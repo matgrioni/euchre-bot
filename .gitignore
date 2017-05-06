@@ -1,0 +1,7 @@
+# Ignore everything without an extension
+*
+!/**/
+!*.*
+
+# Ignore temporary vim files
+.*.*.swp

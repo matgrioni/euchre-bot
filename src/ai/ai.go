@@ -7,14 +7,12 @@ import (
 )
 
 func GenHand() [5]deck.Card {
-    // TODO: Look at differences in seeding and using random library.
-    rand.Seed(time.Now().UnixNano())
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
     var hand [5]deck.Card
-    // TODO: How to make a better loop.
     for i := range hand {
-        hand[i].Suit = deck.SUITS[rand.Intn(4)]
-        hand[i].Value = deck.VALUES[rand.Intn(6)]
+        hand[i].Suit = deck.SUITS[r.Intn(4)]
+        hand[i].Value = deck.VALUES[r.Intn(6)]
     }
 
     return hand
@@ -41,7 +39,6 @@ func RPickUp(hand [5]deck.Card, top deck.Card, friendly bool) bool {
     // action.
     var conf float32 = 0
 
-    // TODO: How to make a better loop.
     for i := range hand {
         card := hand[i]
         if card.Suit == top.Suit {

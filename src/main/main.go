@@ -1,40 +1,41 @@
 package main
 
 import (
-    "euchre"
+    "ai"
+    "deck"
     "fmt"
 )
 
 func main() {
     fmt.Printf("Welcome to the Euchre AI!\n")
 
-    fmt.Printf("Was it your deal?\n")
     var resp string
+    fmt.Printf("Was it your deal?\n")
     fmt.Scanf("%s", &resp)
     friendly := resp == "y"
 
     fmt.Printf("Enter the top card.\n")
 
-    var top euchre.Card
-    var value int
-    var suitStr string
-    fmt.Scanf("%d %s", &value, &suitStr)
+    var top deck.Card
+    var value string
+    var suit string
+    fmt.Scanf("%s %s", &value, &suit)
 
-    top.Value = value;
-    top.Suit = euchre.NewSuit(suitStr);
+    top.Value = deck.CreateValue(value);
+    top.Suit = deck.CreateSuit(suit);
 
     fmt.Printf("Enter your hand to determine your call.\n")
 
     // Input the hand.
-    var hand [5]euchre.Card
+    var hand [5]deck.Card
     for i := 0; i < 5; i++ {
-        fmt.Scanf("%d %s", &value, &suitStr)
+        fmt.Scanf("%s %s", &value, &suit)
 
-        hand[i].Value = value
-        hand[i].Suit = euchre.NewSuit(suitStr)
+        hand[i].Value = deck.CreateValue(value)
+        hand[i].Suit = deck.CreateSuit(suit)
     }
 
-    if euchre.RPickUp(hand, top, friendly) {
+    if ai.RPickUp(hand, top, friendly) {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

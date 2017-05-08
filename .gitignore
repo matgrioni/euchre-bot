@@ -3,5 +3,8 @@
 !/**/
 !*.*
 
+# Ignore package files from `go install`
+*.a
+
 # Ignore temporary vim files
 .*.*.swp

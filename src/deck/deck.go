@@ -1,5 +1,10 @@
 package deck
 
+import (
+    "math/rand"
+    "time"
+)
+
 // Define a Suit type off of the string type. This Suit type should only take on
 // 4 values. These are the constants defined below for the 4 suits of a standard
 // 52 card deck, H, D, S, C.
@@ -79,4 +84,38 @@ func CreateValue(s string) Value {
 type Card struct {
     Suit Suit
     Value Value
+}
+
+// Creates a card given the string in the format of VS, where V is the value, and
+// S is the suit.
+func CreateCard(s string) Card {
+    var card Card
+    card.Suit = CreateSuit(s[len(s) - 1:])
+    card.Value = CreateValue(s[:len(s) - 1])
+
+    return card
+}
+
+// Generate a random card.
+func GenCard() Card {
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+    var card Card
+    card.Suit = SUITS[r.Intn(4)]
+    card.Value = VALUES[r.Intn(6)]
+
+    return card
+}
+
+// Randomly generates a hand of cards, which is 5 cards.
+func GenHand() [5]Card {
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+    var hand [5]Card
+    for i := range hand {
+        hand[i].Suit = SUITS[r.Intn(4)]
+        hand[i].Value = VALUES[r.Intn(6)]
+    }
+
+    return hand
 }

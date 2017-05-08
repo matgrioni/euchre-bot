@@ -1,22 +1,6 @@
 package ai
 
-import (
-    "deck"
-    "math/rand"
-    "time"
-)
-
-func GenHand() [5]deck.Card {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-    var hand [5]deck.Card
-    for i := range hand {
-        hand[i].Suit = deck.SUITS[r.Intn(4)]
-        hand[i].Value = deck.VALUES[r.Intn(6)]
-    }
-
-    return hand
-}
+import "deck"
 
 // A rule based approach to deciding if one should call for the dealer to pick
 // up the top card at the start of a deal. This approach takes into account the

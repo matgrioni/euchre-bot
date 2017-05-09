@@ -9,10 +9,9 @@ import (
 func main() {
     fmt.Printf("Welcome to the Euchre AI!\n")
 
-    var resp string
-    fmt.Printf("Did you or your partner deal (y/n)?\n")
-    fmt.Scanf("%s", &resp)
-    friendly := resp == "y"
+    var friendly int
+    fmt.Printf("Did you(2) or your partner(1) or neither(0) deal (2/1/0)?\n")
+    fmt.Scanf("%d", &friendly)
 
     fmt.Printf("Enter the top card.\n")
 
@@ -29,7 +28,9 @@ func main() {
         hand[i] = deck.CreateCard(line)
     }
 
-    if ai.RPickUp(hand, top, friendly) {
+    conf := ai.RPickUp(hand, top, friendly)
+    fmt.Printf("Confidence of %f\n", conf)
+    if conf >= 0.5 {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

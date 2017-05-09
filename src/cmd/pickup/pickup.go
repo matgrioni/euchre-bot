@@ -10,7 +10,7 @@ func main() {
     fmt.Printf("Welcome to the Euchre AI!\n")
 
     var resp string
-    fmt.Printf("Was it your deal?\n")
+    fmt.Printf("Did you or your partner deal (y/n)?\n")
     fmt.Scanf("%s", &resp)
     friendly := resp == "y"
 

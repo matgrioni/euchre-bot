@@ -1,8 +1,8 @@
 package main
 
 import (
-    "ai"
     "deck"
+    "euchre"
     "fmt"
 )
 
@@ -28,7 +28,7 @@ func main() {
         hand[i] = deck.CreateCard(line)
     }
 
-    if ai.RPickUp(hand, top, friendly, 0.5) >= 0.5 {
+    if euchre.RPickUp(hand, top, friendly, 0.5) {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

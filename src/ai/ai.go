@@ -8,7 +8,7 @@ import "deck"
 // partner picks up the card in question. The friendly parameter can take the
 // following values. 2 for you are picking it up, 1 for your partner is picking
 // it up, and 0 neither.
-func RPickUp(hand [5]deck.Card, top deck.Card, friendly int) float32 {
+func RPickUp(hand [5]deck.Card, top deck.Card, friendly int, thres float32) float32 {
     // Arbitrary weights that I felt like using based on experience.
     weights := map[deck.Value]float32 {
         deck.Nine: 0.05,
@@ -62,7 +62,6 @@ func RPickUp(hand [5]deck.Card, top deck.Card, friendly int) float32 {
     // it. You can reach two suits either by already having them or by, picking
     // up the top card and removing one card if it is a friendly deal (to
     // yourself).
-    // TODO: Can boolean expressions be simplified?
     suitCount := len(suitsPresent)
     if suitCount <= 2 && friendly != 2 {
         conf += 0.08
@@ -103,5 +102,5 @@ func RPickUp(hand [5]deck.Card, top deck.Card, friendly int) float32 {
         conf += weights[top.Value]
     }
 
-    return conf
+    return conf >= thres
 }

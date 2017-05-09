@@ -28,9 +28,7 @@ func main() {
         hand[i] = deck.CreateCard(line)
     }
 
-    conf := ai.RPickUp(hand, top, friendly)
-    fmt.Printf("Confidence of %f\n", conf)
-    if conf >= 0.5 {
+    if ai.RPickUp(hand, top, friendly, 0.5) >= 0.5 {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

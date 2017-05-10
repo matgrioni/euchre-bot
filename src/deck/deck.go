@@ -145,8 +145,9 @@ func GenHand() [5]Card {
         hand[i].Suit = SUITS[r.Intn(4)]
         hand[i].Value = VALUES[r.Intn(6)]
 
+        // TODO: Is this idiomatic?
         // Ensure that any generated card is only included once in the result.
-        for _, in := present[hand[i]]; in ; {
+        for _, in := present[hand[i]]; in ; _, in = present[hand[i]] {
             hand[i].Suit = SUITS[r.Intn(4)]
             hand[i].Value = VALUES[r.Intn(6)]
         }

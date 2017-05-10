@@ -10,7 +10,7 @@ import (
 )
 
 // TODO: Isolate randomness to it's own local package.
-var r Rand
+var r *rand.Rand
 type PickupSample struct {
     Hand [5]deck.Card
     Top deck.Card
@@ -20,9 +20,25 @@ type PickupSample struct {
 func GenPickupSample() PickupSample {
     r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+    hand := deck.GenHand()
+
+    var top deck.Card
+    inHand := true
+    for inHand {
+        top = deck.GenCard()
+
+        for _, card := range hand {
+            inHand = false
+            if card == top {
+                inHand = true
+                break
+            }
+        }
+    }
+
     return PickupSample {
-        deck.GenHand(),
-        deck.GenCard,
+        hand,
+        top,
         r.Intn(3),
     }
 }
@@ -75,7 +91,7 @@ func main() {
     for {
         ps := GenPickupSample()
 
-        for _, ok := samples[ps]; ok ; {
+        for _, in := samples[ps]; in ; _, in = samples[ps] {
             ps = GenPickupSample()
         }
 

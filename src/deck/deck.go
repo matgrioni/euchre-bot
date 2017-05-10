@@ -41,6 +41,10 @@ func (s Suit) Left() Suit {
     return H
 }
 
+func (s Suit) String() string {
+    return string(s)
+}
+
 // Define a Value type off the int type. Each Value corresponds to the different
 // cards used in euchre. A is high at value 14, and Nine is low at value 9.
 type Value int
@@ -77,6 +81,25 @@ func CreateValue(s string) Value {
     return Nine
 }
 
+func (v Value) String() string {
+    switch v {
+    case Nine:
+        return "9"
+    case Ten:
+        return "10"
+    case J:
+        return "J"
+    case Q:
+        return "Q"
+    case K:
+        return "K"
+    case A:
+        return "A"
+    }
+
+    return ""
+}
+
 // A Card represents a playing card from a standard 52 card deck. It consists of
 // a suit, such as Hearts (H), and a value such as J. The suit is represented by
 // the Suit type, and the value is a simple int that should be in the range
@@ -96,6 +119,10 @@ func CreateCard(s string) Card {
     return card
 }
 
+func (c Card) String() string {
+    return c.Value.String() + c.Suit.String()
+}
+
 // Generate a random card.
 func GenCard() Card {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -107,14 +134,24 @@ func GenCard() Card {
     return card
 }
 
-// Randomly generates a hand of cards, which is 5 cards.
+// TODO: Should this be in euchre package?
+// Randomly generates a hand of cards, which is 5 cards in euchre.
 func GenHand() [5]Card {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
     var hand [5]Card
+    present := make(map[Card]bool)
     for i := range hand {
         hand[i].Suit = SUITS[r.Intn(4)]
         hand[i].Value = VALUES[r.Intn(6)]
+
+        // Ensure that any generated card is only included once in the result.
+        for _, in := present[hand[i]]; in ; {
+            hand[i].Suit = SUITS[r.Intn(4)]
+            hand[i].Value = VALUES[r.Intn(6)]
+        }
+
+        present[hand[i]] = true
     }
 
     return hand

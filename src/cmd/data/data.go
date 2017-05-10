@@ -9,10 +9,22 @@ import (
     "time"
 )
 
+// TODO: Isolate randomness to it's own local package.
+var r Rand
 type PickupSample struct {
     Hand [5]deck.Card
     Top deck.Card
     Friend int
+}
+
+func GenPickupSample() PickupSample {
+    r = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+    return PickupSample {
+        deck.GenHand(),
+        deck.GenCard,
+        r.Intn(3),
+    }
 }
 
 func check(err error) {
@@ -55,27 +67,16 @@ func main() {
 
     file, err = os.OpenFile(filename, os.O_APPEND | os.O_WRONLY, 0600)
     check(err)
-    w := bufio.NewWriter(file)
 
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
     fmt.Print("Each line that is generated is a new test sample.\n")
-    fmt.Print("Enter 1 for it is picked up, and 0 otherwise.\n")
+    fmt.Print("Enter 1 for it is picked up, 0 to pass, and -1 to quit.\n")
     fmt.Printf("%-10s\t%-20s\t%-10s\n", "Top", "Hand", "Friend")
     for {
-        // TODO: Repeated code.
-        ps := PickupSample {
-            Top:  deck.GenCard(),
-            Hand: deck.GenHand(),
-            Friend: r.Intn(3),
-        }
+        ps := GenPickupSample()
 
         for _, ok := samples[ps]; ok ; {
-            ps = PickupSample {
-                Top:  deck.GenCard(),
-                Hand: deck.GenHand(),
-                Friend: r.Intn(3),
-            }
+            ps = GenPickupSample()
         }
 
         var handStr string
@@ -91,10 +92,8 @@ func main() {
             break
         }
 
-        output := fmt.Sprintf("%s %s %d %d\n", ps.Top, handStr, ps.Friend, orderedUp)
-        w.WriteString(output)
+        fmt.Fprintf(file, "%s %s %d %d\n", ps.Top, handStr, ps.Friend, orderedUp)
     }
 
-    w.Flush()
     file.Close()
 }

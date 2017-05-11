@@ -11,6 +11,7 @@ import (
 
 // TODO: Isolate randomness to it's own local package.
 var r *rand.Rand
+// TODO: Rename better
 type PickupSample struct {
     Hand [5]deck.Card
     Top deck.Card
@@ -66,9 +67,9 @@ func main() {
         var tmpHand [5]string
         var tmpFriend int
         fmt.Sscanf(line, "%s %s %s %s %s %s %d", &tmpTop, &tmpHand[0],
-                                                    &tmpHand[1], &tmpHand[2],
-                                                    &tmpHand[3], &tmpHand[4],
-                                                    &tmpFriend)
+                                                 &tmpHand[1], &tmpHand[2],
+                                                 &tmpHand[3], &tmpHand[4],
+                                                 &tmpFriend)
 
         nextSample.Top = deck.CreateCard(tmpTop)
         for i, tmpCard := range tmpHand {
@@ -83,7 +84,6 @@ func main() {
 
     file, err = os.OpenFile(filename, os.O_APPEND | os.O_WRONLY, 0600)
     check(err)
-
 
     fmt.Print("Each line that is generated is a new test sample.\n")
     fmt.Print("Enter 1 for it is picked up, 0 to pass, and -1 to quit.\n")

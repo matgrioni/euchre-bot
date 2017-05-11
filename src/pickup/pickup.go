@@ -1,6 +1,101 @@
-package euchre
+package pickup
 
-import "deck"
+import (
+    "ai"
+    "deck"
+)
+
+// TODO: Comments
+type Input struct {
+    Top deck.Card
+    Hand [5]deck.Card
+    Friend int
+}
+
+func (i Input) Features() []int {
+    // TODO: Add commments.
+    features := make([]int, 11, 11)
+
+    indexes := map[deck.Value]int {
+        deck.Nine: 0,
+        deck.Ten: 1,
+        deck.J: 2,
+        deck.Q: 3,
+        deck.K: 4,
+        deck.A: 5,
+    }
+
+    // Used to keep track of how many suits are in the hand.
+    suitsPresent := make(map[deck.Suit]int)
+
+    for _, card := range i.Hand {
+        if card.Suit == i.Top.Suit {
+            features[indexes[card.Value]] = 1
+        } else if card.Suit.Left() == i.Top.Suit && card.Value == deck.J {
+            features[6] = 1
+        } else if card.Value == deck.A {
+            for i := 0; i < 3; i++ {
+                if features[7 + i] == 0 {
+                    features[7 + i] = 1
+                }
+            }
+        }
+
+        // Adjust suit count for left bower.
+        adjSuit := card.Suit
+        if card.Value == deck.J && card.Suit == i.Top.Suit.Left() {
+            adjSuit = i.Top.Suit
+        }
+
+        if _, ok := suitsPresent[adjSuit]; ok {
+            suitsPresent[adjSuit] += 1
+        } else {
+            suitsPresent[adjSuit] = 1
+        }
+    }
+
+    suitCount := len(suitsPresent)
+    if suitCount <= 2 && i.Friend != 2 {
+        features[10] = 1
+    } else if suitCount <= 3 && i.Friend == 2 {
+        _, trumpPresent := suitsPresent[i.Top.Suit]
+        if suitCount <= 2 && trumpPresent {
+            features[10] = 1
+        } else if suitCount == 3 && trumpPresent {
+            for _, card := range i.Hand {
+                // If this is the only card in the hand of a given suit, and it
+                // is not a trump (left bower or of the same suit as the top
+                // card), and it is not an A, then by removing it we get rid of
+                // one suit. So if there were only 3 suits, then this means we
+                // have 2 suits after discarding if we were to pick up. We also
+                // have to make sure that this removal will result in at 2 suits
+                // and that picking up the top card does not increase the suit
+                // amount.
+                if suitsPresent[card.Suit] == 1 && card.Suit != i.Top.Suit &&
+                   (card.Suit != i.Top.Suit.Left() || card.Value != deck.J) &&
+                   card.Value != deck.A {
+                    features[10] = 1
+
+                    // There could be more than one card that matches these
+                    // requirements, we only care if one exists, so break on finding
+                    // one.
+                    break
+                }
+            }
+        }
+    }
+
+    // If you are picking it up then consider the weight of the card on top as
+    // well. The discarded card need not be considered since, it is most likely
+    // non-trump, and will not affect this analysis which only considers trump
+    // cards. If it is a trump card, then every other card is a trump as well
+    // and the final decision should not be affected.
+    if i.Friend != 0 {
+        features[indexes[i.Top.Value]] = 1
+    }
+
+    return features
+}
 
 // A rule based approach to deciding if one should call for the dealer to pick
 // up the top card at the start of a deal. This approach takes into account the
@@ -8,7 +103,7 @@ import "deck"
 // partner picks up the card in question. The friend parameter can take the
 // following values. 2 for you are picking it up, 1 for your partner is picking
 // it up, and 0 neither.
-func RPickUp(hand [5]deck.Card, top deck.Card, friend int, thres float32) bool {
+func RPickUp(hand [5]deck.Card, top deck.Card, friend int) bool {
     // Arbitrary weights that I felt like using based on experience.
     weights := map[deck.Value]float32 {
         deck.Nine: 0.05,
@@ -102,5 +197,25 @@ func RPickUp(hand [5]deck.Card, top deck.Card, friend int, thres float32) bool {
         conf += weights[top.Value]
     }
 
-    return conf >= thres
+    return conf >= 0.5
+}
+
+func PPickUp(p *ai.Perceptron, inputs []ai.Input, expected []int, hand [5]deck.Card,
+             top deck.Card, friend, iter int) bool {
+    for i := 0; i < iter; i++ {
+        p.Train(inputs, expected, 0.01)
+    }
+
+    nextInput := Input {
+        top,
+        hand,
+        friend,
+    }
+    res := p.Process(nextInput)
+
+    return res == 1
+}
+
+func InitialPerceptron() *ai.Perceptron {
+    return ai.CreatePerceptron(11, 0, 1)
 }

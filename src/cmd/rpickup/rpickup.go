@@ -2,12 +2,13 @@ package main
 
 import (
     "deck"
-    "euchre"
+    "pickup"
     "fmt"
 )
 
 func main() {
     fmt.Printf("Welcome to the Euchre AI!\n")
+    fmt.Printf("This is the rule based approach to picking up or not\n")
 
     var friendly int
     fmt.Printf("Did you(2) or your partner(1) or neither(0) deal (2/1/0)?\n")
@@ -28,7 +29,7 @@ func main() {
         hand[i] = deck.CreateCard(line)
     }
 
-    if euchre.RPickUp(hand, top, friendly, 0.5) {
+    if pickup.RPickUp(hand, top, friendly) {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

@@ -72,3 +72,7 @@ func (p *Perceptron) Train(inputs []Input, expected []int, rate float32) {
 func (p *Perceptron) Weights() []float32 {
     return p.weights
 }
+
+func (p *Perceptron) Bias() float32 {
+    return p.bias
+}

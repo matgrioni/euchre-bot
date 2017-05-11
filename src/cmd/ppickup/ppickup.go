@@ -62,6 +62,7 @@ func main() {
     for _, weight := range p.Weights() {
         fmt.Printf("%.3f ", weight)
     }
+    fmt.Printf("%.3f", p.Bias())
     fmt.Println()
 
     for {
@@ -94,6 +95,7 @@ func main() {
         for _, weight := range p.Weights() {
             fmt.Printf("%.3f ", weight)
         }
+        fmt.Printf("%.3f", p.Bias())
         fmt.Println()
     }
 }

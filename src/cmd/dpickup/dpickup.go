@@ -6,19 +6,14 @@ import (
     "fmt"
     "math/rand"
     "os"
+    "pickup"
     "time"
 )
 
 // TODO: Isolate randomness to it's own local package.
 var r *rand.Rand
-// TODO: Rename better
-type PickupSample struct {
-    Hand [5]deck.Card
-    Top deck.Card
-    Friend int
-}
 
-func GenPickupSample() PickupSample {
+func GenPickupInput() pickup.Input {
     r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
     hand := deck.GenHand()
@@ -37,9 +32,9 @@ func GenPickupSample() PickupSample {
         }
     }
 
-    return PickupSample {
-        hand,
+    return pickup.Input {
         top,
+        hand,
         r.Intn(3),
     }
 }
@@ -52,17 +47,17 @@ func check(err error) {
 
 func main() {
     filename := os.Args[1]
-    file, err := os.Open(filename)
+    file, err := os.OpenFile(filename, os.O_RDWR, 0600)
     check(err)
 
     // Read in the current existing samples into a map that easily tracks which
     // problem instances have already been determined.
-    var samples map[PickupSample]bool = make(map[PickupSample]bool)
+    var samples map[pickup.Input]bool = make(map[pickup.Input]bool)
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
         line := scanner.Text()
 
-        var nextSample PickupSample
+        var nextSample pickup.Input
         var tmpTop string
         var tmpHand [5]string
         var tmpFriend int
@@ -80,21 +75,22 @@ func main() {
         samples[nextSample] = true
     }
 
-    file.Close()
-
-    file, err = os.OpenFile(filename, os.O_APPEND | os.O_WRONLY, 0600)
-    check(err)
+    // Move the file pointer to the end of the file.
+    file.Seek(0, 2)
 
     fmt.Print("Each line that is generated is a new test sample.\n")
     fmt.Print("Enter 1 for it is picked up, 0 to pass, and -1 to quit.\n")
     fmt.Printf("%-10s\t%-20s\t%-10s\n", "Top", "Hand", "Friend")
     for {
-        ps := GenPickupSample()
+        ps := GenPickupInput()
 
+        // If this generated sample already exists generate a new one until it
+        // it is a new one.
         for _, in := samples[ps]; in ; _, in = samples[ps] {
-            ps = GenPickupSample()
+            ps = GenPickupInput()
         }
 
+        // Output the new sample and get the user's decision.
         var handStr string
         for _, card := range ps.Hand {
             handStr += card.String() + " "

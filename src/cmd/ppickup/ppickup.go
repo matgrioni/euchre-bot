@@ -52,50 +52,33 @@ func main() {
         expected = append(expected, up)
     }
 
-
     fmt.Printf("Welcome to the Euchre AI!\n")
     fmt.Printf("This is the perceptron based approach to picking up or not\n")
     fmt.Printf("Control-C to quit.\n")
 
-    p := pickup.InitialPerceptron()
-    fmt.Print("These are the initial weights of the perceptron.\n")
-    for _, weight := range p.Weights() {
-        fmt.Printf("%.3f ", weight)
-    }
-    fmt.Printf("%.3f", p.Bias())
-    fmt.Println()
+    var friendly int
+    fmt.Printf("Did you(2), your partner(1), or neither(0) deal (2/1/0)?\n")
+    fmt.Scanf("%d", &friendly)
 
-    for {
-        var friendly int
-        fmt.Printf("Did you(2), your partner(1), or neither(0) deal (2/1/0)?\n")
-        fmt.Scanf("%d", &friendly)
+    fmt.Printf("Enter the top card.\n")
 
-        fmt.Printf("Enter the top card.\n")
+    var line string
+    fmt.Scanf("%s", &line)
+    top := deck.CreateCard(line)
 
-        var line string
+    fmt.Printf("Enter your hand to determine your call.\n")
+
+    // Input the hand.
+    var hand [5]deck.Card
+    for i := range hand {
         fmt.Scanf("%s", &line)
-        top := deck.CreateCard(line)
-
-        fmt.Printf("Enter your hand to determine your call.\n")
-
-        // Input the hand.
-        var hand [5]deck.Card
-        for i := range hand {
-            fmt.Scanf("%s", &line)
-            hand[i] = deck.CreateCard(line)
-        }
-
-        if pickup.PPickUp(p, samples, expected, hand, top, friendly, 10) {
-            fmt.Printf("Pick it up!\n")
-        } else {
-            fmt.Printf("Pass...\n")
-        }
-
-        fmt.Print("These are the new weights.\n")
-        for _, weight := range p.Weights() {
-            fmt.Printf("%.3f ", weight)
-        }
-        fmt.Printf("%.3f", p.Bias())
-        fmt.Println()
+        hand[i] = deck.CreateCard(line)
     }
+
+    if pickup.P(samples, expected, hand, top, friendly) {
+        fmt.Printf("Pick it up!\n")
+    } else {
+        fmt.Printf("Pass...\n")
+    }
+
 }

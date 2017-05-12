@@ -17,6 +17,9 @@ type Perceptron struct {
     bias float32
 }
 
+// The Input type to the perceptron breaks down any struct or type into a vector
+// of features which function as the inputs to the perceptron. The features are
+// either there or aren't, so they only take on a value of 1 or 0.
 type Input interface {
     Features() []int
 }
@@ -37,6 +40,7 @@ func CreatePerceptron(n int, low, high float32) *Perceptron {
     }
 }
 
+// Process the given input and return a classification of either 1 or 0.
 func (p *Perceptron) Process(input Input) int {
     s := p.bias
     for i, input := range input.Features() {
@@ -50,16 +54,24 @@ func (p *Perceptron) Process(input Input) int {
     return 0
 }
 
+// Adjust a perceptron based on a given input, difference and learning rate. The
+// input is what is given to the perceptron, delta is either 1, 0, or -1. It
+// should be the result of expected - actual, and learningRate is how fast the
+// perceptron should adjust. Therefore, this function moves a given perceptron
+// in the direction of delta at a rate determined by learningRate. The use of
+// input is that it provides the features that are activated by this input, and
+// which are not. Therefore only weights that are from activated features are
+// changed while weights related to features not in the input are unchanged.
 func (p *Perceptron) Adjust(input Input, delta int, learningRate float32) {
     for i, input := range input.Features() {
-        // TODO: Is this right?
         p.weights[i] += float32(input) * float32(delta) * learningRate
     }
 
     p.bias += float32(delta) * learningRate
 }
 
-// TODO: Maybe interface type for training data samples?
+// Based on an array of inputs and a parallel array of expected answers, train
+// the perceptron at the given rate.
 func (p *Perceptron) Train(inputs []Input, expected []int, rate float32) {
     for i, input := range inputs {
         actual := p.Process(input)
@@ -67,6 +79,36 @@ func (p *Perceptron) Train(inputs []Input, expected []int, rate float32) {
 
         p.Adjust(input, del, rate)
     }
+}
+
+// Train the perceptron until a certain level of convergence. Basically this
+// method keeps training the perceptron on the same data until the percent of
+// wrong classifications is less than percent or until it has trained the
+// perceptron maxIter times.
+func (p *Perceptron) Converge(inputs []Input, expected []int,
+                              rate, percent float32, maxIter int) bool {
+    thres := int(percent * float32(len(inputs)))
+
+    iter := 0
+    wrong := thres + 1
+    for wrong > thres && iter < maxIter {
+        wrong = 0
+
+        for i, input := range inputs {
+            actual := p.Process(input)
+            del := expected[i] - actual
+
+            p.Adjust(input, del, rate)
+
+            if del != 0 {
+                wrong++
+            }
+        }
+
+        iter++
+    }
+
+    return wrong <= thres
 }
 
 func (p *Perceptron) Weights() []float32 {

@@ -3,6 +3,7 @@ package pickup
 import (
     "ai"
     "deck"
+    "fmt"
 )
 
 // TODO: Comments
@@ -14,7 +15,7 @@ type Input struct {
 
 func (i Input) Features() []int {
     // TODO: Add commments.
-    features := make([]int, 11, 11)
+    features := make([]int, 12, 12)
 
     indexes := map[deck.Value]int {
         deck.Nine: 0,
@@ -23,6 +24,13 @@ func (i Input) Features() []int {
         deck.Q: 3,
         deck.K: 4,
         deck.A: 5,
+    }
+
+    aces := map[deck.Suit]int {
+        deck.H: 7,
+        deck.D: 8,
+        deck.S: 9,
+        deck.C: 10,
     }
 
     // Used to keep track of how many suits are in the hand.
@@ -34,11 +42,7 @@ func (i Input) Features() []int {
         } else if card.Suit.Left() == i.Top.Suit && card.Value == deck.J {
             features[6] = 1
         } else if card.Value == deck.A {
-            for i := 0; i < 3; i++ {
-                if features[7 + i] == 0 {
-                    features[7 + i] = 1
-                }
-            }
+            features[aces[card.Suit]] = 1
         }
 
         // Adjust suit count for left bower.
@@ -56,11 +60,11 @@ func (i Input) Features() []int {
 
     suitCount := len(suitsPresent)
     if suitCount <= 2 && i.Friend != 2 {
-        features[10] = 1
+        features[11] = 1
     } else if suitCount <= 3 && i.Friend == 2 {
         _, trumpPresent := suitsPresent[i.Top.Suit]
         if suitCount <= 2 && trumpPresent {
-            features[10] = 1
+            features[11] = 1
         } else if suitCount == 3 && trumpPresent {
             for _, card := range i.Hand {
                 // If this is the only card in the hand of a given suit, and it
@@ -74,7 +78,7 @@ func (i Input) Features() []int {
                 if suitsPresent[card.Suit] == 1 && card.Suit != i.Top.Suit &&
                    (card.Suit != i.Top.Suit.Left() || card.Value != deck.J) &&
                    card.Value != deck.A {
-                    features[10] = 1
+                    features[11] = 1
 
                     // There could be more than one card that matches these
                     // requirements, we only care if one exists, so break on finding
@@ -200,11 +204,28 @@ func RPickUp(hand [5]deck.Card, top deck.Card, friend int) bool {
     return conf >= 0.5
 }
 
-func PPickUp(p *ai.Perceptron, inputs []ai.Input, expected []int, hand [5]deck.Card,
-             top deck.Card, friend, iter int) bool {
-    for i := 0; i < iter; i++ {
-        p.Train(inputs, expected, 0.01)
+func P(inputs []ai.Input, expected []int, hand [5]deck.Card, top deck.Card,
+       friend int) bool {
+    p := ai.CreatePerceptron(12, 0, 1)
+
+    fmt.Print("These are the initial weights of the perceptron.\n")
+    for _, weight := range p.Weights() {
+        fmt.Printf("%.3f ", weight)
     }
+    fmt.Printf("%.3f\n", p.Bias())
+
+    ret := p.Converge(inputs, expected, 0.01, 0.05, 10000)
+    if ret {
+        fmt.Print("Converged\n")
+    } else {
+        fmt.Print("Did not converge\n")
+    }
+
+    fmt.Print("These are the final weights.\n")
+    for _, weight := range p.Weights() {
+        fmt.Printf("%.3f ", weight)
+    }
+    fmt.Printf("%.3f\n", p.Bias())
 
     nextInput := Input {
         top,
@@ -214,8 +235,4 @@ func PPickUp(p *ai.Perceptron, inputs []ai.Input, expected []int, hand [5]deck.C
     res := p.Process(nextInput)
 
     return res == 1
-}
-
-func InitialPerceptron() *ai.Perceptron {
-    return ai.CreatePerceptron(11, 0, 1)
 }

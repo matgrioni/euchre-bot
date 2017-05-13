@@ -204,18 +204,24 @@ func RPickUp(hand [5]deck.Card, top deck.Card, friend int) bool {
     return conf >= 0.5
 }
 
+// Determine if the given hand should be picked up or not using Perceptron logic.
+// Provide the inputs to the perceptron and a parallel array of the expected
+// answers, along with the current problem instance and true is returned if it
+// should be picked up and false otherwise.
 func P(inputs []ai.Input, expected []int, hand [5]deck.Card, top deck.Card,
        friend int) bool {
     p := ai.CreatePerceptron(12, 0, 1)
 
+    // Output debugging info.
     fmt.Print("These are the initial weights of the perceptron.\n")
     for _, weight := range p.Weights() {
         fmt.Printf("%.3f ", weight)
     }
     fmt.Printf("%.3f\n", p.Bias())
 
-    ret := p.Converge(inputs, expected, 0.01, 0.05, 10000)
-    if ret {
+    // Check if the perceptron converged.
+    conv := p.Converge(inputs, expected, 0.005, 0.05, 10000)
+    if conv {
         fmt.Print("Converged\n")
     } else {
         fmt.Print("Did not converge\n")

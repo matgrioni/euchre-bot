@@ -29,7 +29,7 @@ func main() {
         hand[i] = deck.CreateCard(line)
     }
 
-    if pickup.RPickUp(hand, top, friendly) {
+    if pickup.R(hand, top, friendly) {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

@@ -123,6 +123,15 @@ func (c Card) String() string {
     return c.Value.String() + c.Suit.String()
 }
 
+func (c Card) AdjSuit(t Suit) Suit {
+    adjSuit := c.Suit
+    if c.Value == J && c.Suit == t.Left() {
+        adjSuit = t
+    }
+
+    return adjSuit
+}
+
 // Generate a random card.
 func GenCard() Card {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))

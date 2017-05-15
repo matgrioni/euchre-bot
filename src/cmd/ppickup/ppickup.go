@@ -54,7 +54,6 @@ func main() {
 
     fmt.Printf("Welcome to the Euchre AI!\n")
     fmt.Printf("This is the perceptron based approach to picking up or not\n")
-    fmt.Printf("Control-C to quit.\n")
 
     var friendly int
     fmt.Printf("Did you(2), your partner(1), or neither(0) deal (2/1/0)?\n")

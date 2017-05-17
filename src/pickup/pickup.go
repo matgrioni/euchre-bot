@@ -2,8 +2,10 @@ package pickup
 
 import (
     "ai"
+    "bufio"
     "deck"
     "fmt"
+    "os"
 )
 
 // TODO: Comments
@@ -152,8 +154,8 @@ func R(hand [5]deck.Card, top deck.Card, friend int) bool {
 // Provide the inputs to the perceptron and a parallel array of the expected
 // answers, along with the current problem instance and true is returned if it
 // should be picked up and false otherwise.
-func P(inputs []ai.Input, expected []int, hand [5]deck.Card, top deck.Card,
-       friend int) bool {
+func Perceptron(inputs []ai.Input, expected []int, hand [5]deck.Card,
+                top deck.Card, friend int) bool {
     p := ai.CreatePerceptron(12, 0, 1)
 
     // Output debugging info.
@@ -185,4 +187,53 @@ func P(inputs []ai.Input, expected []int, hand [5]deck.Card, top deck.Card,
     res := p.Process(nextInput)
 
     return res == 1
+}
+
+// Loads the inputs in a file and returns a slice of the inputs and their
+// expected values.
+// fn - The filename where the inputs are located.
+// Returns a slice of ai.Input values and a parallel slice of the expected
+// values for each of these inputs.
+func LoadInputs(fn string) ([]ai.Input, []int) {
+    file, err := os.Open(fn)
+    check(err)
+    scanner := bufio.NewScanner(file)
+
+    // Scan all the training data from the file into the samples slice.
+    var samples []ai.Input
+    var expected []int
+    for scanner.Scan() {
+        line := scanner.Text()
+
+        var nextInput Input
+        var tmpTop string
+        var tmpHand [5]string
+        var up int
+        // TODO: Are parenthesis needed?
+        // Read in a line from the file and parse it for the different needed
+        // fields for a pickup problem instance.
+        fmt.Sscanf(line, "%s %s %s %s %s %s %d %d", &tmpTop, &tmpHand[0],
+                                                    &tmpHand[1], &tmpHand[2],
+                                                    &tmpHand[3], &tmpHand[4],
+                                                    &(nextInput.Friend), &up)
+
+        // Initialize the card from the values read in and add it to the samples
+        // slice.
+        nextInput.Top = deck.CreateCard(tmpTop)
+        for i, tmpCard := range tmpHand {
+            nextInput.Hand[i] = deck.CreateCard(tmpCard)
+        }
+
+        samples = append(samples, nextInput)
+        expected = append(expected, up)
+    }
+
+    return samples, expected
+}
+
+// Simple utility method to check and abort if there was an error.
+func check(err error) {
+    if err != nil {
+        panic(err)
+    }
 }

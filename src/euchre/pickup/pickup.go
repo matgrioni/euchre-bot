@@ -8,17 +8,36 @@ import (
     "os"
 )
 
-// TODO: Comments
+// The input data type is used to represent an input into the perceptron
+// based approach to calling for the dealer to pick it up or not. It implements
+// the ai.Input interface by providing a method to export its data to a slice of
+// features.
 type Input struct {
     Top deck.Card
     Hand [5]deck.Card
     Friend int
 }
 
+// Converts an input to a Perceptron used to tell a player to tell the dealer to
+// pick up a card or not to a vector of binary features. The slice is of size 12
+// and has the following features in order:
+// - Nine of trump
+// - Ten of trump
+// - J of trump
+// - Q of trump
+// - K of trump
+// - A of trump
+// - J of same color as trump
+// - AH
+// - AD
+// - AS
+// - AC
+// - Hand only has 2 suits.
 func (i Input) Features() []int {
-    // TODO: Add commments.
     features := make([]int, 12, 12)
 
+    // The following maps create a relation between a certain feature and its
+    // position within the features vector.
     indexes := map[deck.Value]int {
         deck.Nine: 0,
         deck.Ten: 1,
@@ -41,18 +60,15 @@ func (i Input) Features() []int {
     for _, card := range i.Hand {
         if card.Suit == i.Top.Suit {
             features[indexes[card.Value]] = 1
-        } else if card.Suit.Left() == i.Top.Suit && card.Value == deck.J {
+        } else if card.Suit == i.Top.Suit.Left() && card.Value == deck.J {
             features[6] = 1
         } else if card.Value == deck.A {
             features[aces[card.Suit]] = 1
         }
 
-        // Adjust suit count for left bower.
-        adjSuit := card.Suit
-        if card.Value == deck.J && card.Suit == i.Top.Suit.Left() {
-            adjSuit = i.Top.Suit
-        }
-
+        // Adjust suit count for left bower and increment the count for the
+        // current card's suit.
+        adjSuit := card.AdjSuit(i.Top.Suit)
         if _, ok := suitsPresent[adjSuit]; ok {
             suitsPresent[adjSuit] += 1
         } else {
@@ -61,9 +77,14 @@ func (i Input) Features() []int {
     }
 
     suitCount := len(suitsPresent)
+    // If the hand has less then 2 suits and no card is being picked up then one
+    // can be sure we have 2 suits.
     if suitCount <= 2 && i.Friend != 2 {
         features[11] = 1
     } else if suitCount <= 3 && i.Friend == 2 {
+    // Else, if there are less than 3 suits and we are picking up, one suit
+    // might be gotten rid of yet. Even if we had 2 suits we would to check that
+    // we already had the trump suit if we are picking up.
         _, trumpPresent := suitsPresent[i.Top.Suit]
         if suitCount <= 2 && trumpPresent {
             features[11] = 1
@@ -77,9 +98,8 @@ func (i Input) Features() []int {
                 // have to make sure that this removal will result in at 2 suits
                 // and that picking up the top card does not increase the suit
                 // amount.
-                if suitsPresent[card.Suit] == 1 && card.Suit != i.Top.Suit &&
-                   (card.Suit != i.Top.Suit.Left() || card.Value != deck.J) &&
-                   card.Value != deck.A {
+                if suitsPresent[card.Suit] == 1 && card.Value != deck.A &&
+                   card.AdjSuit(i.Top.Suit) != i.Top.Suit {
                     features[11] = 1
 
                     // There could be more than one card that matches these
@@ -109,7 +129,7 @@ func (i Input) Features() []int {
 // partner picks up the card in question. The friend parameter can take the
 // following values. 2 for you are picking it up, 1 for your partner is picking
 // it up, and 0 neither.
-func R(hand [5]deck.Card, top deck.Card, friend int) bool {
+func Rule(hand [5]deck.Card, top deck.Card, friend int) bool {
     i := Input {
         top,
         hand,
@@ -205,17 +225,18 @@ func LoadInputs(fn string) ([]ai.Input, []int) {
     for scanner.Scan() {
         line := scanner.Text()
 
+        // Declare all variables needed to input a sample instance with the
+        // input (top and hand) and the answer as well (up).
         var nextInput Input
         var tmpTop string
         var tmpHand [5]string
         var up int
-        // TODO: Are parenthesis needed?
         // Read in a line from the file and parse it for the different needed
         // fields for a pickup problem instance.
         fmt.Sscanf(line, "%s %s %s %s %s %s %d %d", &tmpTop, &tmpHand[0],
                                                     &tmpHand[1], &tmpHand[2],
                                                     &tmpHand[3], &tmpHand[4],
-                                                    &(nextInput.Friend), &up)
+                                                    &nextInput.Friend, &up)
 
         // Initialize the card from the values read in and add it to the samples
         // slice.

@@ -6,7 +6,7 @@ import (
     "fmt"
     "math/rand"
     "os"
-    "pickup"
+    "euchre/pickup"
     "time"
 )
 

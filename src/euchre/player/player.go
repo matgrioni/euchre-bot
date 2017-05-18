@@ -6,6 +6,8 @@ import (
     "time"
 )
 
+// TODO: Make all of these euchre subpackages.
+
 // This method acts as a random player that follows all the appropriate rules of
 // euchre. So it will follow suit, or in the case where it is the first player,
 // it will randomly choose a card.

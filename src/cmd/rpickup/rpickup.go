@@ -2,7 +2,7 @@ package main
 
 import (
     "deck"
-    "pickup"
+    "euchre/pickup"
     "fmt"
 )
 
@@ -29,7 +29,7 @@ func main() {
         hand[i] = deck.CreateCard(line)
     }
 
-    if pickup.R(hand, top, friendly) {
+    if pickup.Rule(hand, top, friendly) {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

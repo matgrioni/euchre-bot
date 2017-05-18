@@ -123,6 +123,10 @@ func (c Card) String() string {
     return c.Value.String() + c.Suit.String()
 }
 
+// Adjusts suit of this card based on the trump suit. This is only really
+// valuable when it matters if the card can be the left bower. In this case,
+// this method returns that the suit of this card is the trump suit. For all
+// other cards, the suit is simply outputted.
 func (c Card) AdjSuit(t Suit) Suit {
     adjSuit := c.Suit
     if c.Value == J && c.Suit == t.Left() {
@@ -154,7 +158,6 @@ func GenHand() [5]Card {
         hand[i].Suit = SUITS[r.Intn(4)]
         hand[i].Value = VALUES[r.Intn(6)]
 
-        // TODO: Is this idiomatic?
         // Ensure that any generated card is only included once in the result.
         for _, in := present[hand[i]]; in ; _, in = present[hand[i]] {
             hand[i].Suit = SUITS[r.Intn(4)]

@@ -5,18 +5,18 @@ import (
     "deck"
     "fmt"
     "os"
-    "pickup"
-    "player"
+    "euchre/pickup"
+    "euchre/player"
 )
 
 func main() {
-    fmt.Print("Welcome to the Euchre AI!.\n")
-    fmt.Print("Albert plays just like a human (sort of).\n")
-    fmt.Print("This program plays a single hand (5 tricks) at a time.\n")
-    fmt.Print("This includes picking the trump suit.\n")
+    fmt.Println("Welcome to the Euchre AI!.")
+    fmt.Println("Albert plays just like a human (sort of).")
+    fmt.Println("This program plays a single hand (5 tricks) at a time.")
+    fmt.Println("This includes picking the trump suit.")
     fmt.Println()
 
-    fmt.Print("Enter the 5 cards in your hand...\n")
+    fmt.Println("Enter the 5 cards in your hand...")
     var hand [5]deck.Card
     for i := 0; i< 5; i++ {
         var cardStr string
@@ -25,14 +25,14 @@ func main() {
     }
     fmt.Println()
 
-    fmt.Print("Enter the top card...\n")
+    fmt.Println("Enter the top card...")
     var topStr string
     fmt.Scanf("%s", &topStr)
     top := deck.CreateCard(topStr)
     fmt.Println()
 
-    fmt.Print("You (2), Partner (1), Other (0)\n")
-    fmt.Print("Enter whose deal it was...\n")
+    fmt.Println("You (2), Partner (1), Other (0)")
+    fmt.Println("Enter whose deal it was...")
     var friend int
     fmt.Scanf("%d", friend)
     fmt.Println()
@@ -41,11 +41,11 @@ func main() {
     fn := os.Args[1]
     inputs, expected := pickup.LoadInputs(fn)
     if pickup.Perceptron(inputs, expected, hand, top, friend) {
-        fmt.Print("Pick it up.\n")
+        fmt.Println("Pick it up.")
         trump = top.Suit
     } else {
-        fmt.Print("Pass.\n")
-        fmt.Print("Enter the chosen trump suit...\n")
+        fmt.Println("Pass.")
+        fmt.Println("Enter the chosen trump suit...\n")
         fmt.Scanln()
         var trumpStr string
         fmt.Scanf("%s", &trumpStr)
@@ -58,7 +58,7 @@ func main() {
     scanner := bufio.NewScanner(os.Stdin)
     for i := 0; i < 5; i++ {
         fmt.Printf("Hand %d\n", i + 1)
-        fmt.Print("Cards already played (blank line when done)...\n")
+        fmt.Println("Cards already played (blank line when done)...")
         fmt.Scanln()
 
         played := make([]deck.Card, 0, 0)

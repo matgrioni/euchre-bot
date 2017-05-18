@@ -3,7 +3,7 @@ package main
 import (
     "deck"
     "fmt"
-    "player"
+    "euchre/player"
 )
 
 func main() {
@@ -42,6 +42,6 @@ func main() {
     fmt.Scanf("%s", &trumpStr)
     trump := deck.CreateSuit(trumpStr)
 
-    chosen, _ := player.Random(hand, played, nil, trump)
+    chosen, _ := player.Random(hand, played, trump)
     fmt.Printf("Play %s.\n", chosen)
 }

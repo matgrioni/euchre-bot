@@ -3,10 +3,12 @@ package main
 import (
     "bufio"
     "deck"
-    "fmt"
-    "os"
+    "euchre/call"
+    "euchre/discard"
     "euchre/pickup"
     "euchre/player"
+    "fmt"
+    "os"
 )
 
 func main() {
@@ -34,34 +36,63 @@ func main() {
     fmt.Println("You (2), Partner (1), Other (0)")
     fmt.Println("Enter whose deal it was...")
     var friend int
-    fmt.Scanf("%d", friend)
+    fmt.Scanf("%d", &friend)
     fmt.Println()
 
     var trump deck.Suit
     fn := os.Args[1]
     inputs, expected := pickup.LoadInputs(fn)
-    if pickup.Perceptron(inputs, expected, hand, top, friend) {
-        fmt.Println("Pick it up.")
+    orderedUp := pickup.Perceptron(inputs, expected, hand, top, friend)
+    if orderedUp {
+        fmt.Println("Order it up.")
         trump = top.Suit
+
+        if friend == 2 {
+            var d deck.Card
+            hand, d = discard.Rand(hand, top)
+
+            fmt.Printf("Discard %s.\n", d)
+        }
     } else {
         fmt.Println("Pass.")
-        fmt.Println("Enter the chosen trump suit...\n")
-        fmt.Scanln()
+        fmt.Println()
+
+        if call, chosenSuit := call.Rule(top, hand); call {
+            fmt.Printf("If possible call on second go around %s.\n", chosenSuit)
+        } else {
+            fmt.Println("Pass if it makes its way back to you.")
+        }
+
+        fmt.Println("Enter the eventual chosen trump suit...")
         var trumpStr string
         fmt.Scanf("%s", &trumpStr)
         trump = deck.CreateSuit(trumpStr)
+        fmt.Printf("This is trump: %s.\n", trumpStr)
     }
+
+    if !orderedUp && friend == 2 {
+        var pickedUp int
+        fmt.Println("Did you pick it up (1/0)?")
+        fmt.Scanf("%d", &pickedUp)
+
+        if pickedUp == 1 {
+            var d deck.Card
+            hand, d = discard.Rand(hand, top)
+
+            fmt.Printf("Discard %s.\n", d)
+        }
+    }
+
     fmt.Println()
 
     var chosen deck.Card
     curHand := hand[:]
     scanner := bufio.NewScanner(os.Stdin)
     for i := 0; i < 5; i++ {
-        fmt.Printf("Hand %d\n", i + 1)
+        fmt.Printf("Trick %d\n", i + 1)
         fmt.Println("Cards already played (blank line when done)...")
-        fmt.Scanln()
 
-        played := make([]deck.Card, 0, 0)
+        played := make([]deck.Card, 0, 4)
         for scanner.Scan() {
             line := scanner.Text()
             if line == "" {

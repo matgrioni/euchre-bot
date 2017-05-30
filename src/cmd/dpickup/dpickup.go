@@ -35,7 +35,7 @@ func GenPickupInput() pickup.Input {
     return pickup.Input {
         top,
         hand,
-        r.Intn(3),
+        r.Intn(4),
     }
 }
 
@@ -60,17 +60,17 @@ func main() {
         var nextSample pickup.Input
         var tmpTop string
         var tmpHand [5]string
-        var tmpFriend int
+        var tmpDealer int
         fmt.Sscanf(line, "%s %s %s %s %s %s %d", &tmpTop, &tmpHand[0],
                                                  &tmpHand[1], &tmpHand[2],
                                                  &tmpHand[3], &tmpHand[4],
-                                                 &tmpFriend)
+                                                 &tmpDealer)
 
         nextSample.Top = deck.CreateCard(tmpTop)
         for i, tmpCard := range tmpHand {
             nextSample.Hand[i] = deck.CreateCard(tmpCard)
         }
-        nextSample.Friend = tmpFriend
+        nextSample.Dealer = tmpDealer
 
         samples[nextSample] = true
     }
@@ -80,7 +80,7 @@ func main() {
 
     fmt.Print("Each line that is generated is a new test sample.\n")
     fmt.Print("Enter 1 for it is picked up, 0 to pass, and -1 to quit.\n")
-    fmt.Printf("%-10s\t%-20s\t%-10s\n", "Top", "Hand", "Friend")
+    fmt.Printf("%-10s\t%-20s\t%-10s\n", "Top", "Hand", "Dealer")
     for {
         ps := GenPickupInput()
 
@@ -96,7 +96,7 @@ func main() {
             handStr += card.String() + " "
         }
         handStr = handStr[:len(handStr) - 1]
-        fmt.Printf("%-10s\t%-20s\t%-10d ", ps.Top, handStr, ps.Friend)
+        fmt.Printf("%-10s\t%-20s\t%-10d ", ps.Top, handStr, ps.Dealer)
 
         var orderedUp int
         fmt.Scanf("%d", &orderedUp)
@@ -104,7 +104,7 @@ func main() {
             break
         }
 
-        fmt.Fprintf(file, "%s %s %d %d\n", ps.Top, handStr, ps.Friend, orderedUp)
+        fmt.Fprintf(file, "%s %s %d %d\n", ps.Top, handStr, ps.Dealer, orderedUp)
     }
 
     file.Close()

@@ -15,7 +15,7 @@ import (
 type Input struct {
     Top deck.Card
     Hand [5]deck.Card
-    Friend int
+    Dealer int
 }
 
 // Converts an input to a Perceptron used to tell a player to tell the dealer to
@@ -79,9 +79,9 @@ func (i Input) Features() []int {
     suitCount := len(suitsPresent)
     // If the hand has less then 2 suits and no card is being picked up then one
     // can be sure we have 2 suits.
-    if suitCount <= 2 && i.Friend != 2 {
+    if suitCount <= 2 && i.Dealer != 0 {
         features[11] = 1
-    } else if suitCount <= 3 && i.Friend == 2 {
+    } else if suitCount <= 3 && i.Dealer == 0 {
     // Else, if there are less than 3 suits and we are picking up, one suit
     // might be gotten rid of yet. Even if we had 2 suits we would to check that
     // we already had the trump suit if we are picking up.
@@ -116,7 +116,7 @@ func (i Input) Features() []int {
     // non-trump, and will not affect this analysis which only considers trump
     // cards. If it is a trump card, then every other card is a trump as well
     // and the final decision should not be affected.
-    if i.Friend != 0 {
+    if i.Dealer == 0 && i.Dealer == 2 {
         features[indexes[i.Top.Value]] = 1
     }
 
@@ -126,14 +126,14 @@ func (i Input) Features() []int {
 // A rule based approach to deciding if one should call for the dealer to pick
 // up the top card at the start of a deal. This approach takes into account the
 // cards currently in the players hand, the top card, and whether one or one's
-// partner picks up the card in question. The friend parameter can take the
-// following values. 2 for you are picking it up, 1 for your partner is picking
-// it up, and 0 neither.
-func Rule(hand [5]deck.Card, top deck.Card, friend int) bool {
+// partner picks up the card in question. The dealer parameter can take the
+// following values. 0 for you are picking it up, 2 for your partner is picking
+// it up, and 1 or 3 for opponents in clockwise order.
+func Rule(hand [5]deck.Card, top deck.Card, dealer int) bool {
     i := Input {
         top,
         hand,
-        friend,
+        dealer,
     }
 
     // One wants to tell the dealer to pick up if you believe that you can win 3
@@ -175,7 +175,7 @@ func Rule(hand [5]deck.Card, top deck.Card, friend int) bool {
 // answers, along with the current problem instance and true is returned if it
 // should be picked up and false otherwise.
 func Perceptron(inputs []ai.Input, expected []int, hand [5]deck.Card,
-                top deck.Card, friend int) bool {
+                top deck.Card, dealer int) bool {
     p := ai.CreatePerceptron(12, 0, 1)
 
     // Output debugging info.
@@ -202,7 +202,7 @@ func Perceptron(inputs []ai.Input, expected []int, hand [5]deck.Card,
     nextInput := Input {
         top,
         hand,
-        friend,
+        dealer,
     }
     res := p.Process(nextInput)
 
@@ -236,7 +236,7 @@ func LoadInputs(fn string) ([]ai.Input, []int) {
         fmt.Sscanf(line, "%s %s %s %s %s %s %d %d", &tmpTop, &tmpHand[0],
                                                     &tmpHand[1], &tmpHand[2],
                                                     &tmpHand[3], &tmpHand[4],
-                                                    &nextInput.Friend, &up)
+                                                    &nextInput.Dealer, &up)
 
         // Initialize the card from the values read in and add it to the samples
         // slice.

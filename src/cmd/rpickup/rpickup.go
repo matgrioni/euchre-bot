@@ -10,9 +10,9 @@ func main() {
     fmt.Printf("Welcome to the Euchre AI!\n")
     fmt.Printf("This is the rule based approach to picking up or not\n")
 
-    var friendly int
-    fmt.Printf("Did you(2) or your partner(1) or neither(0) deal (2/1/0)?\n")
-    fmt.Scanf("%d", &friendly)
+    var dealer int
+    fmt.Printf("Did you(0) or your partner(2) or neither(1/3) deal?\n")
+    fmt.Scanf("%d", &dealer)
 
     fmt.Printf("Enter the top card.\n")
 
@@ -29,7 +29,7 @@ func main() {
         hand[i] = deck.CreateCard(line)
     }
 
-    if pickup.Rule(hand, top, friendly) {
+    if pickup.Rule(hand, top, dealer) {
         fmt.Printf("Pick it up!\n")
     } else {
         fmt.Printf("Pass...\n")

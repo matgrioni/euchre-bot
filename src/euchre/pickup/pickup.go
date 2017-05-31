@@ -178,27 +178,9 @@ func Perceptron(inputs []ai.Input, expected []int, hand [5]deck.Card,
                 top deck.Card, dealer int) bool {
     p := ai.CreatePerceptron(12, 0, 1)
 
-    // Output debugging info.
-    fmt.Print("These are the initial weights of the perceptron.\n")
-    for _, weight := range p.Weights() {
-        fmt.Printf("%.3f ", weight)
-    }
-    fmt.Printf("%.3f\n", p.Bias())
-
-    // Check if the perceptron converged.
-    conv := p.Converge(inputs, expected, 0.005, 0.07, 10000)
-    if conv {
-        fmt.Print("Converged\n")
-    } else {
-        fmt.Print("Did not converge\n")
-    }
-
-    fmt.Print("These are the final weights.\n")
-    for _, weight := range p.Weights() {
-        fmt.Printf("%.3f ", weight)
-    }
-    fmt.Printf("%.3f\n", p.Bias())
-
+    // Move the perceptron toward linear separability if possible and then
+    // return the result for the given input.
+    p.Converge(inputs, expected, 0.005, 0.07, 10000)
     nextInput := Input {
         top,
         hand,

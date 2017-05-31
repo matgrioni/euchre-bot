@@ -109,6 +109,9 @@ type Card struct {
     Value Value
 }
 
+// Create an array of the all the cards in the euchre deck.
+var CARDS = createCards()
+
 // Creates a card given the string in the format of VS, where V is the value, and
 // S is the suit.
 func CreateCard(s string) Card {
@@ -148,6 +151,7 @@ func GenCard() Card {
 }
 
 // TODO: Should this be in euchre package?
+// TODO: Can be shortened with GenCard() method.
 // Randomly generates a hand of cards, which is 5 cards in euchre.
 func GenHand() [5]Card {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -168,4 +172,19 @@ func GenHand() [5]Card {
     }
 
     return hand
+}
+
+// TODO: This copies the array. Is that a problem / when should I use array vs
+// slice in golang.
+// A helper method that simply creates an array that has all the cards in a
+// euchre deck.
+func createCards() [24]Card {
+    var cards [24]Card
+    for i, value := range VALUES {
+        for j, suit := range SUITS {
+            cards[i * len(SUITS) + j] = Card { suit, value }
+        }
+    }
+
+    return cards
 }

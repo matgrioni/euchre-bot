@@ -81,13 +81,13 @@ func AI(hand []deck.Card, played []deck.Card, prior []deck.Card,
 // previous tricks. This is a generator for now for memory purposes. For example
 // if everybody has 3 cards, there are about 369000 possilibilities since the
 // kitty must be taken into account.
-// hand     -
-// played   -
-// prior    -
-// discard  -
-// dealer   -
-// pickedUp -
-// top      -
+// hand     - The current hand of the player.
+// played   - The cards that have already been played on this trick.
+// prior    - The cards that have been played in previous tricks.
+// discard  - The card that was discarded by the player if applicable.
+// dealer   - The number designation for ther person who dealt the cards.
+// pickedUp - Flag to designate if the top card was picked up by the dealer.
+// top      - The card that was on top of the kitty.
 // TODO: How permutation works?
 func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
                 discard deck.Card, dealer int, pickedUp bool,
@@ -112,8 +112,7 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
     unavailable := append(hand, append(played, prior...)...)
     if !pickedUp || ((pickedUp && dealer != 0) && !topPlayed) {
         unavailable = append(unavailable, top)
-    }
-    if pickedUp && dealer == 0 {
+    } else if pickedUp && dealer == 0 {
         unavailable = append(unavailable, discard)
     }
 
@@ -125,10 +124,8 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
     // distribution is unknown.
     available := make([]deck.Card, len(inPlay), len(inPlay))
     i := 0
-    fmt.Println()
     for card := range inPlay {
         available[i] = card
-        fmt.Println(available[i])
         i++
     }
 
@@ -149,6 +146,10 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
         kit--
     }
 
+    if nums[0] + nums[1] + nums[2] + kit != len(available) {
+        panic("Number of freely fluxing cards is not correct.")
+    }
+
     go func() {
         for t, err := gen.Next(); err == nil; t, err = gen.Next() {
             perm := t.([]deck.Card)
@@ -157,6 +158,26 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
                 perm[nums[0]:nums[0] + nums[1]],
                 perm[nums[0] + nums[1]:nums[0] + nums[1] + nums[2]],
                 perm[nums[0] + nums[1] + nums[2]:],
+            }
+
+            // If the top card has not been played yet and it was picked up by
+            // somebody, else add it to their cards. Basically we know of a card
+            // in somebody's hand, so it wasn't freely above but should be added
+            // now. Similarly, the last two ifs add a card to the kitty if we
+            // know about it, i.e. it isn't picked up or we discarded a card.
+            if pickedUp && dealer != 0 && !topPlayed {
+                switch dealer {
+                case 1:
+                    next.player1 = append(next.player1, top)
+                case 2:
+                    next.player2 = append(next.player2, top)
+                case 3:
+                    next.player3 = append(next.player3, top)
+                }
+            } else if pickedUp && dealer == 0 {
+                next.kitty = append(next.kitty, discard)
+            } else if !pickedUp {
+                next.kitty = append(next.kitty, top)
             }
 
             c <- next

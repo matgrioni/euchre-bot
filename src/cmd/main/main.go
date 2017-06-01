@@ -11,6 +11,20 @@ import (
     "os"
 )
 
+func inputValidCard() deck.Card {
+    var cardStr string
+    fmt.Scanf("%s", &cardStr)
+    card, err := deck.CreateCard(cardStr)
+
+    for err != nil {
+        fmt.Println("Invalid input.")
+        fmt.Scanf("%s", &cardStr)
+        card, err = deck.CreateCard(cardStr)
+    }
+
+    return card
+}
+
 func main() {
     fmt.Println("Welcome to the Euchre AI!.")
     fmt.Println("Albert is basically the best euchre player ever.")
@@ -20,17 +34,13 @@ func main() {
 
     fmt.Println("Enter the 5 cards in your hand...")
     var hand [5]deck.Card
-    for i := 0; i< 5; i++ {
-        var cardStr string
-        fmt.Scanf("%s", &cardStr)
-        hand[i] = deck.CreateCard(cardStr)
+    for i := 0; i < 5; i++ {
+        hand[i] = inputValidCard()
     }
     fmt.Println()
 
     fmt.Println("Enter the top card...")
-    var topStr string
-    fmt.Scanf("%s", &topStr)
-    top := deck.CreateCard(topStr)
+    top := inputValidCard()
     fmt.Println()
 
     fmt.Println("You (0), Left (1), Partner (2), Right (3)")
@@ -67,8 +77,15 @@ func main() {
 
             fmt.Println("Enter the eventual chosen trump suit...")
             var trumpStr string
+            var err error
             fmt.Scanf("%s", &trumpStr)
-            trump = deck.CreateSuit(trumpStr)
+            trump, err = deck.CreateSuit(trumpStr)
+
+            for err != nil {
+                fmt.Println("Invalid input.")
+                fmt.Scanf("%s", &trumpStr)
+                trump, err = deck.CreateSuit(trumpStr)
+            }
         }
     }
 
@@ -98,7 +115,14 @@ func main() {
                 break
             }
 
-            card := deck.CreateCard(line)
+            card, err := deck.CreateCard(line)
+            for err != nil {
+                fmt.Println("Invalid input.")
+                scanner.Scan()
+                line := scanner.Text()
+                card, err = deck.CreateCard(line)
+            }
+
             played = append(played, card)
         }
 
@@ -113,7 +137,14 @@ func main() {
             scanner.Scan()
             line := scanner.Text()
 
-            card := deck.CreateCard(line)
+            card, err := deck.CreateCard(line)
+            for err != nil {
+                fmt.Println("Invalid input.")
+                scanner.Scan()
+                line := scanner.Text()
+                card, err = deck.CreateCard(line)
+            }
+
             played = append(played, card)
         }
 

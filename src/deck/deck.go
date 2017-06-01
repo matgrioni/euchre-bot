@@ -1,6 +1,7 @@
 package deck
 
 import (
+    "errors"
     "math/rand"
     "time"
 )
@@ -19,10 +20,26 @@ const (
 // An array of all the suits. In order they are hearts, diamonds, spades, clubs.
 var SUITS = [4]Suit { H, D, S, C, }
 
-// Create a Suit from the input string. In this case since, Suit is already an
-// alias for the string type, it is just a matter of casting.
-func CreateSuit(s string) Suit {
-    return Suit(s)
+// Create a Suit from the input string. An error is provided if the input is not
+// a valid Suit.
+// s - The string value to convert to a Suit. Intuitive mapping.
+// Returns the converted Suit or an error if something went wrong.
+func CreateSuit(s string) (Suit, error){
+    var res Suit
+    switch s {
+    case "H":
+        res = H
+    case "D":
+        res = D
+    case "S":
+        res = S
+    case "C":
+        res = C
+    default:
+        return H, errors.New("Input is not a valid suit.")
+    }
+
+    return res, nil
 }
 
 // Return the suit of the left bower given what the current suit is.
@@ -62,23 +79,29 @@ var VALUES = [6]Value { Nine, Ten, J, Q, K, A }
 
 // Returns a Value type from the input string. The mapping is evident from the
 // standard 52 card deck.
-func CreateValue(s string) Value {
+// s - The string to convert to a value. Intuitive mapping.
+// Returns a Value type that represents the parameter and an error if anything
+// went wrong.
+func CreateValue(s string) (Value, error) {
+    var res Value
     switch s {
     case "9":
-        return Nine
+        res = Nine
     case "10":
-        return Ten
+        res = Ten
     case "J":
-        return J
+        res = J
     case "Q":
-        return Q
+        res = Q
     case "K":
-        return K
+        res = K
     case "A":
-        return A
+        res = A
+    default:
+        return Nine, errors.New("Input does not represent a valid value.")
     }
 
-    return Nine
+    return res, nil
 }
 
 func (v Value) String() string {
@@ -114,12 +137,18 @@ var CARDS = createCards()
 
 // Creates a card given the string in the format of VS, where V is the value, and
 // S is the suit.
-func CreateCard(s string) Card {
+func CreateCard(s string) (Card, error) {
     var card Card
-    card.Suit = CreateSuit(s[len(s) - 1:])
-    card.Value = CreateValue(s[:len(s) - 1])
+    var sErr, vErr error
 
-    return card
+    card.Suit, sErr = CreateSuit(s[len(s) - 1:])
+    card.Value, vErr = CreateValue(s[:len(s) - 1])
+
+    if sErr != nil || vErr != nil {
+        return card, errors.New("There was an error in the input.")
+    }
+
+    return card, nil
 }
 
 func (c Card) String() string {
@@ -151,21 +180,16 @@ func GenCard() Card {
 }
 
 // TODO: Should this be in euchre package?
-// TODO: Can be shortened with GenCard() method.
 // Randomly generates a hand of cards, which is 5 cards in euchre.
 func GenHand() [5]Card {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
     var hand [5]Card
     present := make(map[Card]bool)
     for i := range hand {
-        hand[i].Suit = SUITS[r.Intn(4)]
-        hand[i].Value = VALUES[r.Intn(6)]
+        hand[i] = GenCard()
 
         // Ensure that any generated card is only included once in the result.
         for _, in := present[hand[i]]; in ; _, in = present[hand[i]] {
-            hand[i].Suit = SUITS[r.Intn(4)]
-            hand[i].Value = VALUES[r.Intn(6)]
+            hand[i] = GenCard()
         }
 
         present[hand[i]] = true

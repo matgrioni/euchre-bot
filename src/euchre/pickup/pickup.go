@@ -222,9 +222,9 @@ func LoadInputs(fn string) ([]ai.Input, []int) {
 
         // Initialize the card from the values read in and add it to the samples
         // slice.
-        nextInput.Top = deck.CreateCard(tmpTop)
+        nextInput.Top, _ = deck.CreateCard(tmpTop)
         for i, tmpCard := range tmpHand {
-            nextInput.Hand[i] = deck.CreateCard(tmpCard)
+            nextInput.Hand[i], _ = deck.CreateCard(tmpCard)
         }
 
         samples = append(samples, nextInput)

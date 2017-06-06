@@ -26,3 +26,31 @@ type Trick struct {
     Led int
     Trump deck.Suit
 }
+
+// Given a player's current hand and the cards that have been played, the
+// possible cards for a player to play are returned. In other words, all cards
+// in the player's hand that match the suit of the led card are returned or all
+// cards otherwise. Also, the actual cards are not returned, rather their
+// position in the hand is returned. This is to make deletion easier.
+// hand   - The player's current cards.
+// played - The cards that have already been played.
+// trump  - The suit that is currently trump.
+// Returns the index of cards that can be played according to euchre rules.
+func Possible(hand, played []deck.Card, trump deck.Suit) []int {
+    possible := make([]int, 0, len(hand))
+    if len(played) > 0 {
+        for i := range hand {
+            if hand[i].AdjSuit(trump) == played[0].AdjSuit(trump) {
+                possible = append(possible, i)
+            }
+        }
+    }
+
+    if len(possible) == 0 {
+        for i := range hand {
+            possible = append(possible, i)
+        }
+    }
+
+    return possible
+}

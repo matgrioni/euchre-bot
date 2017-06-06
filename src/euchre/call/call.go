@@ -6,25 +6,6 @@ import (
     "time"
 )
 
-// Randomly returns whether one should call trump and what that call should be.
-// If the flag that indicates whether trump should be called is false, then the
-// suit that is returned has no meaning and can be ignored.
-// passed - The trump suit that was passed on the original go around and
-//          therefore cannot be used as a trump suit.
-// Returns two values. The first is whether trump should be called. The second
-// is the actual suit. Both of these values are random.
-func Rand(passed deck.Suit) (bool, deck.Suit) {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-    bools := [2]bool{ true, false, }
-
-    s := deck.SUITS[r.Intn(len(deck.SUITS))]
-    for s == passed {
-        s = deck.SUITS[r.Intn(len(deck.SUITS))]
-    }
-
-    return bools[r.Intn(len(bools))], s
-}
-
 // Uses a rule based approach to determine whether one should call trump and
 // thereafter what the call should be.
 // top - The card that was on the top, until everybody passed.

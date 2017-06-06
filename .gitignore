@@ -8,3 +8,6 @@
 
 # Ignore temporary vim files
 .*.*.swp
+*.swp
+
+/**/test

@@ -1,11 +1,14 @@
-package pickup
+package player
 
 import (
     "ai"
     "bufio"
     "deck"
+    "euchre"
     "fmt"
+    "math/rand"
     "os"
+    "time"
 )
 
 // The input data type is used to represent an input into the perceptron
@@ -123,72 +126,125 @@ func (i Input) Features() []int {
     return features
 }
 
-// A rule based approach to deciding if one should call for the dealer to pick
-// up the top card at the start of a deal. This approach takes into account the
-// cards currently in the players hand, the top card, and whether one or one's
-// partner picks up the card in question. The dealer parameter can take the
-// following values. 0 for you are picking it up, 2 for your partner is picking
-// it up, and 1 or 3 for opponents in clockwise order.
-func Rule(hand [5]deck.Card, top deck.Card, dealer int) bool {
-    i := Input {
-        top,
-        hand,
-        dealer,
-    }
-
-    // One wants to tell the dealer to pick up if you believe that you can win 3
-    // tricks if the dealer picks it up. So if your confidence / probability is
-    // greater than 50% (in a non-technical sense) then you should take such an
-    // action. Start off with a little confidence that your partner will win at
-    // least one trick.
-    bias := float32(0.08)
-
-    // Arbitrary weights for the features that I felt like using based on
-    // experience.
-    weights := map[int]float32 {
-        0: 0.05,
-        1: 0.07,
-        2: 0.3,
-        3: 0.12,
-        4: 0.15,
-        5: 0.2,
-        6: 0.25,
-        7: 0.04,
-        8: 0.04,
-        9: 0.04,
-        10: 0.04,
-        11: 0.08,
-    }
-
-    // Do the dot product between the binary feature vector and the weights for
-    // each respective feature.
-    conf := bias
-    for i, feat := range i.Features() {
-        conf += weights[i] * float32(feat)
-    }
-
-    return conf >= 0.5
+type RulePlayer struct {
+    pickupFn string
 }
 
-// Determine if the given hand should be picked up or not using Perceptron logic.
-// Provide the inputs to the perceptron and a parallel array of the expected
-// answers, along with the current problem instance and true is returned if it
-// should be picked up and false otherwise.
-func Perceptron(inputs []ai.Input, expected []int, hand [5]deck.Card,
-                top deck.Card, dealer int) bool {
-    p := ai.CreatePerceptron(12, 0, 1)
+// Used to create a new RulePlayer struct that is properly constructed.
+// pickupFn - The location of the file with the pickup / answer data samples.
+// Returns a RulePlayer pointer.
+func NewRule(pickupFn string) (*RulePlayer) {
+    return &RulePlayer{ pickupFn, }
+}
+
+func (p *RulePlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
+    inputs, expected := loadInputs(p.pickupFn)
+    prcp := ai.CreatePerceptron(12, 0, 1)
 
     // Move the perceptron toward linear separability if possible and then
     // return the result for the given input.
-    p.Converge(inputs, expected, 0.005, 0.07, 10000)
+    prcp.Converge(inputs, expected, 0.005, 0.07, 10000)
     nextInput := Input {
         top,
         hand,
-        dealer,
+        who,
     }
-    res := p.Process(nextInput)
+    res := prcp.Process(nextInput)
 
     return res == 1
+}
+
+func (p *RulePlayer) Discard(hand [5]deck.Card,
+                             top deck.Card) ([5]deck.Card, deck.Card) {
+    // TODO: For now just use the random approach.
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+    total := hand[:]
+    total = append(total, top)
+
+    i := r.Intn(len(total))
+    chosen := total[i]
+    total[i] = total[len(total) - 1]
+    total = total[:len(total) - 1]
+
+    copy(hand[:], total[:5])
+
+    return hand, chosen
+}
+
+func (p *RulePlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
+    chosen := false
+    maxT := top.Suit
+    maxConf := float32(0)
+
+    for _, trump := range deck.SUITS {
+        if trump == top.Suit {
+            continue
+        }
+
+        conf := float32(0.08)
+
+        // The following maps create a relation between a certain feature and its
+        // position within the features vector.
+        weights := map[deck.Value]float32 {
+            deck.Nine: 0.05,
+            deck.Ten: 0.07,
+            deck.J: 0.3,
+            deck.Q: 0.12,
+            deck.K: 0.15,
+            deck.A: 0.2,
+        }
+
+        // Used to keep track of how many suits are in the hand.
+        suitsPresent := make(map[deck.Suit]int)
+
+        for _, card := range hand {
+            if card.Suit == trump {
+                conf += weights[card.Value]
+            } else if card.AdjSuit(trump) == trump {
+                conf += 0.25
+            } else if card.Value == deck.A {
+                conf += 0.04
+            }
+
+            // Adjust suit count for left bower and increment the count for the
+            // current card's suit.
+            adjSuit := card.AdjSuit(trump)
+            if _, ok := suitsPresent[adjSuit]; ok {
+                suitsPresent[adjSuit] += 1
+            } else {
+                suitsPresent[adjSuit] = 1
+            }
+        }
+
+        // If the hand has 2 suits or less we can have more confidence.
+        if len(suitsPresent) <= 2 {
+            conf += 0.08
+        }
+
+        if conf > 0.5 && conf > maxConf {
+            maxConf = conf
+            maxT = trump
+            chosen = true
+        }
+    }
+
+    return maxT, chosen
+}
+
+func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
+                          prior []euchre.Trick) ([]deck.Card, deck.Card) {
+    // TODO: For now just use the random approach.
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+    playable := euchre.Possible(hand, played, setup.Trump)
+
+    chosen := playable[r.Intn(len(playable))]
+    final := hand[chosen]
+    hand[chosen] = hand[len(hand) - 1]
+    hand = hand[:len(hand) - 1]
+
+    return hand, final
 }
 
 // Loads the inputs in a file and returns a slice of the inputs and their
@@ -196,7 +252,7 @@ func Perceptron(inputs []ai.Input, expected []int, hand [5]deck.Card,
 // fn - The filename where the inputs are located.
 // Returns a slice of ai.Input values and a parallel slice of the expected
 // values for each of these inputs.
-func LoadInputs(fn string) ([]ai.Input, []int) {
+func loadInputs(fn string) ([]ai.Input, []int) {
     file, err := os.Open(fn)
     check(err)
     scanner := bufio.NewScanner(file)

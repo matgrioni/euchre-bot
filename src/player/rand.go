@@ -51,15 +51,15 @@ func (p *RandPlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
 }
 
 func (p *RandPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
-                          prior []euchre.Trick)) ([]deck.Card, deck.Card) {
+                          prior []euchre.Trick) ([]deck.Card, deck.Card) {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-    playable := euchre.Possible(hand, played, trump)
+    playable := euchre.Possible(hand, played, setup.Trump)
 
     chosen := playable[r.Intn(len(playable))]
     final := hand[chosen]
-    hand[i] = hand[len(hand) - 1]
+    hand[chosen] = hand[len(hand) - 1]
     hand = hand[:len(hand) - 1]
 
-    return final, hand
+    return hand, final
 }

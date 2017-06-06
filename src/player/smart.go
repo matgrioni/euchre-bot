@@ -2,9 +2,10 @@ package player
 
 import (
     "deck"
+    "euchre"
+    "fmt"
     "github.com/klaidliadon/next"
     "math/rand"
-    "fmt"
     "time"
 )
 
@@ -20,43 +21,48 @@ type Decision struct {
     Value int
 }
 
-// This method acts as a random player that follows all the appropriate rules of
-// euchre. So it will follow suit, or in the case where it is the first player,
-// it will randomly choose a card.
-// hand   - The cards that are currently in the user's hand.
-// played - The cards that have already been played on this trick.
-// trump  - The trump suit.
-// Returns the card to be played and the user's new hand.
-func Random(hand []deck.Card, played []deck.Card, trump deck.Suit) (deck.Card,
-            []deck.Card) {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-    playable := possible(hand, played, trump)
-    chosen := playable[r.Intn(len(playable))]
-    final := hand[chosen]
-    hand = append(hand[:chosen], hand[chosen + 1:]...)
-
-    return final, hand
+type SmartPlayer struct {
 }
 
-// This method acts as a combintorially smart player (uses the power of machine
-// power).
-// hand     - The cards that are currently in the user's hand.
-// played   - The cards that have already been played on this trick.
-// prior    - The cards that have been played in prior tricks.
-// dealer   - Who dealt. 0 is for self, then moves in clockwise directions so 2
-//            is partner, 1 is opponent to the left, and 3 is opponent to the
-//            right.
-// discard  - The card that was discarded if you were the dealer and were told to
-//            pick it up. This value can simply be nil if there is no suitable
-//            value.
-// pickedUp - Whether the top card was picked up or not by the who above.
-// top      - The card on top of the kitty after dealing.
-// trump    - The eventual suit that is chosen as trump.
-// Returns the card to be played and the user's new hand.
-func AI(hand []deck.Card, played []deck.Card, prior []deck.Card,
-        discard deck.Card, dealer int, pickedUp bool, top deck.Card,
-        trump deck.Suit) (deck.Card, []deck.Card) {
+func NewSmart() (*SmartPlayer) {
+    return &SmartPlayer{ }
+}
+
+func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+    return r.Intn(2) == 1
+}
+
+func (p *SmartPlayer) Discard(hand [5]deck.Card,
+                              top deck.Card) ([5]deck.Card, deck.Card) {
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+    total := hand[:]
+    total = append(total, top)
+
+    i := r.Intn(len(total))
+    chosen := total[i]
+    total[i] = total[len(total) - 1]
+    total = total[:len(total) - 1]
+
+    copy(hand[:], total[:5])
+
+    return hand, chosen
+}
+
+func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+    s := deck.SUITS[r.Intn(len(deck.SUITS))]
+    for s == top.Suit {
+        s = deck.SUITS[r.Intn(len(deck.SUITS))]
+    }
+
+    return s, r.Intn(2) == 1
+}
+
+func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
+                           prior []euchre.Trick) ([]deck.Card, deck.Card) {
     // There are two levels of reasoning in this method. When there are 5/4
     // cards in the player's hand, there are simply too many possibilities to
     // compute. So for this amount of cards, rules will be used. Otherwise, if
@@ -66,9 +72,9 @@ func AI(hand []deck.Card, played []deck.Card, prior []deck.Card,
     if len(hand) <= 3 {
         winners := make(map[int]int)
 
-        for situation := range situations(hand, played, prior, discard, dealer, pickedUp, top) {
+        for situation := range situations(setup, hand, played, prior) {
             hands := [4][]deck.Card{hand, situation.player1, situation.player2, situation.player3}
-            dec := minimax(hands, played, trump, 0)
+            dec := minimax(hands, played, setup.Trump, 0)
             if dec.Value == 1 {
                 winners[dec.Move]++
             }
@@ -95,21 +101,22 @@ func AI(hand []deck.Card, played []deck.Card, prior []deck.Card,
         final := hand[chosen]
         hand = append(hand[:chosen], hand[chosen + 1:]...)
 
-        return final, hand
+        return hand, final
     } else {
         r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-        playable := possible(hand, played, trump)
+        playable := euchre.Possible(hand, played, setup.Trump)
         chosen := playable[r.Intn(len(playable))]
         final := hand[chosen]
         hand = append(hand[:chosen], hand[chosen + 1:]...)
 
-        return final, hand
+        return hand, final
     }
 }
 
 // A minimax implementation that will return what card to play and the resulting
 // hand after playing that card.
+// TODO: Move to AI package.
 func minimax(hands [4][]deck.Card, played []deck.Card, trump deck.Suit,
              player int) Decision {
     hand := hands[player]
@@ -119,7 +126,7 @@ func minimax(hands [4][]deck.Card, played []deck.Card, trump deck.Suit,
         hand = append(hand[:0], hand[1:]...)
 
         // TODO: what is played here?
-        w := winner(played, trump, (player + 1) % 4)
+        w := euchre.Winner(played, trump, (player + 1) % 4)
         v := 0
         if w == 0 || w == 2 {
             v = 1
@@ -141,7 +148,7 @@ func minimax(hands [4][]deck.Card, played []deck.Card, trump deck.Suit,
             bestValue = 2
         }
 
-        poss := possible(hand, played, trump)
+        poss := euchre.Possible(hand, played, trump)
         if player == 0 {
             for _, p := range poss {
                 fmt.Print(p)
@@ -171,7 +178,7 @@ func minimax(hands [4][]deck.Card, played []deck.Card, trump deck.Suit,
             if len(played) < 4 {
                 dec = minimax(hands, newPlayed, trump, (player + 1) % 4)
             } else {
-                w := winner(played, trump, (player + 1) % 4)
+                w := euchre.Winner(played, trump, (player + 1) % 4)
                 v := 0
                 if w == 0 {
                     v = 1
@@ -207,68 +214,6 @@ func minimax(hands [4][]deck.Card, played []deck.Card, trump deck.Suit,
     }
 }
 
-// A function that returns the winning player (using the same number designation
-// as before) based on the trump suit, the cards that have been played, and
-// what the player number is for the first player.
-func winner(played []deck.Card, trump deck.Suit, led int) int {
-    highest := played[0]
-    highPlayer := led
-    for i, card := range played[1:] {
-        if Beat(highest, card, trump) {
-            highest = card
-            highPlayer = (led + i + 1) % 4
-        }
-    }
-
-    return highPlayer
-}
-
-// Returns whether a beats b given the current trump suit. a and b are assumed
-// to be different cards. Also it is assumed a leads before b, such that if a
-// and b are two different non-trump suits, a wins automatically.
-// a     - The card that we are asking if it is greater.
-// b     - The card that we are asking if it beats a if it is led.
-// trump - The current trump suit.
-// Returns if a beats b, if a is led and we are given the trump suit.
-// TODO: int casting?
-func Beat(a deck.Card, b deck.Card, trump deck.Suit) bool {
-    var res bool
-    // If a is a trump card but b is not, then a wins.
-    if a.AdjSuit(trump) == trump && b.AdjSuit(trump) != trump {
-        res = true
-    } else if a.AdjSuit(trump) == trump && b.AdjSuit(trump) == trump {
-    // If a is a trump and so is b, then we must compare their values knowing
-    // that right and left bower are a rule.
-        if a.Value == deck.J || b.Value == deck.J {
-            // If a is right bower, then it must win.
-            if a.Value == deck.J && a.Suit == trump {
-                res = true
-            } else if a.Value == deck.J && a.Suit == trump.Left() {
-            // If a is left bower, then it wins as long as b is not the right
-            // bower.
-                res = b.Value != deck.J
-            } else {
-            // Otherwise, a is not a J, so it is b so b must win.
-                res = false
-            }
-        } else {
-        // If neither are one of the bowers, then the values of the cards are
-        // compared as normal.
-            res = int(a.Value) > int(b.Value)
-        }
-    } else if a.Suit == b.Suit {
-    // Otherwise, if they are both the same and they are not both trump, then
-    // whoever has the higher value will win.
-        res = int(a.Value) > int(b.Value)
-    } else {
-    // And lastly if they have different suits, then a wins automatically since
-    // b did not lead.
-        res = true
-    }
-
-    return res
-}
-
 // A generator that iterates through all possible hands or situations given a
 // player's current hand, the cards currently played, and the cards played in
 // previous tricks. This is a generator for now for memory purposes. For example
@@ -282,14 +227,18 @@ func Beat(a deck.Card, b deck.Card, trump deck.Suit) bool {
 // pickedUp - Flag to designate if the top card was picked up by the dealer.
 // top      - The card that was on top of the kitty.
 // TODO: How permutation works?
-func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
-                discard deck.Card, dealer int, pickedUp bool,
-                top deck.Card) chan situation {
+func situations(setup euchre.Setup, hand []deck.Card, played []deck.Card,
+                tricks []euchre.Trick) chan situation {
+    var prior []deck.Card
+    for i := 0; i < len(tricks); i++ {
+        prior = append(prior, tricks[i].Cards[:]...)
+    }
+
     // Figure out if the top card has been played, and is thus, a known card or
     // not.
     topPlayed := false
     for _, card := range append(played, prior...) {
-        if top == card {
+        if setup.Top == card {
             topPlayed = true
             break
         }
@@ -301,11 +250,11 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
     for i := 2; i > 2 - len(played); i-- {
         nums[i]--
     }
-    if pickedUp && dealer != 0 && !topPlayed {
+    if setup.PickedUp && setup.Dealer != 0 && !topPlayed {
     // If the top was picked up by somebody else and it has not been played yet
     // we know where it is.
-        nums[dealer - 1]--
-    } else if (pickedUp && dealer == 0) || (!pickedUp) {
+        nums[setup.Dealer - 1]--
+    } else if (setup.PickedUp && setup.Dealer == 0) || (!setup.PickedUp) {
     // If we picked up the top card or nobody picked it up, then we know about
     // one of the 4 cards not in play.
         nums[3]--
@@ -321,11 +270,11 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
 
     // We know where the top is if wasn't picked up or if somebody else picked
     // it up and it hasn't been played yet.
-    if !pickedUp || (pickedUp && dealer != 0 && !topPlayed) {
-        delete(unknowns, top)
-    } else if pickedUp && dealer == 0 {
+    if !setup.PickedUp || (setup.PickedUp && setup.Dealer != 0 && !topPlayed) {
+        delete(unknowns, setup.Top)
+    } else if setup.PickedUp && setup.Dealer == 0 {
     // Similarly, we know one card is (the discarded card) if we picked it up.
-        delete(unknowns, discard)
+        delete(unknowns, setup.Discard)
     }
 
     // Remove all other cards that we have already seen in some way.
@@ -370,19 +319,19 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
             // in somebody's hand, so it wasn't freely above but should be added
             // now. Similarly, the last two ifs add a card to the kitty if we
             // know about it, i.e. it isn't picked up or we discarded a card.
-            if pickedUp && dealer != 0 && !topPlayed {
-                switch dealer {
+            if setup.PickedUp && setup.Dealer != 0 && !topPlayed {
+                switch setup.Dealer {
                 case 1:
-                    next.player1 = append(next.player1, top)
+                    next.player1 = append(next.player1, setup.Top)
                 case 2:
-                    next.player2 = append(next.player2, top)
+                    next.player2 = append(next.player2, setup.Top)
                 case 3:
-                    next.player3 = append(next.player3, top)
+                    next.player3 = append(next.player3, setup.Top)
                 }
-            } else if pickedUp && dealer == 0 {
-                next.kitty = append(next.kitty, discard)
-            } else if !pickedUp {
-                next.kitty = append(next.kitty, top)
+            } else if setup.PickedUp && setup.Dealer == 0 {
+                next.kitty = append(next.kitty, setup.Discard)
+            } else if !setup.PickedUp {
+                next.kitty = append(next.kitty, setup.Top)
             }
 
             c <- next
@@ -391,34 +340,6 @@ func situations(hand []deck.Card, played []deck.Card, prior []deck.Card,
     }()
 
     return c
-}
-
-// Given a player's current hand and the cards that have been played, the
-// possible cards for a player to play are returned. In other words, all cards
-// in the player's hand that match the suit of the led card are returned or all
-// cards otherwise. Also, the actual cards are not returned, rather their
-// position in the hand is returned. This is to make deletion easier.
-// hand   - The player's current cards.
-// played - The cards that have already been played.
-// trump  - The suit that is currently trump.
-// Returns the index of cards that can be played according to euchre rules.
-func possible(hand, played []deck.Card, trump deck.Suit) []int {
-    possible := make([]int, 0, len(hand))
-    if len(played) > 0 {
-        for i := range hand {
-            if hand[i].AdjSuit(trump) == played[0].AdjSuit(trump) {
-                possible = append(possible, i)
-            }
-        }
-    }
-
-    if len(possible) == 0 {
-        for i := range hand {
-            possible = append(possible, i)
-        }
-    }
-
-    return possible
 }
 
 // Given a list of integer sizes for multinomial choosing, return a channel that

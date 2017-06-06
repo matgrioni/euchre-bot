@@ -3,11 +3,9 @@ package main
 import (
     "bufio"
     "deck"
-    "euchre/call"
-    "euchre/discard"
-    "euchre/pickup"
-    "euchre/player"
     "fmt"
+    "euchre"
+    "player"
     "os"
 )
 
@@ -26,6 +24,8 @@ func inputValidCard() deck.Card {
 }
 
 func main() {
+    player := player.NewSmart()
+
     fmt.Println("Welcome to the Euchre AI!.")
     fmt.Println("Albert is basically the best euchre player ever.")
     fmt.Println("This program plays a single hand (5 tricks) at a time and")
@@ -49,14 +49,11 @@ func main() {
     fmt.Scanf("%d", &dealer)
     fmt.Println()
 
-    fn := os.Args[1]
-    inputs, expected := pickup.LoadInputs(fn)
-
     var (
         trump deck.Suit
         d deck.Card
     )
-    pickedUp := pickup.Perceptron(inputs, expected, hand, top, dealer)
+    pickedUp := player.Pickup(hand, top, dealer)
     if pickedUp {
         fmt.Println("Order it up.")
     } else {
@@ -69,7 +66,7 @@ func main() {
         pickedUp = pickedUpIn == 1
 
         if !pickedUp {
-            if call, chosenSuit := call.Rule(top, hand); call {
+            if chosenSuit, call := player.Call(hand, top); call {
                 fmt.Printf("If possible call %s on second go around.\n", chosenSuit)
             } else {
                 fmt.Println("Pass if it makes its way back to you.")
@@ -93,12 +90,21 @@ func main() {
         trump = top.Suit
 
         if dealer == 0 {
-            hand, d = discard.Rand(hand, top)
+            hand, d = player.Discard(hand, top)
             fmt.Printf("Discard %s.\n", d)
         }
     }
 
-    var prior []deck.Card
+    setup := euchre.Setup {
+        dealer,
+        pickedUp,
+        top,
+        trump,
+        d,
+    }
+
+    led := (dealer + 1) % 4
+    var prior []euchre.Trick
     var chosen deck.Card
     curHand := hand[:]
     scanner := bufio.NewScanner(os.Stdin)
@@ -126,7 +132,7 @@ func main() {
             played = append(played, card)
         }
 
-        chosen, curHand = player.AI(curHand, played, prior, d, dealer, pickedUp, top, trump)
+        curHand, chosen = player.Play(setup, curHand, played, prior)
 
         fmt.Printf("Play %s.\n", chosen)
         fmt.Println()
@@ -148,7 +154,15 @@ func main() {
             played = append(played, card)
         }
 
-        prior = append(prior, played...)
-        prior = append(prior, chosen)
+        played = append(played, chosen)
+        led := euchre.Winner(played, trump, led)
+        var playedArr [4]deck.Card
+        copy(playedArr[:], played[:])
+        trick := euchre.Trick {
+            playedArr,
+            led,
+            trump,
+        }
+        prior = append(prior, trick)
     }
 }

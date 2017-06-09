@@ -30,6 +30,22 @@ func NewSmart() (*SmartPlayer) {
 
 func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
+    /*limit := 100000
+    i := 0
+
+    for situation := range initials(hand, top) {
+        if i >= limit {
+            break
+        }
+
+        if r.Intn(2) == 0 {
+            i++
+
+            //hands := [4][]deck.Card{hand[:], situation.player1, situation.player2, situation.player3}
+            //dec := minimax(hands, nil, top.Suit, 0)
+        }
+    }*/
+
     return r.Intn(2) == 1
 }
 
@@ -389,6 +405,21 @@ func situations(setup euchre.Setup, hand []deck.Card, played []deck.Card,
     }()
 
     return c
+}
+
+func initials(hand [5]deck.Card, top deck.Card) chan situation {
+    // Create a dummy setup object. TODO: Is this a clear separation of
+    // interfaces.
+    var tmp deck.Card
+    setup := euchre.Setup {
+        0,
+        false,
+        top,
+        top.Suit,
+        tmp,
+    }
+
+    return situations(setup, hand[:], nil, nil)
 }
 
 // Given a list of integer sizes for multinomial choosing, return a channel that

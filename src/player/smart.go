@@ -3,7 +3,6 @@ package player
 import (
     "deck"
     "euchre"
-    "fmt"
     "github.com/klaidliadon/next"
     "math/rand"
     "time"
@@ -48,10 +47,6 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
 
     return r.Intn(2) == 1
 }
-
-
-
-
 
 // TODO: Change contract to just give back number.
 func (p *SmartPlayer) Discard(hand [5]deck.Card,
@@ -126,6 +121,8 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
     return s, r.Intn(2) == 1
 }
 
+// TODO: Maybe don't edit the hand. Return a completely new version?
+// Not sure yet.
 func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
     // There are two levels of reasoning in this method. When there are 5/4
@@ -138,29 +135,33 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
         winners := make(map[int]int)
 
         for situation := range situations(setup, hand, played, prior) {
-            hands := [4][]deck.Card{hand, situation.player1, situation.player2, situation.player3}
-            dec := minimax(hands, played, setup.Trump, 0)
-            if dec.Value == 1 {
-                winners[dec.Move]++
+            // TODO
+            hands1 := [][]deck.Card{situation.player1, situation.player2, situation.player3}
+            // This checks to make sure that this situation follows the rules of
+            // the game. Namely, that you must follow the suit of the first card
+            // played.
+            if possibleSituation(hands1, setup.Trump, prior) {
+                hands := [4][]deck.Card{hand, situation.player1, situation.player2, situation.player3}
+                dec := minimax(hands, played, setup.Trump, 0)
+                if dec.Value == 1 {
+                    winners[dec.Move]++
+                }
             }
         }
 
-        chosen := 0
+        chosen := -1
         winValue := -1
         for index, count := range winners {
-            fmt.Printf("%d\t%d\n", index, count)
             if winValue > count {
                 winValue = count
                 chosen = index
             }
         }
 
-        for _, card := range hand {
-            fmt.Print(card)
-            fmt.Print(" ")
+        if chosen < 0 {
+            poss := euchre.Possible(hand, played, setup.Trump)
+            chosen = poss[len(poss) - 1]
         }
-        fmt.Println()
-        fmt.Println(chosen)
 
         // TODO: Remove repetition.
         final := hand[chosen]
@@ -168,14 +169,22 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
 
         return hand, final
     } else {
-        r := rand.New(rand.NewSource(time.Now().UnixNano()))
+        w := euchre.Winner(played, setup.Trump, (4 - len(played)) % 4)
 
-        playable := euchre.Possible(hand, played, setup.Trump)
-        chosen := playable[r.Intn(len(playable))]
-        final := hand[chosen]
-        hand = append(hand[:chosen], hand[chosen + 1:]...)
+        if w == 2 && len(played) == 3 {
+        // The current winner is your partner and you are the last to play so
+        // throw off your lowest card.
+        // TODO:
+        } else if w != 2 && len(played) == 3 {
+        // The current winner is not your partner and you are the last to play
+        // so try to win if you can reasonably, i.e. not throwing your highest
+        // trump but a low one will do.
+        // TODO.
+        } else {
+        // TODO: Not sure what to do here.
+        }
 
-        return hand, final
+        return hand[1:], hand[0]
     }
 }
 
@@ -190,18 +199,9 @@ func minimax(hands [4][]deck.Card, played []deck.Card, trump deck.Suit,
     if len(hand) == 1 {
         hand = append(hand[:0], hand[1:]...)
 
-        // TODO: what is played here?
-        w := euchre.Winner(played, trump, (player + 1) % 4)
-        v := 0
-        if w == 0 || w == 2 {
-            v = 1
-        } else if w == 1 || w == 3 {
-            v = 0
-        }
-
         return Decision {
             0,
-            v,
+            1,
         }
     } else {
         var chosen int
@@ -214,13 +214,6 @@ func minimax(hands [4][]deck.Card, played []deck.Card, trump deck.Suit,
         }
 
         poss := euchre.Possible(hand, played, trump)
-        if player == 0 {
-            for _, p := range poss {
-                fmt.Print(p)
-                fmt.Print(" ")
-            }
-        }
-        fmt.Println()
 
         for _, i := range poss {
             card := hand[i]
@@ -491,4 +484,34 @@ func multinomial(ks ...int) chan [][]interface{} {
     }
 
     return c
+}
+
+func possibleSituation(hands [][]deck.Card, trump deck.Suit,
+                       prior []euchre.Trick) bool {
+    noSuits := make(map[int][]deck.Suit)
+
+    for _, trick := range prior {
+        top := trick.Cards[0]
+        for i, card := range trick.Cards[1:] {
+            if card.AdjSuit(trump) != top.AdjSuit(trump) {
+                cur := noSuits[(trick.Led + i + 1) % 4]
+                cur = append(cur, card.AdjSuit(trump))
+                noSuits[(trick.Led + i + 1) % 4] = cur
+            }
+        }
+    }
+
+    for id, suits := range noSuits {
+        if id != 0 {
+            for _, card := range hands[id - 1] {
+                for _, suit := range suits {
+                    if card.AdjSuit(trump) == suit {
+                        return false
+                    }
+                }
+            }
+        }
+    }
+
+    return true
 }

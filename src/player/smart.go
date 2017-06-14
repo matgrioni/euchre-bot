@@ -3,6 +3,7 @@ package player
 import (
     "deck"
     "euchre"
+    "fmt"
     "github.com/klaidliadon/next"
     "math/rand"
     "time"
@@ -131,7 +132,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     // there are 3 or fewer cards, computational power can be used to figure out
     // the best move.
 
-    if len(hand) <= 3 {
+    if len(hand) <= 4 {
         winners := make(map[int]int)
 
         for situation := range situations(setup, hand, played, prior) {
@@ -152,7 +153,8 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
         chosen := -1
         winValue := -1
         for index, count := range winners {
-            if winValue > count {
+            fmt.Printf("%d\t%d", index, count)
+            if count > winValue {
                 winValue = count
                 chosen = index
             }

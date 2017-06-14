@@ -8,7 +8,7 @@ import (
 
 // TODO: Format test cases, especially arrays, properly.
 
-func TestMinimaxNoWinningChoice(t *testing.T) {
+/*func TestMinimaxNoWinningChoice(t *testing.T) {
     setup := euchre.Setup {
         3,
         true,
@@ -52,14 +52,15 @@ func TestMinimaxNoWinningChoice(t *testing.T) {
                     },
                 }
 
+    // TODO: This thing has to be changed to lowest value card.
     desired := hand[1]
     p := NewSmart()
     _, play := p.Play(setup, hand[:], played[:], prior[:])
 
     if play != desired {
-        t.Errorf("Wanted %s but got %s", hand[1], play)
+        t.Errorf("Wanted %s but got %s", desired, play)
     }
-}
+}*/
 
 func TestMinimaxMultipleWinOptions(t *testing.T) {
     setup := euchre.Setup {
@@ -98,12 +99,12 @@ func TestMinimaxMultipleWinOptions(t *testing.T) {
     prior := [...]euchre.Trick{
                     euchre.Trick {
                         cards1,
-                        3,
+                        2,
                         deck.S,
                     },
                     euchre.Trick {
                         cards2,
-                        2,
+                        1,
                         deck.S,
                     },
                     euchre.Trick {
@@ -118,6 +119,59 @@ func TestMinimaxMultipleWinOptions(t *testing.T) {
     _, play := p.Play(setup, hand[:], played[:], prior[:])
 
     if play != desired {
-        t.Errorf("Wanted %s but got %s", hand[1], play)
+        t.Errorf("Wanted %s but got %s", desired, play)
     }
 }
+
+/*func TestMinimaxFirstPlay(t *testing.T) {
+    setup := euchre.Setup {
+        1,
+        true,
+        deck.Card {
+            deck.C,
+            deck.Q,
+        },
+        deck.C,
+        deck.Card {
+            deck.H,
+            deck.J,
+        },
+    }
+
+    hand := [...]deck.Card{ deck.Card{ deck.C, deck.J    },
+                            deck.Card{ deck.C, deck.Nine },
+                            deck.Card{ deck.C, deck.Ten  } }
+
+    played := [...]deck.Card{ }
+
+
+    cards1 := [...]deck.Card{ deck.Card{ deck.S, deck.A    },
+                              deck.Card{ deck.S, deck.Q    },
+                              deck.Card{ deck.H, deck.Q    },
+                              deck.Card{ deck.S, deck.Ten  } }
+    cards2 := [...]deck.Card{ deck.Card{ deck.S, deck.Nine },
+                              deck.Card{ deck.C, deck.A    },
+                              deck.Card{ deck.S, deck.J    },
+                              deck.Card{ deck.H, deck.J    } }
+
+    prior := [...]euchre.Trick{
+                    euchre.Trick {
+                        cards1,
+                        1,
+                        deck.C,
+                    },
+                    euchre.Trick {
+                        cards2,
+                        1,
+                        deck.C,
+                    },
+                }
+
+    desired := hand[0]
+    p := NewSmart()
+    _, play := p.Play(setup, hand[:], played[:], prior[:])
+
+    if play != desired {
+        t.Errorf("Wanted %s but got %s", desired, play)
+    }
+}*/

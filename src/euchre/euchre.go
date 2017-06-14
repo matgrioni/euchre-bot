@@ -105,12 +105,15 @@ func Possible(hand, played []deck.Card, trump deck.Suit) []int {
 // as before) based on the trump suit, the cards that have been played, and
 // what the player number is for the first player.
 func Winner(played []deck.Card, trump deck.Suit, led int) int {
-    highest := played[0]
     highPlayer := led
-    for i, card := range played[1:] {
-        if Beat(highest, card, trump) {
-            highest = card
-            highPlayer = (led + i + 1) % 4
+
+    if len(played) >= 2 {
+        highest := played[0]
+        for i, card := range played[1:] {
+            if Beat(highest, card, trump) {
+                highest = card
+                highPlayer = (led + i + 1) % 4
+            }
         }
     }
 

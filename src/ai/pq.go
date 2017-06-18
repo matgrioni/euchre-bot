@@ -42,6 +42,10 @@ func (pq *PriorityQueue) Push(item PQItem) {
     *pq = append(*pq, item)
 }
 
+func (pq *PriorityQueue) Poll() PQItem {
+    return pq[0]
+}
+
 func (pq *PriorityQueue) Pop() PQItem {
     old := *pq
     n := len(old)

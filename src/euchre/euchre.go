@@ -1,8 +1,6 @@
 package euchre
 
-import (
-    "deck"
-)
+import "deck"
 
 // Contains all the relevant information the setup portion of a euchre game.
 // This includes who was dealer, what the top card was, if it was picked up,
@@ -38,8 +36,9 @@ type Trick struct {
 func Beat(a deck.Card, b deck.Card, trump deck.Suit) bool {
     var res bool
     // If a is a trump card but b is not, then a wins.
-    if a.AdjSuit(trump) == trump && b.AdjSuit(trump) != trump {
-        res = true
+    if (a.AdjSuit(trump) == trump && b.AdjSuit(trump) != trump) ||
+       (a.AdjSuit(trump) != trump && b.AdjSuit(trump) == trump) {
+        res = a.AdjSuit(trump) == trump
     } else if a.AdjSuit(trump) == trump && b.AdjSuit(trump) == trump {
     // If a is a trump and so is b, then we must compare their values knowing
     // that right and left bower are a rule.
@@ -110,7 +109,7 @@ func Winner(played []deck.Card, trump deck.Suit, led int) int {
     if len(played) >= 2 {
         highest := played[0]
         for i, card := range played[1:] {
-            if Beat(highest, card, trump) {
+            if !Beat(highest, card, trump) {
                 highest = card
                 highPlayer = (led + i + 1) % 4
             }

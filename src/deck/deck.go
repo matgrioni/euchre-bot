@@ -198,6 +198,15 @@ func GenHand() [5]Card {
     return hand
 }
 
+func GenCardSet() map[Card]bool {
+    set := make(map[Card]bool)
+    for i := 0; i < len(CARDS); i++ {
+        set[CARDS[i]] = true
+    }
+
+    return set
+}
+
 // TODO: This copies the array. Is that a problem / when should I use array vs
 // slice in golang.
 // A helper method that simply creates an array that has all the cards in a

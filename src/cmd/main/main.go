@@ -133,12 +133,13 @@ func main() {
         }
 
         curHand, chosen = player.Play(setup, curHand, played, prior)
+        played = append(played, chosen)
 
         fmt.Printf("Play %s.\n", chosen)
         fmt.Println()
 
         fmt.Println("Enter the rest of the cards played.")
-        left := 3 - len(played)
+        left := 4 - len(played)
         for i := 0; i < left; i++ {
             scanner.Scan()
             line := scanner.Text()
@@ -154,8 +155,6 @@ func main() {
             played = append(played, card)
         }
 
-        played = append(played, chosen)
-        led := euchre.Winner(played, trump, led)
         var playedArr [4]deck.Card
         copy(playedArr[:], played[:])
         trick := euchre.Trick {
@@ -164,5 +163,6 @@ func main() {
             trump,
         }
         prior = append(prior, trick)
+        led = euchre.Winner(played, trump, led)
     }
 }

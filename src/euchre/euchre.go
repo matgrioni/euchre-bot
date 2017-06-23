@@ -25,6 +25,15 @@ type Trick struct {
     Trump deck.Suit
 }
 
+type State struct {
+    Setup Setup
+    Player int
+    Hand []deck.Card
+    Played []deck.Card
+    Prior []Trick
+    Move deck.Card
+}
+
 // Returns whether a beats b given the current trump suit. a and b are assumed
 // to be different cards. Also it is assumed a leads before b, such that if a
 // and b are two different non-trump suits, a wins automatically.
@@ -117,4 +126,150 @@ func Winner(played []deck.Card, trump deck.Suit, led int) int {
     }
 
     return highPlayer
+}
+
+type Engine struct { }
+
+func (engine Engine) Favorable(state interface{}, winner int) bool {
+    cState := state.(State)
+    return cState.Player == winner || cState.Player == (winner + 2) % 4
+}
+
+func (engine Engine) IsTerminal(state interface{}) bool {
+    cState := state.(State)
+    return len(cState.Played) == 3 && len(cState.Prior) == 4
+}
+
+func (engine Engine) NextStates(state interface{}) []interface{} {
+    cState := state.(State)
+    nextStates := make([]interface{}, 0)
+    var pCards []deck.Card
+
+
+    if cState.Player == 0 {
+        pIdxs := Possible(cState.Hand, cState.Played, cState.Setup.Trump)
+        pCards = make([]deck.Card, len(pIdxs))
+
+        for i, idx := range pIdxs {
+            pCards[i] = cState.Hand[idx]
+        }
+    } else {
+        noSuits := make(map[int][]deck.Suit)
+        all := deck.GenCardSet()
+
+        for i := 0; i < len(cState.Prior); i++ {
+            // For each trick, find out if a user did not follow suit and
+            // therefore does not have this suit.
+            trick := cState.Prior[i]
+            first := trick.Cards[0]
+            for j := 1; j < len(trick.Cards); j++ {
+                next := trick.Cards[j]
+                if first.AdjSuit(cState.Setup.Trump) != next.AdjSuit(cState.Setup.Trump) {
+                    cur := noSuits[(trick.Led + j) % 4]
+                    cur = append(cur, first.AdjSuit(cState.Setup.Trump))
+                }
+            }
+
+            for j := 0; j < len(trick.Cards); j++ {
+                delete(all, trick.Cards[j])
+            }
+        }
+
+        for i := 0; i < len(cState.Played); i++ {
+            delete(all, cState.Played[i])
+        }
+
+        for player, suits := range noSuits {
+            if player == cState.Player {
+                for card, _ := range all {
+                    for i := 0; i < len(suits); i++ {
+                        if card.AdjSuit(cState.Setup.Trump) == suits[i] {
+                            delete(all, card)
+                            break
+                        }
+                    }
+                }
+            }
+        }
+
+        for card, _ := range all {
+            pCards = append(pCards, card)
+        }
+    }
+
+    for i := 0; i < len(pCards); i++ {
+        nCard := pCards[i]
+
+        var nHand []deck.Card
+        if cState.Player == 0 {
+            nHand = make([]deck.Card, 0)
+            for j := 0; j < len(cState.Hand); j++ {
+                jCard := cState.Hand[j]
+                if nCard != jCard {
+                    nHand = append(nHand, cState.Hand[j])
+                }
+            }
+        } else {
+            nHand = cState.Hand
+        }
+
+        nPrior := make([]Trick, len(cState.Prior))
+        copy(nPrior, cState.Prior)
+
+        var nPlayed []deck.Card
+        var nPlayer int
+        nmPlayer := (cState.Player + 1) % 4
+        if len(cState.Played) < 3 {
+            nPlayed = make([]deck.Card, len(cState.Played))
+            copy(nPlayed, cState.Played)
+            nPlayed = append(nPlayed, nCard)
+            nPlayer = nmPlayer
+        } else if len(cState.Played) == 3 {
+            var arrPlayed [4]deck.Card
+            copy(arrPlayed[:], cState.Played)
+            arrPlayed[3] = nCard
+
+            nextPrior := Trick {
+                arrPlayed,
+                nmPlayer,
+                cState.Setup.Trump,
+            }
+            nPrior = append(nPrior, nextPrior)
+
+            nPlayed = make([]deck.Card, 0)
+            nPlayer = Winner(arrPlayed[:], cState.Setup.Trump, nmPlayer)
+        }
+
+        nextState := State {
+            cState.Setup,
+            nPlayer,
+            nHand,
+            nPlayed,
+            nPrior,
+            nCard,
+        }
+
+        nextStates = append(nextStates, nextState)
+    }
+
+    return nextStates
+}
+
+func (engine Engine) Winner(state interface{}) int {
+    // TODO: Idiomatic syntax?
+    winCounts := [2]int{0, 0}
+
+    cState := state.(State)
+    for i := 0; i < len(cState.Prior); i++ {
+        trick := cState.Prior[i]
+
+        w := Winner(cState.Played, cState.Setup.Trump, trick.Led)
+        winCounts[w % 2]++
+    }
+
+    if winCounts[0] > winCounts[1] {
+        return 0
+    } else {
+        return 1
+    }
 }

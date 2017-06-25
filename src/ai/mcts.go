@@ -2,6 +2,8 @@ package ai
 
 import (
     "container/heap"
+    "deck"
+    "fmt"
     "euchre"
     "math"
     "math/rand"
@@ -98,11 +100,21 @@ func MCTS(node *Node, engine MCTSEngine, runs int) euchre.State {
         runPlayout(node, engine)
     }
 
-    return node.children.Poll().GetValue().(euchre.State)
+    if node.children.Len() > 0 {
+        for _, child := range node.children {
+            fmt.Printf("%s\t%d\t%d\t%f\n", child.GetValue().(euchre.State).Move, child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
+        }
+
+        return node.children.Poll().GetValue().(euchre.State)
+    } else {
+        return node.GetValue().(euchre.State)
+    }
 }
 
 
 func runPlayout(node *Node, engine MCTSEngine) int {
+    node.simulations++
+
     var winner int
     // We have been given a node state that is the last in the playout. Time to
     // return and backpropagate the results.
@@ -115,10 +127,24 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         // If we don't have data on all the posssible next states, select one at
         // random. Otherwise, choose the one with the highest UCB.
         if len(nextStates) > node.children.Len() {
-            // TODO: Make sure they are different states.
-            nextState := nextStates[r.Intn(len(nextStates))]
+            // TODO: Remove type assertions.
+            takenMoves := make(map[deck.Card]bool)
+            for i := 0; i < node.children.Len(); i++ {
+                takenMoves[node.children[i].GetValue().(euchre.State).Move] = true
+            }
+
+            availableStates := make([]interface{}, 0)
+            for i := 0; i < len(nextStates); i++ {
+                nextState := nextStates[i]
+                if _, ok := takenMoves[nextState.(euchre.State).Move]; !ok {
+                    availableStates = append(availableStates, nextState)
+                }
+            }
+
+            nextState := availableStates[r.Intn(len(availableStates))]
             next = NewNode()
             next.Value(nextState)
+            next.parent = node
             heap.Push(&node.children, next)
         } else {
             next = node.children.Poll().(*Node)
@@ -129,10 +155,11 @@ func runPlayout(node *Node, engine MCTSEngine) int {
     if engine.Favorable(node.GetValue(), winner) {
         node.wins++
     }
-    node.simulations++
-    node.Priority(UpperConfBound(node))
 
     if node.parent != nil {
+        p := UpperConfBound(node)
+        fmt.Printf("%f\n", p)
+        node.Priority(UpperConfBound(node))
         node.parent.children.Update(node, node.GetValue(), node.GetPriority())
     }
 

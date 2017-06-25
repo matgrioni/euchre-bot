@@ -124,39 +124,30 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
 // Not sure yet.
 func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
     var card deck.Card
 
-    if len(hand) <= 3 {
-        s := State {
-            setup,
-            0,
-            hand,
-            played,
-            prior,
-            deck.Card{}
-        }
-
-        n := ai.NewNode()
-        e := euchre.Engine{}
-
-        n.Value(s)
-        chosenState := ai.MCTS(n, e, 1000)
-        card = chosenState.Move
-
-        nHand := make([]deck.Card, 0)
-        for i := 0; i < len(hand); i++ {
-            if card != hand[i] {
-                nHand = append(nHand, hand[i])
-            }
-        }
-    } else {
-        pIdxs := euchre.Possible(hand, played, setup.Trump)
-        chosen := pIdxs[r.Intn(len(pIdxs))]
-        card = hand[chosen]
-        hand[chosen] = hand[len(hand) - 1]
-        hand = hand[:len(hand) - 1]
+    s := euchre.State {
+        setup,
+        0,
+        hand,
+        played,
+        prior,
+        deck.Card{},
     }
 
-    return hand, card
+    n := ai.NewNode()
+    e := euchre.Engine{}
+
+    n.Value(s)
+    chosenState := ai.MCTS(n, e, 10000)
+    card = chosenState.Move
+
+    nHand := make([]deck.Card, 0)
+    for i := 0; i < len(hand); i++ {
+        if card != hand[i] {
+            nHand = append(nHand, hand[i])
+        }
+    }
+
+    return nHand, card
 }

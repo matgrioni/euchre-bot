@@ -137,14 +137,13 @@ func (engine Engine) Favorable(state interface{}, winner int) bool {
 
 func (engine Engine) IsTerminal(state interface{}) bool {
     cState := state.(State)
-    return len(cState.Played) == 3 && len(cState.Prior) == 4
+    return len(cState.Played) == 0 && len(cState.Prior) == 5
 }
 
 func (engine Engine) NextStates(state interface{}) []interface{} {
     cState := state.(State)
     nextStates := make([]interface{}, 0)
     var pCards []deck.Card
-
 
     if cState.Player == 0 {
         pIdxs := Possible(cState.Hand, cState.Played, cState.Setup.Trump)

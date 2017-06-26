@@ -157,8 +157,6 @@ func runPlayout(node *Node, engine MCTSEngine) int {
     }
 
     if node.parent != nil {
-        p := UpperConfBound(node)
-        fmt.Printf("%f\n", p)
         node.Priority(UpperConfBound(node))
         node.parent.children.Update(node, node.GetValue(), node.GetPriority())
     }

@@ -139,7 +139,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     e := euchre.Engine{}
 
     n.Value(s)
-    chosenState := ai.MCTS(n, e, 50000)
+    chosenState := ai.MCTS(n, e, 75000)
     card = chosenState.Move
 
     nHand := make([]deck.Card, 0)

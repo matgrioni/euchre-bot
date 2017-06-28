@@ -228,15 +228,19 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
             copy(arrPlayed[:], cState.Played)
             arrPlayed[3] = nCard
 
+            nPlayed = make([]deck.Card, 0)
+            nPlayer = Winner(arrPlayed[:], cState.Setup.Trump, nmPlayer)
+
+            if len(cState.Prior) == 4 {
+                nPlayer = cState.Player
+            }
+
             nextPrior := Trick {
                 arrPlayed,
                 nmPlayer,
                 cState.Setup.Trump,
             }
             nPrior = append(nPrior, nextPrior)
-
-            nPlayed = make([]deck.Card, 0)
-            nPlayer = Winner(arrPlayed[:], cState.Setup.Trump, nmPlayer)
         }
 
         nextState := State {

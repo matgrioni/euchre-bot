@@ -262,7 +262,7 @@ func (engine Engine) Winner(state interface{}) int {
     for i := 0; i < len(cState.Prior); i++ {
         trick := cState.Prior[i]
 
-        w := Winner(cState.Played, cState.Setup.Trump, trick.Led)
+        w := Winner(trick.Cards[:], cState.Setup.Trump, trick.Led)
         winCounts[w % 2]++
     }
 

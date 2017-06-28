@@ -81,7 +81,7 @@ func UpperConfBound(node *Node) float64 {
         ucb = math.Inf(1)
     } else if node.parent != nil {
         ucb = float64(node.wins) / float64(node.simulations) +
-              math.Sqrt(2.0 * math.Log(float64(node.parent.simulations)) / float64(node.simulations))
+              math.Sqrt(2.0 * (math.Log(float64(node.parent.simulations)) + 1) / float64(node.simulations))
     }
     return ucb
 }
@@ -150,15 +150,13 @@ func runPlayout(node *Node, engine MCTSEngine) int {
             next = node.children.Poll().(*Node)
         }
         winner = runPlayout(next, engine)
-    }
 
-    if engine.Favorable(node.GetValue(), winner) {
-        node.wins++
-    }
+        if engine.Favorable(next.GetValue(), winner) {
+            next.wins++
+        }
 
-    if node.parent != nil {
-        node.Priority(UpperConfBound(node))
-        node.parent.children.Update(node, node.GetValue(), node.GetPriority())
+        next.Priority(UpperConfBound(next))
+        node.children.Update(next, next.GetValue(), next.GetPriority())
     }
 
     return winner

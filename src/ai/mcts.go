@@ -4,7 +4,6 @@ import (
     "container/heap"
     "deck"
     "fmt"
-    "euchre"
     "math"
     "math/rand"
     "time"
@@ -12,13 +11,17 @@ import (
 
 var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+type State interface {
+    Hash() interface{}
+}
+
 // This is a Node that is used for the MCTS tree. It has the attributes necessary
 // for this role such as, parent, children, wins, and simulations but also
 // implements methods from PQItem, since the list of node children is a priority
 // queue based on the node's UCB. Any data can be passed along with a node
 // through the Value methods, which accept a blank interface type.
 type Node struct {
-    value interface{}
+    value State
     priority float64
     index int
 
@@ -45,7 +48,7 @@ func (node *Node) GetValue() interface{} {
 }
 
 func (node *Node) Value(v interface{}) {
-    node.value = v
+    node.value = v.(State)
 }
 
 // The priority of a node is based on how many times all of its siblings have
@@ -95,19 +98,22 @@ type MCTSEngine interface {
 
 // TODO: I feel like node should just be abstracted away. The interface{} State
 // object that you choose is the only thing that the caller should see.
-func MCTS(node *Node, engine MCTSEngine, runs int) euchre.State {
+func MCTS(s State, engine MCTSEngine, runs int) State {
+    n := NewNode()
+    n.Value(s)
+
     for i := 0; i < runs; i++ {
-        runPlayout(node, engine)
+        runPlayout(n, engine)
     }
 
-    if node.children.Len() > 0 {
-        for _, child := range node.children {
-            fmt.Printf("%s\t%d\t%d\t%f\n", child.GetValue().(euchre.State).Move, child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
+    if n.children.Len() > 0 {
+        for _, child := range n.children {
+            fmt.Printf("%s\t%d\t%d\t%f\n", child.GetValue().(State).Hash().(deck.Card), child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
         }
 
-        return node.children.Poll().GetValue().(euchre.State)
+        return n.children.Poll().GetValue().(State)
     } else {
-        return node.GetValue().(euchre.State)
+        return n.GetValue().(State)
     }
 }
 
@@ -128,22 +134,22 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         // random. Otherwise, choose the one with the highest UCB.
         if len(nextStates) > node.children.Len() {
             // TODO: Remove type assertions.
-            takenMoves := make(map[deck.Card]bool)
+            takenMoves := make(map[interface{}]bool)
             for i := 0; i < node.children.Len(); i++ {
-                takenMoves[node.children[i].GetValue().(euchre.State).Move] = true
+                takenMoves[node.children[i].GetValue().(State).Hash()] = true
             }
 
             availableStates := make([]interface{}, 0)
             for i := 0; i < len(nextStates); i++ {
                 nextState := nextStates[i]
-                if _, ok := takenMoves[nextState.(euchre.State).Move]; !ok {
+                if _, ok := takenMoves[nextState.(State).Hash()]; !ok {
                     availableStates = append(availableStates, nextState)
                 }
             }
 
             nextState := availableStates[r.Intn(len(availableStates))]
             next = NewNode()
-            next.Value(nextState)
+            next.Value(nextState.(State))
             next.parent = node
             heap.Push(&node.children, next)
         } else {

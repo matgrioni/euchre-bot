@@ -8,13 +8,6 @@ import (
     "time"
 )
 
-type situation struct {
-    player1 []deck.Card
-    player2 []deck.Card
-    player3 []deck.Card
-    kitty   []deck.Card
-}
-
 type Decision struct {
     Move int
     Value int
@@ -30,21 +23,6 @@ func NewSmart() (*SmartPlayer) {
 func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
     return r.Intn(2) == 1
-    /*limit := 100000
-    i := 0
-
-    for situation := range initials(hand, top) {
-        if i >= limit {
-            break
-        }
-
-        if r.Intn(2) == 0 {
-            i++
-
-            //hands := [4][]deck.Card{hand[:], situation.player1, situation.player2, situation.player3}
-            //dec := minimax(hands, nil, top.Suit, 0)
-        }
-    }*/
 }
 
 // TODO: Change contract to just give back number.
@@ -135,12 +113,10 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
         deck.Card{},
     }
 
-    n := ai.NewNode()
     e := euchre.Engine{}
+    chosenState := ai.MCTS(s, e, 75000)
 
-    n.Value(s)
-    chosenState := ai.MCTS(n, e, 75000)
-    card = chosenState.Move
+    card = chosenState.(euchre.State).Move
 
     nHand := make([]deck.Card, 0)
     for i := 0; i < len(hand); i++ {

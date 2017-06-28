@@ -34,6 +34,10 @@ type State struct {
     Move deck.Card
 }
 
+func (s State) Hash() interface{} {
+    return s.Move
+}
+
 // Returns whether a beats b given the current trump suit. a and b are assumed
 // to be different cards. Also it is assumed a leads before b, such that if a
 // and b are two different non-trump suits, a wins automatically.

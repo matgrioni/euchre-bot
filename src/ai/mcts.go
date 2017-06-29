@@ -102,8 +102,13 @@ func MCTS(s State, engine MCTSEngine, runs int) State {
     n := NewNode()
     n.Value(s)
 
-    for i := 0; i < runs; i++ {
-        runPlayout(n, engine)
+    nextStates := engine.NextStates(n.GetValue())
+    if len(nextStates) > 1 {
+        for i := 0; i < runs; i++ {
+            runPlayout(n, engine)
+        }
+    } else {
+        return nextStates[0].(State)
     }
 
     if n.children.Len() > 0 {
@@ -133,7 +138,6 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         // If we don't have data on all the posssible next states, select one at
         // random. Otherwise, choose the one with the highest UCB.
         if len(nextStates) > node.children.Len() {
-            // TODO: Remove type assertions.
             takenMoves := make(map[interface{}]bool)
             for i := 0; i < node.children.Len(); i++ {
                 takenMoves[node.children[i].GetValue().(State).Hash()] = true
@@ -149,7 +153,7 @@ func runPlayout(node *Node, engine MCTSEngine) int {
 
             nextState := availableStates[r.Intn(len(availableStates))]
             next = NewNode()
-            next.Value(nextState.(State))
+            next.Value(nextState)
             next.parent = node
             heap.Push(&node.children, next)
         } else {
@@ -157,7 +161,7 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         }
         winner = runPlayout(next, engine)
 
-        if engine.Favorable(next.GetValue(), winner) {
+        if engine.Favorable(node.GetValue(), winner) {
             next.wins++
         }
 

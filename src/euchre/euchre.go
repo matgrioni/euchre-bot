@@ -160,6 +160,14 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
         noSuits := make(map[int][]deck.Suit)
         all := deck.GenCardSet()
 
+        if cState.Setup.PickedUp && cState.Setup.Dealer != cState.Player {
+            delete(all, cState.Setup.Top)
+        }
+
+        if cState.Setup.Dealer == 0 && !cState.Setup.PickedUp {
+            delete(all, cState.Setup.Discard)
+        }
+
         for i := 0; i < len(cState.Prior); i++ {
             // For each trick, find out if a user did not follow suit and
             // therefore does not have this suit.
@@ -198,6 +206,7 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
         for card, _ := range all {
             pCards = append(pCards, card)
         }
+
     }
 
     for i := 0; i < len(pCards); i++ {

@@ -36,9 +36,8 @@ func (p *SmartPlayer) Discard(hand [5]deck.Card,
         suitsCount[adjSuit]++
         if _, ok := lowest[adjSuit]; !ok {
             lowest[adjSuit] = i
-        }
-
-        if int(card.Value) < int(hand[lowest[adjSuit]].Value) {
+        } else if int(card.Value) < int(hand[lowest[adjSuit]].Value) {
+            // TODO: Isn't this an error?
             lowest[adjSuit] = i
         }
     }
@@ -53,7 +52,9 @@ func (p *SmartPlayer) Discard(hand [5]deck.Card,
         // the current min card is of greater value (it is trump or its value is
         // less), then update the trackers.
         if suitsCount[suit] == 1 && suit != top.Suit && card.Value != deck.A &&
-           (minCard.AdjSuit(top.Suit) == top.Suit || int(card.Value) < int(minCard.Value)) {
+           (minCard.AdjSuit(top.Suit) == top.Suit ||
+            int(card.Value) < int(minCard.Value) ||
+            suitsCount[minCard.Suit] > 1) {
             singleFound = true
             minCard = card
             minIndex = i

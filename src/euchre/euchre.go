@@ -3,13 +3,15 @@ package euchre
 import "deck"
 
 // Contains all the relevant information the setup portion of a euchre game.
-// This includes who was dealer, what the top card was, if it was picked up,
-// what the trump suit is and if anything was discarded. Not all of these values
-// will be valid. For example, discard only makes since if the top was picked up
-// and you are the dealer, and in this case trump is not necessary. However,
-// together these 5 fields cover all possible starting scenarios of interest.
+// This includes who was dealer, who called it up, what the top card was, if it
+// was picked up, what the trump suit is and if anything was discarded. Not all
+// of these values will be valid. For example, discard only makes since if the
+// top was picked up and you are the dealer, and in this case trump is not
+// necessary. However, together these 6 fields cover all possible starting
+// scenarios of interest.
 type Setup struct {
     Dealer int
+    Caller int
     PickedUp bool
     Top deck.Card
     Trump deck.Suit

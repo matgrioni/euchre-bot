@@ -46,6 +46,7 @@ func main() {
     fmt.Println("You (0), Left (1), Partner (2), Right (3)")
     fmt.Println("Enter whose deal it was...")
     var dealer int
+    var caller int
     fmt.Scanf("%d", &dealer)
     fmt.Println()
 
@@ -56,6 +57,7 @@ func main() {
     pickedUp := player.Pickup(hand, top, dealer)
     if pickedUp {
         fmt.Println("Order it up.")
+        caller = 0
     } else {
         fmt.Println("Pass.")
         fmt.Println()
@@ -64,10 +66,13 @@ func main() {
         fmt.Println("But did somebody else order it up?")
         fmt.Scanf("%d", &pickedUpIn)
         pickedUp = pickedUpIn == 1
+        fmt.Println("Who was it?")
+        fmt.Scanf("%d", &caller)
 
         if !pickedUp {
             if chosenSuit, call := player.Call(hand, top); call {
                 fmt.Printf("If possible call %s on second go around.\n", chosenSuit)
+                caller = 0
             } else {
                 fmt.Println("Pass if it makes its way back to you.")
             }
@@ -83,6 +88,9 @@ func main() {
                 fmt.Scanf("%s", &trumpStr)
                 trump, err = deck.CreateSuit(trumpStr)
             }
+
+            fmt.Println("Who called this suit?")
+            fmt.Scanf("%d", &caller)
         }
     }
 
@@ -97,6 +105,7 @@ func main() {
 
     setup := euchre.Setup {
         dealer,
+        caller,
         pickedUp,
         top,
         trump,

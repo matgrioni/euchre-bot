@@ -4,8 +4,7 @@ import (
     "ai"
     "deck"
     "euchre"
-    "math/rand"
-    "time"
+    "math"
 )
 
 type Decision struct {
@@ -20,9 +19,43 @@ func NewSmart() (*SmartPlayer) {
 }
 
 func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
-    //r := rand.New(rand.NewSource(time.Now().UnixNano()))
-    return false
-    //return r.Intn(2) == 1
+    var copyHand [5]deck.Card
+    copy(copyHand[:], hand[:])
+    played := make([]deck.Card, 0)
+    prior := make([]euchre.Trick, 0)
+
+    if who == 0 {
+        newHand, discard := p.Discard(copyHand, top)
+        setup := euchre.Setup {
+            who,
+            0,
+            true,
+            top,
+            top.Suit,
+            discard,
+        }
+
+        s := euchre.NewState(setup, 0, newHand[:], played, prior, deck.Card{}, 0)
+        e := euchre.Engine{ }
+        _, expected := ai.MCTS(s, e, 50000)
+
+        return expected > 0.7
+    } else {
+        setup := euchre.Setup {
+            who,
+            0,
+            true,
+            top,
+            top.Suit,
+            deck.Card{},
+        }
+
+        s := euchre.NewState(setup, 0, hand[:], played, prior, deck.Card{}, 0)
+        e := euchre.Engine{ }
+        _, expected := ai.MCTS(s, e, 50000)
+
+        return expected > 0.7
+    }
 }
 
 // TODO: Change contract to just give back number.
@@ -89,15 +122,36 @@ func (p *SmartPlayer) Discard(hand [5]deck.Card,
     return hand, minCard
 }
 
-func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit, bool) {
+    played := make([]deck.Card, 0)
+    prior := make([]euchre.Trick, 0)
+    max := math.Inf(-1)
+    var maxSuit deck.Suit
 
-    s := deck.SUITS[r.Intn(len(deck.SUITS))]
-    for s == top.Suit {
-        s = deck.SUITS[r.Intn(len(deck.SUITS))]
+    for i := 0; i < len(deck.SUITS); i++ {
+        suit := deck.SUITS[i]
+
+        if suit != top.Suit {
+            setup := euchre.Setup {
+                who,
+                0,
+                false,
+                top,
+                suit,
+                deck.Card{},
+            }
+
+            s := euchre.NewState(setup, 0, hand[:], played, prior, deck.Card{}, 0)
+            e := euchre.Engine{ }
+            _, expected := ai.MCTS(s, e, 15000)
+
+            if expected > max {
+                max = expected
+            }
+        }
     }
 
-    return s, r.Intn(2) == 1
+    return maxSuit, max > 0.7
 }
 
 // TODO: Maybe don't edit the hand. Return a completely new version?
@@ -108,7 +162,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
 
     s := euchre.NewState(setup, 0, hand, played, prior, deck.Card{}, 0)
     e := euchre.Engine{ }
-    chosenState := ai.MCTS(s, e, 75000)
+    chosenState, _ := ai.MCTS(s, e, 75000)
 
     card = chosenState.(euchre.State).Move
 

@@ -73,7 +73,7 @@ func main() {
         }
 
         if !pickedUp {
-            if chosenSuit, call := player.Call(hand, top); call {
+            if chosenSuit, call := player.Call(hand, top, dealer); call {
                 fmt.Printf("If possible call %s on second go around.\n", chosenSuit)
                 caller = 0
             } else {

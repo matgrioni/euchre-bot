@@ -2,8 +2,6 @@ package ai
 
 import (
     "container/heap"
-    "deck"
-    "fmt"
     "math"
     "math/rand"
     "time"
@@ -98,32 +96,19 @@ type MCTSEngine interface {
     Evaluation(state interface{}) int
 }
 
-// TODO: I feel like node should just be abstracted away. The interface{} State
-// object that you choose is the only thing that the caller should see.
-func MCTS(s State, engine MCTSEngine, runs int) State {
+func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
     n := NewNode()
     n.Value(s)
 
-    /*nextStates := engine.NextStates(n.GetValue())
-    if len(nextStates) > 1 {
-        for i := 0; i < runs; i++ {
-            runPlayout(n, engine)
-        }
-    } else {
-        return nextStates[0].(State)
-    }*/
     for i := 0; i < runs; i++ {
         runPlayout(n, engine)
     }
 
     if n.children.Len() > 0 {
-        for _, child := range n.children {
-            fmt.Printf("%s\t%d\t%d\t%f\n", child.GetValue().(State).Hash().(deck.Card), child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
-        }
-
-        return n.children.Poll().GetValue().(State)
+        topNode := n.children.Poll()
+        return topNode.GetValue().(State), topNode.GetPriority()
     } else {
-        return n.GetValue().(State)
+        return n.GetValue().(State), n.GetPriority()
     }
 }
 

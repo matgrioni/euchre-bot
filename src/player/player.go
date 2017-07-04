@@ -35,10 +35,11 @@ type Player interface {
     // players have passed on picking it up.
     // hand - The 5 cards currently in the player's hand.
     // top  - The card that was passed by all players and was on the kitty.
+    // who  - The player who dealt the cards.
     // Returns the suit that should be called if given the chance. This result
     // valid iff true is returned as well. Otherwise, the returned suit is
     // meaningless.
-    Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool)
+    Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit, bool)
 
     // Determines which card to play given the current euchre situation.
     // setup  - The setup of the euchre game before any tricks which consists

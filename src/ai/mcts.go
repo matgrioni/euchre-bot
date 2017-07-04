@@ -13,6 +13,7 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 type State interface {
     Hash() interface{}
+    Weight() float64
 }
 
 // This is a Node that is used for the MCTS tree. It has the attributes necessary
@@ -85,6 +86,7 @@ func UpperConfBound(node *Node) float64 {
     } else if node.parent != nil {
         ucb = float64(node.wins) / float64(node.simulations) +
               math.Sqrt(2.0 * (math.Log(float64(node.parent.simulations)) + 1) / float64(node.simulations))
+        ucb *= node.GetValue().(State).Weight()
     }
     return ucb
 }

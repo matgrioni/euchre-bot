@@ -155,6 +155,10 @@ func (c Card) String() string {
     return c.Value.String() + c.Suit.String()
 }
 
+func (c Card) IsTrump(t Suit) bool {
+    return c.AdjSuit(t) == t
+}
+
 // Adjusts suit of this card based on the trump suit. This is only really
 // valuable when it matters if the card can be the left bower. In this case,
 // this method returns that the suit of this card is the trump suit. For all

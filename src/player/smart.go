@@ -106,15 +106,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
     var card deck.Card
 
-    s := euchre.State {
-        setup,
-        0,
-        hand,
-        played,
-        prior,
-        deck.Card{},
-    }
-
+    s := euchre.NewState(setup, 0, hand, played, prior, deck.Card{}, 0)
     e := euchre.Engine{ }
     chosenState := ai.MCTS(s, e, 75000)
 

@@ -34,10 +34,28 @@ type State struct {
     Played []deck.Card
     Prior []Trick
     Move deck.Card
+    weight float64
 }
 
 func (s State) Hash() interface{} {
     return s.Move
+}
+
+func (s State) Weight() float64 {
+    return s.weight
+}
+
+func NewState(setup Setup, player int, hand, played []deck.Card,
+              prior []Trick, move deck.Card, weight float64) State {
+    return State {
+        setup,
+        player,
+        hand,
+        played,
+        prior,
+        move,
+        weight,
+    }
 }
 
 // Returns whether a beats b given the current trump suit. a and b are assumed
@@ -260,14 +278,15 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
             nPrior = append(nPrior, nextPrior)
         }
 
-        nextState := State {
-            cState.Setup,
-            nPlayer,
-            nHand,
-            nPlayed,
-            nPrior,
-            nCard,
+        var weight float64
+        weight = 1.0
+        if cState.Setup.Caller == cState.Player &&
+           nCard.IsTrump(cState.Setup.Trump) {
+            weight = 1.05
         }
+
+        nextState := NewState(cState.Setup, nPlayer, nHand, nPlayed,
+                              nPrior, nCard, weight)
 
         nextStates = append(nextStates, nextState)
     }

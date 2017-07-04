@@ -13,17 +13,10 @@ type Decision struct {
     Value int
 }
 
-type SmartPlayer struct {
-    e euchre.Engine
-}
+type SmartPlayer struct { }
 
 func NewSmart() (*SmartPlayer) {
     return &SmartPlayer{ }
-}
-
-// TODO: Create better interface for using players for this purpose.
-func (p *SmartPlayer) SetupEngine(hand []deck.Card, setup euchre.Setup) {
-    p.e = euchre.NewEngine(hand, setup)
 }
 
 func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
@@ -122,7 +115,8 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
         deck.Card{},
     }
 
-    chosenState := ai.MCTS(s, p.e, 75000)
+    e := euchre.Engine{ }
+    chosenState := ai.MCTS(s, e, 75000)
 
     card = chosenState.(euchre.State).Move
 

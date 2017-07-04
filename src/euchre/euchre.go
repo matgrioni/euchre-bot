@@ -136,9 +136,10 @@ func Winner(played []deck.Card, trump deck.Suit, led int) int {
 
 type Engine struct { }
 
-func (engine Engine) Favorable(state interface{}, winner int) bool {
+func (engine Engine) Favorable(state interface{}, eval int) bool {
     cState := state.(State)
-    return cState.Player == winner || cState.Player == (winner + 2) % 4
+    return (cState.Player % 2 == 0 && eval > 0) ||
+           (cState.Player % 2 == 1 && eval < 0)
 }
 
 func (engine Engine) IsTerminal(state interface{}) bool {
@@ -273,7 +274,7 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
     return nextStates
 }
 
-func (engine Engine) Winner(state interface{}) int {
+func (engine Engine) Evaluation(state interface{}) int {
     // TODO: Idiomatic syntax?
     winCounts := [2]int{0, 0}
 
@@ -285,9 +286,16 @@ func (engine Engine) Winner(state interface{}) int {
         winCounts[w % 2]++
     }
 
+    // TODO: Add euching as more points.
+    if winCounts[0] == 5 {
+        return 2
+    } else if winCounts[0] == 0 {
+        return -2
+    }
+
     if winCounts[0] > winCounts[1] {
-        return 0
-    } else {
         return 1
+    } else {
+        return -1
     }
 }

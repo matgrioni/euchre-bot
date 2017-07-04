@@ -90,10 +90,10 @@ func UpperConfBound(node *Node) float64 {
 }
 
 type MCTSEngine interface {
-    Favorable(state interface{}, winner int) bool
+    Favorable(state interface{}, eval int) bool
     IsTerminal(state interface{}) bool
     NextStates(state interface{}) []interface{}
-    Winner(state interface{}) int
+    Evaluation(state interface{}) int
 }
 
 // TODO: I feel like node should just be abstracted away. The interface{} State
@@ -129,11 +129,11 @@ func MCTS(s State, engine MCTSEngine, runs int) State {
 func runPlayout(node *Node, engine MCTSEngine) int {
     node.simulations++
 
-    var winner int
+    var eval int
     // We have been given a node state that is the last in the playout. Time to
     // return and backpropagate the results.
     if engine.IsTerminal(node.GetValue()) {
-        winner = engine.Winner(node.GetValue())
+        eval = engine.Evaluation(node.GetValue())
     } else {
         nextStates := engine.NextStates(node.GetValue())
         var next *Node
@@ -162,15 +162,26 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         } else {
             next = node.children.Poll().(*Node)
         }
-        winner = runPlayout(next, engine)
+        eval = runPlayout(next, engine)
 
-        if engine.Favorable(node.GetValue(), winner) {
-            next.wins++
+        var adjEval int
+        if engine.Favorable(node.GetValue(), eval) {
+            if eval < 0 {
+                adjEval = -1 * eval
+            }
+
+            next.wins += adjEval
+        } else {
+            if eval < 0 {
+                adjEval = -1 * eval
+            }
+
+            next.wins -= adjEval
         }
 
         next.Priority(UpperConfBound(next))
         node.children.Update(next, next.GetValue(), next.GetPriority())
     }
 
-    return winner
+    return eval
 }

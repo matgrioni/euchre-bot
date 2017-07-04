@@ -66,8 +66,11 @@ func main() {
         fmt.Println("But did somebody else order it up?")
         fmt.Scanf("%d", &pickedUpIn)
         pickedUp = pickedUpIn == 1
-        fmt.Println("Who was it?")
-        fmt.Scanf("%d", &caller)
+
+        if pickedUp {
+            fmt.Println("Who was it?")
+            fmt.Scanf("%d", &caller)
+        }
 
         if !pickedUp {
             if chosenSuit, call := player.Call(hand, top); call {

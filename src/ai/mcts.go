@@ -102,13 +102,16 @@ func MCTS(s State, engine MCTSEngine, runs int) State {
     n := NewNode()
     n.Value(s)
 
-    nextStates := engine.NextStates(n.GetValue())
+    /*nextStates := engine.NextStates(n.GetValue())
     if len(nextStates) > 1 {
         for i := 0; i < runs; i++ {
             runPlayout(n, engine)
         }
     } else {
         return nextStates[0].(State)
+    }*/
+    for i := 0; i < runs; i++ {
+        runPlayout(n, engine)
     }
 
     if n.children.Len() > 0 {

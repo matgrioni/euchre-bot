@@ -1,6 +1,10 @@
 package euchre
 
-import "deck"
+import (
+    "deck"
+    "math/rand"
+    "time"
+)
 
 // Contains all the relevant information the setup portion of a euchre game.
 // This includes who was dealer, who called it up, what the top card was, if it
@@ -134,7 +138,49 @@ func Winner(played []deck.Card, trump deck.Suit, led int) int {
     return highPlayer
 }
 
-type Engine struct { }
+type Engine struct {
+    Cards []deck.Card
+    CardsSet map[deck.Card]bool
+}
+
+func NewEngine(hand []deck.Card, setup Setup) Engine {
+    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+    var e Engine
+
+    available := deck.GenCardSet()
+    for i := 0; i < len(hand); i++ {
+        delete(available, hand[i])
+    }
+
+    delete(available, setup.Top)
+
+    if setup.Dealer == 0 && setup.PickedUp {
+        delete(available, setup.Discard)
+    }
+
+    inPlay := make([]deck.Card, 0)
+    for card, _ := range available {
+        inPlay = append(inPlay, card)
+    }
+
+    // Randomly delete 3 cards from the deck that are not in play.
+    for i := 0; i < 3; i++ {
+        ri := r.Intn(len(inPlay))
+
+        inPlay[ri] = inPlay[len(inPlay) - 1]
+        inPlay = inPlay[:len(inPlay) - 1]
+    }
+    e.Cards = inPlay
+
+    all := make(map[deck.Card]bool)
+    for i := 0; i < len(e.Cards); i++ {
+        card := e.Cards[i]
+        all[card] = true
+    }
+    e.CardsSet = all
+
+    return e
+}
 
 func (engine Engine) Favorable(state interface{}, eval int) bool {
     cState := state.(State)
@@ -161,13 +207,18 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
         }
     } else {
         noSuits := make(map[int][]deck.Suit)
-        all := deck.GenCardSet()
+        all := make(map[deck.Card]bool)
 
-        if cState.Setup.PickedUp && cState.Setup.Dealer != cState.Player {
+        for k, v := range engine.CardsSet {
+            all[k] = v
+        }
+
+        if (cState.Setup.PickedUp && cState.Setup.Dealer != cState.Player) ||
+           !cState.Setup.PickedUp {
             delete(all, cState.Setup.Top)
         }
 
-        if cState.Setup.Dealer == 0 && !cState.Setup.PickedUp {
+        if cState.Setup.Dealer == 0 && cState.Setup.PickedUp {
             delete(all, cState.Setup.Discard)
         }
 

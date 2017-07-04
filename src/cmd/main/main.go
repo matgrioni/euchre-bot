@@ -115,6 +115,8 @@ func main() {
         d,
     }
 
+    player.SetupEngine(hand[:], setup)
+
     led := (dealer + 1) % 4
     var prior []euchre.Trick
     var chosen deck.Card

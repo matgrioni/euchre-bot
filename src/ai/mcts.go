@@ -164,7 +164,7 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         }
         eval = runPlayout(next, engine)
 
-        var adjEval int
+        adjEval := eval
         if engine.Favorable(node.GetValue(), eval) {
             if eval < 0 {
                 adjEval = -1 * eval

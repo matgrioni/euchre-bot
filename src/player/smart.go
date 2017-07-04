@@ -14,15 +14,22 @@ type Decision struct {
 }
 
 type SmartPlayer struct {
+    e euchre.Engine
 }
 
 func NewSmart() (*SmartPlayer) {
     return &SmartPlayer{ }
 }
 
+// TODO: Create better interface for using players for this purpose.
+func (p *SmartPlayer) SetupEngine(hand []deck.Card, setup euchre.Setup) {
+    p.e = euchre.NewEngine(hand, setup)
+}
+
 func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-    return r.Intn(2) == 1
+    //r := rand.New(rand.NewSource(time.Now().UnixNano()))
+    return false
+    //return r.Intn(2) == 1
 }
 
 // TODO: Change contract to just give back number.
@@ -50,7 +57,8 @@ func (p *SmartPlayer) Discard(hand [5]deck.Card,
 
         // If there's only one of a card that is not trump and is not an A and
         // the current min card is of greater value (it is trump or its value is
-        // less), then update the trackers.
+        // less), or the current min card is not the only card of its suit then
+        // update the trackers.
         if suitsCount[suit] == 1 && suit != top.Suit && card.Value != deck.A &&
            (minCard.AdjSuit(top.Suit) == top.Suit ||
             int(card.Value) < int(minCard.Value) ||
@@ -114,8 +122,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
         deck.Card{},
     }
 
-    e := euchre.Engine{}
-    chosenState := ai.MCTS(s, e, 75000)
+    chosenState := ai.MCTS(s, p.e, 75000)
 
     card = chosenState.(euchre.State).Move
 

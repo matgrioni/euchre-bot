@@ -2,6 +2,34 @@ package euchre
 
 import "deck"
 
+var NON_TRUMP_WEIGHTS = createNonTrumpWeights()
+func createNonTrumpWeights() map[deck.Value]float64 {
+    weights := make(map[deck.Value]float64)
+
+    weights[deck.Nine] = 0.9
+    weights[deck.Ten] = 0.92
+    weights[deck.J] = 0.94
+    weights[deck.Q] = 0.98
+    weights[deck.K] = 1.0
+    weights[deck.A] = 1.02
+
+    return weights
+}
+
+var TRUMP_WEIGHTS = createTrumpWeights()
+func createTrumpWeights() map[deck.Value]float64 {
+    weights := make(map[deck.Value]float64)
+
+    weights[deck.Nine] = 1.02
+    weights[deck.Ten] = 1.04
+    weights[deck.J] = 1.1
+    weights[deck.Q] = 1.05
+    weights[deck.K] = 1.07
+    weights[deck.A] = 1.08
+
+    return weights
+}
+
 // Contains all the relevant information the setup portion of a euchre game.
 // This includes who was dealer, who called it up, what the top card was, if it
 // was picked up, what the trump suit is and if anything was discarded. Not all
@@ -279,11 +307,14 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
         }
 
         var weight float64
-        weight = 1.0
+        weight = NON_TRUMP_WEIGHTS[nCard.Value]
         if cState.Setup.Caller == cState.Player &&
            nCard.IsTrump(cState.Setup.Trump) {
-            weight = 1.05
-        }
+            weight = TRUMP_WEIGHTS[nCard.Value]
+        }/* else if cState.Setup.Caller != cState.Player &&
+                  nCard.IsTrump(cState.Setup.Trump) {
+            weight = 1 - TRUMP_WEIGHTS[nCard.Value] + 1
+        }*/
 
         nextState := NewState(cState.Setup, nPlayer, nHand, nPlayed,
                               nPrior, nCard, weight)

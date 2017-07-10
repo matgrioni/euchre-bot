@@ -1,6 +1,9 @@
 package euchre
 
-import "deck"
+import (
+    "ai"
+    "deck"
+)
 
 var NON_TRUMP_WEIGHTS = createNonTrumpWeights()
 func createNonTrumpWeights() map[deck.Value]float64 {
@@ -182,20 +185,20 @@ func Winner(played []deck.Card, trump deck.Suit, led int) int {
 
 type Engine struct { }
 
-func (engine Engine) Favorable(state interface{}, eval int) bool {
+func (engine Engine) Favorable(state ai.State, eval int) bool {
     cState := state.(State)
     return (cState.Player % 2 == 0 && eval > 0) ||
            (cState.Player % 2 == 1 && eval < 0)
 }
 
-func (engine Engine) IsTerminal(state interface{}) bool {
+func (engine Engine) IsTerminal(state ai.State) bool {
     cState := state.(State)
     return len(cState.Played) == 0 && len(cState.Prior) == 5
 }
 
-func (engine Engine) NextStates(state interface{}) []interface{} {
+func (engine Engine) NextStates(state ai.State) []ai.State {
     cState := state.(State)
-    nextStates := make([]interface{}, 0)
+    nextStates := make([]ai.State, 0)
     var pCards []deck.Card
 
     if cState.Player == 0 {
@@ -311,10 +314,7 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
         if cState.Setup.Caller == cState.Player &&
            nCard.IsTrump(cState.Setup.Trump) {
             weight = TRUMP_WEIGHTS[nCard.Value]
-        }/* else if cState.Setup.Caller != cState.Player &&
-                  nCard.IsTrump(cState.Setup.Trump) {
-            weight = 1 - TRUMP_WEIGHTS[nCard.Value] + 1
-        }*/
+        }
 
         nextState := NewState(cState.Setup, nPlayer, nHand, nPlayed,
                               nPrior, nCard, weight)
@@ -325,7 +325,7 @@ func (engine Engine) NextStates(state interface{}) []interface{} {
     return nextStates
 }
 
-func (engine Engine) Evaluation(state interface{}) int {
+func (engine Engine) Evaluation(state ai.State) int {
     // TODO: Idiomatic syntax?
     winCounts := [2]int{0, 0}
 

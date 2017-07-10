@@ -2,8 +2,6 @@ package ai
 
 import (
     "container/heap"
-    "euchre"
-    "fmt"
     "math"
     "math/rand"
     "time"
@@ -31,6 +29,8 @@ type Node struct {
 
     wins int
     simulations int
+
+    memoize []State
 }
 
 // Return a new node that is properly initialized. Specifically, the priority
@@ -42,6 +42,10 @@ func NewNode() *Node {
     heap.Init(&n.children)
 
     return &n
+}
+
+func (node *Node) GetState() State {
+    return node.value
 }
 
 func (node *Node) GetValue() interface{} {
@@ -91,10 +95,10 @@ func UpperConfBound(node *Node) float64 {
 }
 
 type MCTSEngine interface {
-    Favorable(state interface{}, eval int) bool
-    IsTerminal(state interface{}) bool
-    NextStates(state interface{}) []interface{}
-    Evaluation(state interface{}) int
+    Favorable(state State, eval int) bool
+    IsTerminal(state State) bool
+    NextStates(state State) []State
+    Evaluation(state State) int
 }
 
 func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
@@ -109,8 +113,7 @@ func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
         topNode := n.children.Poll()
         for i := 0; i < n.children.Len(); i++ {
             child := n.children[i]
-            cState := child.GetValue().(euchre.State)
-            fmt.Printf("%s\t%d\t%d\t%f\n", cState.Move, child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
+            fmt.Printf("%d\t%d\t%f\n", child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
         }
 
         return topNode.GetValue().(State), topNode.GetPriority()
@@ -126,29 +129,21 @@ func runPlayout(node *Node, engine MCTSEngine) int {
     var eval int
     // We have been given a node state that is the last in the playout. Time to
     // return and backpropagate the results.
-    if engine.IsTerminal(node.GetValue()) {
-        eval = engine.Evaluation(node.GetValue())
+    if engine.IsTerminal(node.GetState()) {
+        eval = engine.Evaluation(node.GetState())
     } else {
-        nextStates := engine.NextStates(node.GetValue())
+        if node.memoize == nil {
+            node.memoize = engine.NextStates(node.GetState())
+        }
+        nextStates := node.memoize
+
         var next *Node
 
         // If we don't have data on all the posssible next states, select one at
         // random. Otherwise, choose the one with the highest UCB.
         if len(nextStates) > node.children.Len() {
-            takenMoves := make(map[interface{}]bool)
-            for i := 0; i < node.children.Len(); i++ {
-                takenMoves[node.children[i].GetValue().(State).Hash()] = true
-            }
+            nextState := nextStates[r.Intn(len(nextStates))]
 
-            availableStates := make([]interface{}, 0)
-            for i := 0; i < len(nextStates); i++ {
-                nextState := nextStates[i]
-                if _, ok := takenMoves[nextState.(State).Hash()]; !ok {
-                    availableStates = append(availableStates, nextState)
-                }
-            }
-
-            nextState := availableStates[r.Intn(len(availableStates))]
             next = NewNode()
             next.Value(nextState)
             next.parent = node
@@ -159,7 +154,7 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         eval = runPlayout(next, engine)
 
         adjEval := eval
-        if engine.Favorable(node.GetValue(), eval) {
+        if engine.Favorable(node.GetValue().(State), eval) {
             if eval < 0 {
                 adjEval = -1 * eval
             }

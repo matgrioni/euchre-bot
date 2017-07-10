@@ -2,6 +2,8 @@ package ai
 
 import (
     "container/heap"
+    "euchre"
+    "fmt"
     "math"
     "math/rand"
     "time"
@@ -84,7 +86,6 @@ func UpperConfBound(node *Node) float64 {
     } else if node.parent != nil {
         ucb = float64(node.wins) / float64(node.simulations) +
               math.Sqrt(2.0 * (math.Log(float64(node.parent.simulations)) + 1) / float64(node.simulations))
-        ucb *= node.GetValue().(State).Weight()
     }
     return ucb
 }
@@ -106,6 +107,12 @@ func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
 
     if n.children.Len() > 0 {
         topNode := n.children.Poll()
+        for i := 0; i < n.children.Len(); i++ {
+            child := n.children[i]
+            cState := child.GetValue().(euchre.State)
+            fmt.Printf("%s\t%d\t%d\t%f\n", cState.Move, child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
+        }
+
         return topNode.GetValue().(State), topNode.GetPriority()
     } else {
         return n.GetValue().(State), n.GetPriority()

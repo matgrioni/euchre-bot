@@ -4,6 +4,7 @@ import (
     "ai"
     "deck"
     "euchre"
+    "fmt"
     "math"
 )
 
@@ -39,7 +40,8 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
         e := euchre.Engine{ }
         _, expected := ai.MCTS(s, e, 50000)
 
-        return expected > 0.7
+        fmt.Printf("%f\n", expected)
+        return expected > 0.6
     } else {
         setup := euchre.Setup {
             who,
@@ -54,7 +56,8 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
         e := euchre.Engine{ }
         _, expected := ai.MCTS(s, e, 50000)
 
-        return expected > 0.7
+        fmt.Printf("%f\n", expected)
+        return expected > 0.6
     }
 }
 
@@ -147,11 +150,12 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit
 
             if expected > max {
                 max = expected
+                maxSuit = suit
             }
         }
     }
 
-    return maxSuit, max > 0.7
+    return maxSuit, max > 0.6
 }
 
 // TODO: Maybe don't edit the hand. Return a completely new version?

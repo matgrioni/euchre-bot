@@ -146,7 +146,7 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit
 
             s := euchre.NewState(setup, 0, hand[:], played, prior, deck.Card{}, 0)
             e := euchre.Engine{ }
-            _, expected := ai.MCTS(s, e, 15000)
+            _, expected := ai.MCTS(s, e, 5000)
 
             if expected > max {
                 max = expected

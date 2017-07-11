@@ -198,7 +198,7 @@ func (engine Engine) IsTerminal(state ai.State) bool {
 
 func (engine Engine) NextStates(state ai.State) []ai.State {
     cState := state.(State)
-    nextStates := make([]ai.State, 0)
+    nextStates := make([]ai.State, 0, len(deck.CARDS))
     var pCards []deck.Card
 
     if cState.Player == 0 {
@@ -210,15 +210,15 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
         }
     } else {
         noSuits := make(map[int][]deck.Suit)
-        all := deck.GenCardSet()
+        all := deck.NewCardsSet()
+        pCards = make([]deck.Card, 0, len(all))
 
-        if (cState.Setup.PickedUp && cState.Setup.Dealer != cState.Player) ||
-           !cState.Setup.PickedUp {
-            delete(all, cState.Setup.Top)
+        if cState.Setup.Dealer != cState.Player || !cState.Setup.PickedUp {
+            all[cState.Setup.Top] = false
         }
 
         if cState.Setup.Dealer == 0 && cState.Setup.PickedUp {
-            delete(all, cState.Setup.Discard)
+            all[cState.Setup.Discard] = false
         }
 
         for i := 0; i < len(cState.Prior); i++ {
@@ -235,12 +235,12 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             }
 
             for j := 0; j < len(trick.Cards); j++ {
-                delete(all, trick.Cards[j])
+                all[trick.Cards[j]] = false
             }
         }
 
         for i := 0; i < len(cState.Played); i++ {
-            delete(all, cState.Played[i])
+            all[cState.Played[i]] = false
         }
 
         for player, suits := range noSuits {
@@ -248,7 +248,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
                 for card, _ := range all {
                     for i := 0; i < len(suits); i++ {
                         if card.AdjSuit(cState.Setup.Trump) == suits[i] {
-                            delete(all, card)
+                            all[card] = false
                             break
                         }
                     }
@@ -256,10 +256,11 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             }
         }
 
-        for card, _ := range all {
-            pCards = append(pCards, card)
+        for card, present := range all {
+            if present {
+                pCards = append(pCards, card)
+            }
         }
-
     }
 
     for i := 0; i < len(pCards); i++ {
@@ -267,7 +268,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
 
         var nHand []deck.Card
         if cState.Player == 0 {
-            nHand = make([]deck.Card, 0)
+            nHand = make([]deck.Card, 0, len(cState.Hand))
             for j := 0; j < len(cState.Hand); j++ {
                 jCard := cState.Hand[j]
                 if nCard != jCard {
@@ -278,18 +279,22 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             nHand = cState.Hand
         }
 
-        nPrior := make([]Trick, len(cState.Prior))
-        copy(nPrior, cState.Prior)
 
+        var nPrior []Trick
         var nPlayed []deck.Card
         var nPlayer int
         nmPlayer := (cState.Player + 1) % 4
+
         if len(cState.Played) < 3 {
             nPlayed = make([]deck.Card, len(cState.Played))
             copy(nPlayed, cState.Played)
+            nPrior = cState.Prior
             nPlayed = append(nPlayed, nCard)
             nPlayer = nmPlayer
         } else if len(cState.Played) == 3 {
+            nPrior = make([]Trick, len(cState.Prior))
+            copy(nPrior, cState.Prior)
+
             var arrPlayed [4]deck.Card
             copy(arrPlayed[:], cState.Played)
             arrPlayed[3] = nCard
@@ -326,25 +331,29 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
 }
 
 func (engine Engine) Evaluation(state ai.State) int {
-    // TODO: Idiomatic syntax?
-    winCounts := [2]int{0, 0}
+    winCounts0 := 0
+    winCounts1 := 0
 
     cState := state.(State)
     for i := 0; i < len(cState.Prior); i++ {
         trick := cState.Prior[i]
 
         w := Winner(trick.Cards[:], cState.Setup.Trump, trick.Led)
-        winCounts[w % 2]++
+        if w % 2 == 0 {
+            winCounts0++
+        } else {
+            winCounts1++
+        }
     }
 
     // TODO: Add euching as more points.
-    if winCounts[0] == 5 {
+    if winCounts0 == 5 || (winCounts0 >= 3 && cState.Setup.Caller % 2 == 1) {
         return 2
-    } else if winCounts[0] == 0 {
+    } else if winCounts0 == 0 || (winCounts0 < 3 && cState.Setup.Caller % 2 == 0) {
         return -2
     }
 
-    if winCounts[0] > winCounts[1] {
+    if winCounts0 > winCounts1 {
         return 1
     } else {
         return -1

@@ -2,6 +2,7 @@ package ai
 
 import (
     "container/heap"
+    "fmt"
     "math"
     "math/rand"
     "time"
@@ -142,12 +143,21 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         // If we don't have data on all the posssible next states, select one at
         // random. Otherwise, choose the one with the highest UCB.
         if len(nextStates) > node.children.Len() {
+            takenMoves := make(map[interface{}]int)
+            for i := 0; i < node.children.Len(); i++ {
+                takenMoves[node.children[i].(*Node).GetState().Hash()] = i
+            }
+
             nextState := nextStates[r.Intn(len(nextStates))]
 
-            next = NewNode()
-            next.Value(nextState)
-            next.parent = node
-            heap.Push(&node.children, next)
+            if _, ok := takenMoves[nextState.Hash()]; ok {
+                next = node.children[takenMoves[nextState.Hash()]].(*Node)
+            } else {
+                next = NewNode()
+                next.Value(nextState)
+                next.parent = node
+                heap.Push(&node.children, next)
+            }
         } else {
             next = node.children.Poll().(*Node)
         }

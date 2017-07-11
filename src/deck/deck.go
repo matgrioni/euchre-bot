@@ -134,6 +134,7 @@ type Card struct {
 
 // Create an array of the all the cards in the euchre deck.
 var CARDS = createCards()
+var CARDS_SET = createCardsSet()
 
 // Creates a card given the string in the format of VS, where V is the value, and
 // S is the suit.
@@ -202,7 +203,15 @@ func GenHand() [5]Card {
     return hand
 }
 
-func GenCardSet() map[Card]bool {
+func NewCardsSet() map[Card]bool {
+    for k, _ := range CARDS_SET {
+        CARDS_SET[k] = true
+    }
+
+    return CARDS_SET
+}
+
+func createCardsSet() map[Card]bool {
     set := make(map[Card]bool)
     for i := 0; i < len(CARDS); i++ {
         set[CARDS[i]] = true

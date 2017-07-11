@@ -209,7 +209,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             pCards[i] = cState.Hand[idx]
         }
     } else {
-        noSuits := make(map[int][]deck.Suit)
+        noSuits := make([]deck.Suit, 0, 4)
         all := deck.NewCardsSet()
         pCards = make([]deck.Card, 0, len(all))
 
@@ -226,12 +226,10 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             // therefore does not have this suit.
             trick := cState.Prior[i]
             first := trick.Cards[0]
-            for j := 1; j < len(trick.Cards); j++ {
-                next := trick.Cards[j]
-                if first.AdjSuit(cState.Setup.Trump) != next.AdjSuit(cState.Setup.Trump) {
-                    cur := noSuits[(trick.Led + j) % 4]
-                    cur = append(cur, first.AdjSuit(cState.Setup.Trump))
-                }
+
+            playedCard := trick.Cards[(4 - (cState.Player - trick.Led)) % 4]
+            if first.AdjSuit(cState.Setup.Trump) != playedCard.AdjSuit(cState.Setup.Trump) {
+                noSuits = append(noSuits, first.AdjSuit(cState.Setup.Trump))
             }
 
             for j := 0; j < len(trick.Cards); j++ {
@@ -243,15 +241,11 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             all[cState.Played[i]] = false
         }
 
-        for player, suits := range noSuits {
-            if player == cState.Player {
-                for card, _ := range all {
-                    for i := 0; i < len(suits); i++ {
-                        if card.AdjSuit(cState.Setup.Trump) == suits[i] {
-                            all[card] = false
-                            break
-                        }
-                    }
+        for i := 0; i < len(noSuits); i++ {
+            for card, _ := range all {
+                if card.AdjSuit(cState.Setup.Trump) == noSuits[i] {
+                    all[card] = false
+                    break
                 }
             }
         }
@@ -279,7 +273,6 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             nHand = cState.Hand
         }
 
-
         var nPrior []Trick
         var nPlayed []deck.Card
         var nPlayer int
@@ -299,7 +292,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             copy(arrPlayed[:], cState.Played)
             arrPlayed[3] = nCard
 
-            nPlayed = make([]deck.Card, 0)
+            nPlayed = make([]deck.Card, 0, 4)
             nPlayer = Winner(arrPlayed[:], cState.Setup.Trump, nmPlayer)
 
             if len(cState.Prior) == 4 {
@@ -346,7 +339,6 @@ func (engine Engine) Evaluation(state ai.State) int {
         }
     }
 
-    // TODO: Add euching as more points.
     if winCounts0 == 5 || (winCounts0 >= 3 && cState.Setup.Caller % 2 == 1) {
         return 2
     } else if winCounts0 == 0 || (winCounts0 < 3 && cState.Setup.Caller % 2 == 0) {

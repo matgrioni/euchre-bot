@@ -36,7 +36,7 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
             discard,
         }
 
-        s := euchre.NewState(setup, 0, newHand[:], played, prior, deck.Card{}, 0)
+        s := euchre.NewState(setup, (who + 1) % 4, newHand[:], played, prior, deck.Card{}, 0)
         e := euchre.Engine{ }
         _, expected := ai.MCTS(s, e, 50000)
 

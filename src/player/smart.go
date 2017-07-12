@@ -20,14 +20,21 @@ func NewSmart() (*SmartPlayer) {
 }
 
 func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
-    var copyHand [5]deck.Card
-    copy(copyHand[:], hand[:])
+    var setup euchre.Setup
+    var discard deck.Card
+
+    // TODO: clean up this hand nonsense.
+    var actualHand [5]deck.Card
+
     played := make([]deck.Card, 0)
     prior := make([]euchre.Trick, 0)
 
     if who == 0 {
-        newHand, discard := p.Discard(copyHand, top)
-        setup := euchre.Setup {
+        var newHand [5]deck.Card
+        copy(newHand[:], hand[:])
+
+        actualHand, discard = p.Discard(newHand, top)
+        setup = euchre.Setup {
             who,
             0,
             true,
@@ -35,15 +42,9 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
             top.Suit,
             discard,
         }
-
-        s := euchre.NewState(setup, (who + 1) % 4, newHand[:], played, prior, deck.Card{}, 0)
-        e := euchre.Engine{ }
-        _, expected := ai.MCTS(s, e, 50000)
-
-        fmt.Printf("%f\n", expected)
-        return expected > 0.6
     } else {
-        setup := euchre.Setup {
+        copy(actualHand[:], hand[:])
+        setup = euchre.Setup {
             who,
             0,
             true,
@@ -51,14 +52,15 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
             top.Suit,
             deck.Card{},
         }
-
-        s := euchre.NewState(setup, 0, hand[:], played, prior, deck.Card{}, 0)
-        e := euchre.Engine{ }
-        _, expected := ai.MCTS(s, e, 50000)
-
-        fmt.Printf("%f\n", expected)
-        return expected > 0.6
     }
+
+    nPlayer := (who + 1) % 4
+    s := euchre.NewState(setup, nPlayer, actualHand[:], played, prior, deck.Card{}, 0)
+    e := euchre.Engine{ }
+    _, expected := ai.MCTS(s, e, 75000)
+
+    fmt.Printf("%f\n", expected)
+    return expected > 0.6 && nPlayer % 2 == 0 || expected < -0.6 && nPlayer % 2 == 1
 }
 
 // TODO: Change contract to just give back number.

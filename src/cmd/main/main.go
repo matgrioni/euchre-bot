@@ -3,11 +3,16 @@ package main
 import (
     "bufio"
     "deck"
+    "flag"
     "fmt"
+    "log"
     "euchre"
     "player"
     "os"
+    "runtime/pprof"
 )
+
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func inputValidCard() deck.Card {
     var cardStr string
@@ -48,7 +53,18 @@ func main() {
     var dealer int
     var caller int
     fmt.Scanf("%d", &dealer)
+    fmt.Printf("%d\n", dealer)
     fmt.Println()
+
+    flag.Parse()
+    if *cpuprofile != "" {
+        f, err := os.Create(*cpuprofile)
+        if err != nil {
+            log.Fatal(err)
+        }
+        pprof.StartCPUProfile(f)
+        defer pprof.StopCPUProfile()
+    }
 
     var (
         trump deck.Suit
@@ -61,7 +77,6 @@ func main() {
     } else {
         fmt.Println("Pass.")
         fmt.Println()
-
         var pickedUpIn int
         fmt.Println("But did somebody else order it up?")
         fmt.Scanf("%d", &pickedUpIn)

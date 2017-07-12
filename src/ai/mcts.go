@@ -32,6 +32,7 @@ type Node struct {
     simulations int
 
     memoize []State
+    depth int
 }
 
 // Return a new node that is properly initialized. Specifically, the priority
@@ -133,10 +134,16 @@ func runPlayout(node *Node, engine MCTSEngine) int {
     if engine.IsTerminal(node.GetState()) {
         eval = engine.Evaluation(node.GetState())
     } else {
-        if node.memoize == nil {
-            node.memoize = engine.NextStates(node.GetState())
+        var nextStates []State
+        if node.depth <= 2 {
+            if node.memoize == nil {
+                node.memoize = engine.NextStates(node.GetState())
+            }
+
+            nextStates = node.memoize
+        } else {
+            nextStates = engine.NextStates(node.GetState())
         }
-        nextStates := node.memoize
 
         var next *Node
 
@@ -156,6 +163,7 @@ func runPlayout(node *Node, engine MCTSEngine) int {
                 next = NewNode()
                 next.Value(nextState)
                 next.parent = node
+                next.depth = node.depth + 1
                 heap.Push(&node.children, next)
             }
         } else {

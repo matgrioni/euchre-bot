@@ -60,7 +60,7 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     _, expected := ai.MCTS(s, e, 75000)
 
     fmt.Printf("%f\n", expected)
-    return expected > 0.6 && nPlayer % 2 == 0 || expected < -0.6 && nPlayer % 2 == 1
+    return (expected > 0.6 && nPlayer % 2 == 0) || (expected < -0.6 && nPlayer % 2 == 1)
 }
 
 // TODO: Change contract to just give back number.

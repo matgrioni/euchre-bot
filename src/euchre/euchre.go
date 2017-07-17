@@ -213,6 +213,10 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
         all := deck.NewCardsSet()
         pCards = make([]deck.Card, 0, len(all))
 
+        for i := 0; i < len(cState.Hand); i++ {
+            all[cState.Hand[i]] = false
+        }
+
         if cState.Setup.Dealer != cState.Player || !cState.Setup.PickedUp {
             all[cState.Setup.Top] = false
         }
@@ -264,8 +268,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
         if cState.Player == 0 {
             nHand = make([]deck.Card, 0, len(cState.Hand))
             for j := 0; j < len(cState.Hand); j++ {
-                jCard := cState.Hand[j]
-                if nCard != jCard {
+                if i != j {
                     nHand = append(nHand, cState.Hand[j])
                 }
             }

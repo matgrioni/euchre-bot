@@ -55,7 +55,7 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     }
 
     nPlayer := (who + 1) % 4
-    s := euchre.NewState(setup, nPlayer, actualHand[:], played, prior, deck.Card{}, 0)
+    s := euchre.NewState(setup, nPlayer, actualHand[:], played, prior, deck.Card{})
     e := euchre.Engine{ }
     _, expected := ai.MCTS(s, e, 75000)
 
@@ -146,7 +146,7 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit
                 deck.Card{},
             }
 
-            s := euchre.NewState(setup, 0, hand[:], played, prior, deck.Card{}, 0)
+            s := euchre.NewState(setup, 0, hand[:], played, prior, deck.Card{})
             e := euchre.Engine{ }
             _, expected := ai.MCTS(s, e, 5000)
 
@@ -166,7 +166,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
     var card deck.Card
 
-    s := euchre.NewState(setup, 0, hand, played, prior, deck.Card{}, 0)
+    s := euchre.NewState(setup, 0, hand, played, prior, deck.Card{})
     e := euchre.Engine{ }
     chosenState, _ := ai.MCTS(s, e, 75000)
 

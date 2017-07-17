@@ -5,34 +5,6 @@ import (
     "deck"
 )
 
-var NON_TRUMP_WEIGHTS = createNonTrumpWeights()
-func createNonTrumpWeights() map[deck.Value]float64 {
-    weights := make(map[deck.Value]float64)
-
-    weights[deck.Nine] = 0.9
-    weights[deck.Ten] = 0.92
-    weights[deck.J] = 0.94
-    weights[deck.Q] = 0.98
-    weights[deck.K] = 1.0
-    weights[deck.A] = 1.02
-
-    return weights
-}
-
-var TRUMP_WEIGHTS = createTrumpWeights()
-func createTrumpWeights() map[deck.Value]float64 {
-    weights := make(map[deck.Value]float64)
-
-    weights[deck.Nine] = 1.02
-    weights[deck.Ten] = 1.04
-    weights[deck.J] = 1.1
-    weights[deck.Q] = 1.05
-    weights[deck.K] = 1.07
-    weights[deck.A] = 1.08
-
-    return weights
-}
-
 // Contains all the relevant information the setup portion of a euchre game.
 // This includes who was dealer, who called it up, what the top card was, if it
 // was picked up, what the trump suit is and if anything was discarded. Not all
@@ -65,19 +37,14 @@ type State struct {
     Played []deck.Card
     Prior []Trick
     Move deck.Card
-    weight float64
 }
 
 func (s State) Hash() interface{} {
     return s.Move
 }
 
-func (s State) Weight() float64 {
-    return s.weight
-}
-
 func NewState(setup Setup, player int, hand, played []deck.Card,
-              prior []Trick, move deck.Card, weight float64) State {
+              prior []Trick, move deck.Card) State {
     return State {
         setup,
         player,
@@ -85,7 +52,6 @@ func NewState(setup Setup, player int, hand, played []deck.Card,
         played,
         prior,
         move,
-        weight,
     }
 }
 
@@ -310,15 +276,8 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             nPrior = append(nPrior, nextPrior)
         }
 
-        var weight float64
-        weight = NON_TRUMP_WEIGHTS[nCard.Value]
-        if cState.Setup.Caller == cState.Player &&
-           nCard.IsTrump(cState.Setup.Trump) {
-            weight = TRUMP_WEIGHTS[nCard.Value]
-        }
-
         nextState := NewState(cState.Setup, nPlayer, nHand, nPlayed,
-                              nPrior, nCard, weight)
+                              nPrior, nCard)
 
         nextStates = append(nextStates, nextState)
     }

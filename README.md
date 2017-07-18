@@ -6,6 +6,10 @@ The AI algorithms in use now or that have already been implemented but are not c
 
 Another approach that should be attempted is minimax across randomly sampled hands. In other words, iterate over all the possible hands of opponents and run minimax assuming these hands. Weight the chosen card to be played based on the likelihood of the hands and find the average expected win value for each card. This was actually the first thing attempted but I kinda sucked and couldn't get it to work because of non-iterative development. Another approach could combine this minimax based approach and MCTS based on the hand, since minimax for 5 cards has a much larger search space than for 3 cards.
 
+## Structure
+
+The game agnostic AI libraries live in `src/ai`. These libraries are used by the different player logic found in `src/player`. Each file in this module represents a different playing strategy embodied by the player interface which each file implements through a structure like `SmartPlayer` or `RandomPlayer`. The `src/deck` module has definitions and helper functions for manipulating a card deck, and the `src/euchre` module has helper methods on top of the `deck` module that deal with euchre play.
+
 ## TODO
 
 - Improve MCTS

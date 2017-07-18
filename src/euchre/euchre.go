@@ -175,9 +175,9 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             pCards[i] = cState.Hand[idx]
         }
     } else {
-        noSuits := make([]deck.Suit, 0, 4)
         all := deck.NewCardsSet()
         pCards = make([]deck.Card, 0, len(all))
+        noSuits := noSuits(cState.Prior, cState.Player, cState.Setup.Trump)
 
         for i := 0; i < len(cState.Hand); i++ {
             all[cState.Hand[i]] = false
@@ -192,16 +192,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
         }
 
         for i := 0; i < len(cState.Prior); i++ {
-            // For each trick, find out if a user did not follow suit and
-            // therefore does not have this suit.
             trick := cState.Prior[i]
-            first := trick.Cards[0]
-
-            playedCard := trick.Cards[(4 - (cState.Player - trick.Led)) % 4]
-            if first.AdjSuit(cState.Setup.Trump) != playedCard.AdjSuit(cState.Setup.Trump) {
-                noSuits = append(noSuits, first.AdjSuit(cState.Setup.Trump))
-            }
-
             for j := 0; j < len(trick.Cards); j++ {
                 all[trick.Cards[j]] = false
             }
@@ -312,4 +303,31 @@ func (engine Engine) Evaluation(state ai.State) int {
     } else {
         return -1
     }
+}
+
+
+// A private helper method that returns what suits a given player cannot have.
+// prior  - The list of prior tricks.
+// player - The number of the player. This can be any player, although 0 doesn't
+//          make much sense, since we already know what suits we have!
+// trump  - The current trump suit.
+// Returns a list of the suits that a player cannot have.
+func noSuits(prior []Trick, player int, trump deck.Suit) []deck.Suit {
+    noSuits := make([]deck.Suit, 0, 4)
+
+    for i := 0; i < len(prior); i++ {
+        // For each trick, find out if a user did not follow suit and therefore
+        // does not have this suit.
+        trick := prior[i]
+        first := trick.Cards[0]
+
+        // Add 4 to player, so that it is guaranteed to be after trick.Led, but
+        // it does not change the final result mod 4.
+        playedCard := trick.Cards[(player + 4 - trick.Led) % 4]
+        if first.AdjSuit(trump) != playedCard.AdjSuit(trump) {
+            noSuits = append(noSuits, first.AdjSuit(trump))
+        }
+    }
+
+    return noSuits
 }

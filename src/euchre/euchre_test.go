@@ -69,8 +69,8 @@ func TestBeatBowers(t *testing.T) {
     }
 }
 
-// Test euchre#Winner. A helper to determine which player is the winner given
-// the player who led, the list of cards, and the trump suit.
+// euchre#Winner. A helper to determine which player is the winner given the
+// player who led, the list of cards, and the trump suit.
 // -----------------------------------------------------------------------------
 func TestWinnerOneTrump1(t *testing.T) {
     played := []deck.Card {
@@ -238,5 +238,221 @@ func TestPossibleCanFollow(t *testing.T) {
 
     if len(res) != 1 || res[0] != 4 {
         t.Errorf("Expected only #4 not %d option(s).", len(res))
+    }
+}
+
+
+// euchre#noSuits
+// Checks whether we correctly learn what suits a player has based on their
+// inability to follow.
+// -----------------------------------------------------------------------------
+func TestNoSuitsEmpty(t *testing.T) {
+    prior := make([]Trick, 0)
+    player := 1
+    trump := deck.H
+
+    res := noSuits(prior, player, trump)
+
+    if len(res) > 0 {
+        t.Errorf("Expected all suits to be possible, but %d aren't.", len(res))
+    }
+}
+
+
+func TestNoSuitsOne(t *testing.T) {
+    prior := make([]Trick, 2)
+    player := 1
+    trump := deck.C
+
+    cards1 := [4]deck.Card {
+        deck.Card{ deck.H, deck.A },
+        deck.Card{ deck.C, deck.K },
+        deck.Card{ deck.H, deck.K },
+        deck.Card{ deck.H, deck.Q },
+    }
+    cards2 := [4]deck.Card {
+        deck.Card{ deck.S, deck.K },
+        deck.Card{ deck.S, deck.Ten },
+        deck.Card{ deck.C, deck.Ten },
+        deck.Card{ deck.C, deck.A },
+    }
+
+    trick1 := Trick {
+        cards1,
+        0,
+        trump,
+    }
+    trick2 := Trick {
+        cards2,
+        1,
+        trump,
+    }
+
+    prior[0] = trick1
+    prior[1] = trick2
+
+    res := noSuits(prior, player, trump)
+    if len(res) != 1 || (len(res) >= 1 && res[0] != deck.H) {
+        t.Errorf("Expected only H to be impossible, but these are:", len(res))
+
+        for _, suit := range res {
+            t.Errorf(" %s ", suit)
+        }
+    }
+}
+
+
+func TestNoSuitsThree(t *testing.T) {
+    prior := make([]Trick, 2)
+    player := 3
+    trump := deck.C
+
+    cards1 := [4]deck.Card {
+        deck.Card{ deck.H, deck.A },
+        deck.Card{ deck.C, deck.K },
+        deck.Card{ deck.H, deck.K },
+        deck.Card{ deck.H, deck.Q },
+    }
+    cards2 := [4]deck.Card {
+        deck.Card{ deck.S, deck.K },
+        deck.Card{ deck.S, deck.Ten },
+        deck.Card{ deck.C, deck.Ten },
+        deck.Card{ deck.C, deck.A },
+    }
+
+    trick1 := Trick {
+        cards1,
+        0,
+        trump,
+    }
+    trick2 := Trick {
+        cards2,
+        1,
+        trump,
+    }
+
+    prior[0] = trick1
+    prior[1] = trick2
+
+    res := noSuits(prior, player, trump)
+    if len(res) != 1 || (len(res) >= 1 && res[0] != deck.S) {
+        t.Errorf("Expected only S to be impossible, but these are:")
+
+        for _, suit := range res {
+            t.Errorf(" %s ", suit)
+        }
+    }
+}
+
+
+func TestNoSuitsPlayerWraps(t *testing.T) {
+    prior := make([]Trick, 2)
+    player := 0
+    trump := deck.C
+
+    cards1 := [4]deck.Card {
+        deck.Card{ deck.H, deck.A },
+        deck.Card{ deck.C, deck.K },
+        deck.Card{ deck.H, deck.K },
+        deck.Card{ deck.H, deck.Q },
+    }
+    cards2 := [4]deck.Card {
+        deck.Card{ deck.S, deck.K },
+        deck.Card{ deck.S, deck.Ten },
+        deck.Card{ deck.C, deck.Ten },
+        deck.Card{ deck.C, deck.A },
+    }
+
+    trick1 := Trick {
+        cards1,
+        3,
+        trump,
+    }
+    trick2 := Trick {
+        cards2,
+        0,
+        trump,
+    }
+
+    prior[0] = trick1
+    prior[1] = trick2
+
+    res := noSuits(prior, player, trump)
+    if len(res) != 1 || (len(res) >= 1 && res[0] != deck.H) {
+        t.Errorf("Expected only H to be impossible, but these are:")
+
+        for _, suit := range res {
+            t.Errorf(" %s ", suit)
+        }
+    }
+}
+
+
+func TestNoSuitsMultiple(t *testing.T) {
+    prior  := make([]Trick, 4)
+    player := 1
+    trump  := deck.S
+
+    cards1 := [4]deck.Card {
+        deck.Card{ deck.D, deck.A },
+        deck.Card{ deck.S, deck.J },
+        deck.Card{ deck.D, deck.Ten },
+        deck.Card{ deck.D, deck.J },
+    }
+    cards2 := [4]deck.Card {
+        deck.Card{ deck.C, deck.A },
+        deck.Card{ deck.C, deck.Q },
+        deck.Card{ deck.C, deck.K },
+        deck.Card{ deck.S, deck.Ten },
+    }
+    cards3 := [4]deck.Card {
+        deck.Card{ deck.H, deck.K },
+        deck.Card{ deck.H, deck.Ten },
+        deck.Card{ deck.H, deck.Nine },
+        deck.Card{ deck.H, deck.A },
+    }
+    cards4 := [4]deck.Card {
+        deck.Card{ deck.H, deck.Q },
+        deck.Card{ deck.S, deck.A },
+        deck.Card{ deck.C, deck.Ten },
+        deck.Card{ deck.S, deck.K },
+    }
+
+    trick1 := Trick {
+        cards1,
+        0,
+        trump,
+    }
+    trick2 := Trick {
+        cards2,
+        1,
+        trump,
+    }
+    trick3 := Trick {
+        cards3,
+        0,
+        trump,
+    }
+    trick4 := Trick {
+        cards4,
+        3,
+        trump,
+    }
+
+    prior[0] = trick1
+    prior[1] = trick2
+    prior[2] = trick3
+    prior[3] = trick4
+
+    res := noSuits(prior, player, trump)
+    if len(res) != 2 {
+        if (res[0] == deck.D && res[1] == deck.H) ||
+           (res[0] == deck.H && res[1] == deck.D) {
+            t.Errorf("Expected H and D to not be possible but got:")
+
+            for _, suit := range res {
+                t.Errorf(" %s ", suit)
+            }
+        }
     }
 }

@@ -1,10 +1,6 @@
 package deck
 
-import (
-    "errors"
-    "math/rand"
-    "time"
-)
+import "errors"
 
 // Define a Suit type off of the string type. This Suit type should only take on
 // 4 values. These are the constants defined below for the 4 suits of a standard
@@ -171,36 +167,6 @@ func (c Card) AdjSuit(t Suit) Suit {
     }
 
     return adjSuit
-}
-
-// Generate a random card.
-func GenCard() Card {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-    var card Card
-    card.Suit = SUITS[r.Intn(4)]
-    card.Value = VALUES[r.Intn(6)]
-
-    return card
-}
-
-// TODO: Should this be in euchre package?
-// Randomly generates a hand of cards, which is 5 cards in euchre.
-func GenHand() [5]Card {
-    var hand [5]Card
-    present := make(map[Card]bool)
-    for i := range hand {
-        hand[i] = GenCard()
-
-        // Ensure that any generated card is only included once in the result.
-        for _, in := present[hand[i]]; in ; _, in = present[hand[i]] {
-            hand[i] = GenCard()
-        }
-
-        present[hand[i]] = true
-    }
-
-    return hand
 }
 
 func NewCardsSet() map[Card]bool {

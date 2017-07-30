@@ -16,7 +16,7 @@ var r *rand.Rand
 func GenPickupInput() pickup.Input {
     r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-    hand := deck.GenHand()
+    hand := deck.GenHand(5)
 
     var top deck.Card
     inHand := true

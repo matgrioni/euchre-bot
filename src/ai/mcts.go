@@ -107,7 +107,7 @@ func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
     n.Value(s)
 
     for i := 0; i < runs; i++ {
-        runPlayout(n, engine)
+        RunPlayout(n, engine)
     }
 
     if n.children.Len() > 0 {
@@ -136,7 +136,7 @@ func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
  *  An integer that represents the final terminal state of the playout per the
  *  engine's computation.
  */
-func runPlayoutDebug(node *Node, engine MCTSEngine) int {
+func RunPlayoutDebug(node *Node, engine MCTSEngine) int {
     return _runPlayout(node, engine, true)
 }
 
@@ -152,7 +152,7 @@ func runPlayoutDebug(node *Node, engine MCTSEngine) int {
  *  An integer that represents the final terminal state of the playout per the
  *  engine's computation.
  */
-func runPlayout(node *Node, engine MCTSEngine) int {
+func RunPlayout(node *Node, engine MCTSEngine) int {
     return _runPlayout(node, engine, false)
 }
 
@@ -219,7 +219,7 @@ func _runPlayout(node *Node, engine MCTSEngine, log bool) int {
         } else {
             next = node.children.Poll().(*Node)
         }
-        eval = runPlayout(next, engine)
+        eval = _runPlayout(next, engine, log)
 
         adjEval := eval
         if engine.Favorable(node.GetValue().(State), eval) {

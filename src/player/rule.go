@@ -172,7 +172,7 @@ func (p *RulePlayer) Discard(hand [5]deck.Card,
     return hand, chosen
 }
 
-func (p *RulePlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
+func (p *RulePlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit, bool) {
     chosen := false
     maxT := top.Suit
     maxConf := float32(0)

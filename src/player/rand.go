@@ -39,7 +39,7 @@ func (p *RandPlayer) Discard(hand [5]deck.Card,
     return hand, chosen
 }
 
-func (p *RandPlayer) Call(hand [5]deck.Card, top deck.Card) (deck.Suit, bool) {
+func (p *RandPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit, bool) {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
     s := deck.SUITS[r.Intn(len(deck.SUITS))]

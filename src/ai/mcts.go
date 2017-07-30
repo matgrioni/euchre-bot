@@ -124,7 +124,57 @@ func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
 }
 
 
+/*
+ * This method is for internal testing of an MCTS playout. It prints out debug
+ * info so that the MCTS process can be verified.
+ *
+ * Args:
+ *  node   - A node in the MCTS tree to start from.
+ *  engine - The engine for traversing through the MCTS tree.
+ *
+ * Returns:
+ *  An integer that represents the final terminal state of the playout per the
+ *  engine's computation.
+ */
+func runPlayoutDebug(node *Node, engine MCTSEngine) int {
+    return _runPlayout(node, engine, true)
+}
+
+
+/*
+ * The normal MCTS playout method. This method does not provide any logging.
+ *
+ * Args:
+ *  node   - A node in the MCTS tree to start from.
+ *  engine - The engine for traversing the MCTS tree.
+ *
+ * Returns:
+ *  An integer that represents the final terminal state of the playout per the
+ *  engine's computation.
+ */
 func runPlayout(node *Node, engine MCTSEngine) int {
+    return _runPlayout(node, engine, false)
+}
+
+
+/*
+ * The internal logic for the MCTS tree logic. Provides a logging flag for
+ * debugging purposes.
+ *
+ * Args:
+ *  node   - A node in the MCTS tree to start from.
+ *  engine - The engine for traversing the MCTS tree.
+ *  log    - A flag to indicate whether the function should log.
+ *
+ * Returns:
+ *  An integer that represents the final terminal state of the playout per the
+ *  engine's computation.
+ */
+func _runPlayout(node *Node, engine MCTSEngine, log bool) int {
+    if log {
+        fmt.Println(node.GetState())
+    }
+
     node.simulations++
 
     var eval int
@@ -150,6 +200,7 @@ func runPlayout(node *Node, engine MCTSEngine) int {
         // random. Otherwise, choose the one with the highest UCB.
         if len(nextStates) > node.children.Len() {
             takenMoves := make(map[interface{}]int)
+
             for i := 0; i < node.children.Len(); i++ {
                 takenMoves[node.children[i].(*Node).GetState().Hash()] = i
             }

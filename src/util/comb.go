@@ -109,23 +109,27 @@ func Binomial(n, k int) chan []int {
 
     go func() {
         comb := make([]int, k)
-        last := k - 1
+        if k > 0 {
+            last := k - 1
 
-        var rc func(int, int)
-        rc = func(i, next int) {
-            for j := next; j < n; j++ {
-                comb[i] = j
+            var rc func(int, int)
+            rc = func(i, next int) {
+                for j := next; j < n; j++ {
+                    comb[i] = j
 
-                if i == last {
-                    c := make([]int, len(comb))
-                    copy(c, comb)
-                    ch <- c
-                } else {
-                    rc(i+1, j+1)
+                    if i == last {
+                        c := make([]int, len(comb))
+                        copy(c, comb)
+                        ch <- c
+                    } else {
+                        rc(i+1, j+1)
+                    }
                 }
             }
+            rc(0, 0)
+        } else {
+            ch <- []int { }
         }
-        rc(0, 0)
 
         close(ch)
     }()

@@ -1,138 +1,51 @@
 package util
 
+import (
+    "math/rand"
+    "time"
+)
+
 /*
  * A utility package for combinatorial functions. Includes items such as
  * combinations and permutations.
  */
 
 
-/*
- * Compute the multinomial choices for a given n, and ks. This function returns
- * a chan which is used as a generator to iterate over all multinomial choices
- * of n numbers given ks. Note that the sum(ks) = n.
- *
- * Args:
- *  n,  type(int): The number of total choices there are.
- *  ks, type(int): A varidic argument for the numbers on the bottom of the
- *                 coefficient.
- *
- * Returns:
- *  type(chan []int): The integer slices are the multinomial choices. So every
- *                    len(ks) items from the channel make up one partition.
- */
-func Multinomial(n int, ks ...int) chan []int {
-    idxs := make([]int, n)
-    for i := 0; i < len(idxs); i++ {
-        idxs[i] = i
-    }
-
-    return multinomialHelper(idxs, ks...)
-}
+var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 
 /*
- * The main logic for multinomials. This helper needed to be made since it was
- * much easier to make a function that took the numbers list to be used as the
- * sample space.
- *
- * Args:
- *  idxs,  type([]int): The numbers on which to do a multinomial choice.
- *  ks,   type(...int): The k's for selection on the n idxs.
- *
- * Returns:
- *  type(chan []int): A channel that provides the partitions of the idxs. This
- *                    one whole partition occurs every len(ks) chan items.
- */
-func multinomialHelper(idxs []int, ks ...int) chan []int {
-    ch := make(chan []int)
-    n := len(idxs)
-
-    go func() {
-        if n > 0 {
-            bch := Binomial(n, ks[0])
-
-            for b := range bch {
-                trans := make([]int, len(b))
-                for i := 0; i < len(b); i++ {
-                    trans[i] = idxs[b[i]]
-                }
-
-                left := make([]int, n)
-                copy(left, idxs)
-                l := len(b) - 1
-                for i := l; i >= 0; i-- {
-                    left = append(left[:b[i]], left[b[i] + 1:]...)
-                }
-
-                if len(ks) == 1 {
-                    ch <- trans
-                } else {
-                    count := 0
-
-                    for rc := range multinomialHelper(left, ks[1:]...) {
-                        if (count % (len(ks) - 1) == 0) {
-                            ch <- trans
-                        }
-
-                        c := make([]int, len(rc))
-                        copy(c, rc)
-                        ch <- c
-                        count++
-                    }
-                }
-            }
-        }
-
-        close(ch);
-    }()
-
-    return ch
-}
-
-
-/*
- * Creates a channel that lists all of the binomial combinations given some n
- * and some k. They are provided two at at time, so get them two at time.
+ * Generates a random multinomial given the number of items to choose from and
+ * the way to choose the items. Note that sum(ks) should equal n. Also note that,
+ * this algorithm has n! responses. In other words, duplicates with different
+ * orderings are possible. But since, they are used one at a time the
+ * probability of getting any specific one stays the same.
  *
  * Args:
  *  n, type(int): The number of items to choose from.
- *  k, type(int): The number of items to choose.
+ *  ks, type(...int): The way to choose to the n items.
  *
  * Returns:
- *  type(chan[]int): A channel that provides a slice that represent a choice
- *                   of k and n-k integers from n integers. These combinations
- *                   are provided one after the other. So get them two at a
- *                   time.
+ *  A slice of integer slices. There are len(ks) integer slices, each of which
+ *  corresponds to a random choice from the n items.
  */
-func Binomial(n, k int) chan []int {
-    ch := make(chan []int)
+func RandMultinomial(n int, ks ...int) [][]int {
+    perm := r.Perm(n)
 
-    go func() {
-        comb := make([]int, k)
-        if k > 0 {
-            last := k - 1
+    res := make([][]int, len(ks))
 
-            var rc func(int, int)
-            rc = func(i, next int) {
-                for j := next; j < n; j++ {
-                    comb[i] = j
+    last := 0
+    for i := 0; i < len(ks); i++ {
+        next := make([]int, 0)
+        k := ks[i]
 
-                    if i == last {
-                        c := make([]int, len(comb))
-                        copy(c, comb)
-                        ch <- c
-                    } else {
-                        rc(i+1, j+1)
-                    }
-                }
-            }
-            rc(0, 0)
-        } else {
-            ch <- []int { }
+        for j := 0; j < k; j++ {
+            next = append(next, perm[last + j])
         }
 
-        close(ch)
-    }()
+        last += k
+        res[i] = next
+    }
 
-    return ch
+    return res
 }

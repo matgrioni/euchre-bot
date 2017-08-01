@@ -1,89 +1,76 @@
 package util
 
 import (
-    "reflect"
+    "fmt"
     "testing"
 )
 
+
 /*
- * Test that the Binomial output for small numbers is in lexicographic order and
- * includes all the expected choices.
+ * Test the Random multinomial for a normal situation for the sizes of the
+ * returned slices.
  */
-func TestBinomialChoices(t *testing.T) {
-    res := [][]int {
-        []int { 0, 1 },
-        []int { 0, 2 },
-        []int { 0, 3 },
-        []int { 0, 4 },
-        []int { 1, 2 },
-        []int { 1, 3 },
-        []int { 1, 4 },
-        []int { 2, 3 },
-        []int { 2, 4 },
-        []int { 3, 4 },
-    }
+func TestRandMultinomialSizes(t *testing.T) {
+    res := RandMultinomial(6, 3, 2, 1)
+    sizes := []int { 3, 2, 1 }
 
-    count := 0
-    for choice := range Binomial(5, 2) {
-        if !reflect.DeepEqual(choice, res[count]) {
-            t.Errorf("Expected %s but got %s\n", res[count], choice)
+    fmt.Printf("Example for (6, 3, 2, 1): %v\n", res)
+
+    for i, slice := range res {
+        if len(slice) != sizes[i] {
+            t.Errorf("Expected size of slice %d to be %d but got %d.\n",
+                     i + 1, sizes[i], len(slice))
         }
-
-        count++
     }
 }
 
 
 /*
- * Test that there is only one empty combination when choosing 0 from n.
+ * Tests to make sure all the numbers in the multinomial are not too big
+ * or small and are not duplicates.
  */
-func TestBinomialChoicesNone(t *testing.T) {
-    count := 0
-    for c := range Binomial(7, 0) {
-        if len(c) > 0 {
-            t.Errorf("Expected an empty combination but got %s\n", c)
-        }
+func TestRandMultinomialValues(t *testing.T) {
+    res := RandMultinomial(8, 3, 2, 3)
+    fmt.Printf("Example for (8, 3, 2, 3): %v\n", res)
 
-        count++
+    seen := make(map[int]bool)
+
+    for _, slice := range res {
+        for _, item := range slice {
+            if _, ok := seen[item]; ok {
+                t.Errorf("Expected %d only once.\n", item)
+            }
+            seen[item] = true
+        }
     }
 
-    if count > 1 {
-        t.Errorf("Expected one choice but got %d\n", count)
+    for i := 0; i < 8; i++ {
+        if _, ok := seen[i]; !ok {
+            t.Errorf("Expected %d at least once.\n", i)
+        }
     }
 }
 
-
 /*
- * Test that there is only one way to choose all n elements from n.
+ * Test to make sure you can choose nothing.
  */
-func TestBinomialChoicesAll(t *testing.T) {
-    count := 0
-    for c := range Binomial(9, 9) {
-        if len(c) < 9 {
-            t.Errorf("Expected all inclusive choice but got %s\n", c)
-        }
+func TestRandMultinomialNothing(t *testing.T) {
+    res := RandMultinomial(0, 0)
+    fmt.Printf("Example for (0, 0): %v\n", res)
 
-        count++
-    }
-
-    if count > 1 {
-        t.Errorf("Expected only one choice but got %d\n", count)
+    if !(len(res) == 1 && len(res[0]) == 0) {
+        t.Errorf("Expected an empty response.\n")
     }
 }
 
-
 /*
- * Test that for large binomial n and k, the amount of binomials generated is
- * correct.
+ * Test to make sure you can choose everything.
  */
-func TestBinomialSize(t *testing.T) {
-    count := 0
-    for _ = range Binomial(15, 5) {
-        count++
-    }
+func TestRandMultinomialEverything(t *testing.T) {
+    res := RandMultinomial(10, 10)
+    fmt.Printf("Example for (10, 10): %v\n", res)
 
-    res := 3003
-    if count != res {
-        t.Errorf("Expected %d combinations but got %d", res, count)
+    if !(len(res) == 1 && len(res[0]) == 10) {
+        t.Errorf("Expected a full response.\n")
     }
 }

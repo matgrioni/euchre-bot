@@ -211,10 +211,22 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             }
         }
 
+        oCards := make([]deck.Card, 0)
         for card, present := range all {
             if present {
                 pCards = append(pCards, card)
             }
+
+            if len(cState.Played) > 0 {
+                if card.AdjSuit(cState.Setup.Trump) ==
+                   cState.Played[0].AdjSuit(cState.Setup.Trump) {
+                    oCards = append(oCards, card)
+                }
+            }
+        }
+
+        if len(oCards) > 0 {
+            pCards = oCards
         }
     }
 

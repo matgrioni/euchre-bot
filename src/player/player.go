@@ -14,7 +14,7 @@ import (
 type Player interface {
     // Returns whether or not a player should tell the top card to be ordered up
     // based on their current cards and who is picking it up.
-    // hand - The 5 cards currently in the player's hand. TODO: Array or slice?
+    // hand - The 5 cards currently in the player's hand. TODO: Change to slice.
     // top  - The card on top of the kitty and currenty in question to be
     //        picked up.
     // who  - Who is picking up the card (the dealer). The number designation

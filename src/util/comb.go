@@ -16,10 +16,10 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 /*
  * Generates a random multinomial given the number of items to choose from and
- * the way to choose the items. Note that sum(ks) should equal n. Also note that,
- * this algorithm has n! responses. In other words, duplicates with different
- * orderings are possible. But since, they are used one at a time the
- * probability of getting any specific one stays the same.
+ * the way to choose the items. Also note that, this algorithm has n! responses.
+ * In other words, duplicates with different orderings are possible. But since,
+ * they are used one at a time the probability of getting any specific one stays
+ * the same. Note that sum(ks) need not equal n.
  *
  * Args:
  *  n, type(int): The number of items to choose from.

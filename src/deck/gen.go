@@ -36,11 +36,11 @@ func GenCard() Card {
  *  type([]deck.Card): A slice of n random cards.
  */
 func GenHand(n int) []Card {
-    hand := make([]deck.Card, n)
+    hand := make([]Card, n)
     present := make(map[Card]bool)
 
     for i := range hand {
-        gen = GenCard()
+        gen := GenCard()
 
         // Ensure that any generated card is only included once.
         for _, in := present[gen]; in ; _, in = present[gen] {

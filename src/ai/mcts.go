@@ -106,25 +106,61 @@ type MCTSEngine interface {
     Evaluation(state State) int
 }
 
-func MCTS(s State, engine MCTSEngine, runs int) (State, float64) {
-    n := NewNode()
-    n.Value(s)
 
-    for i := 0; i < runs; i++ {
-        RunPlayout(n, engine)
-    }
+/*
+ * Performs a Monte Carlo Tree search on the given the state and the game engine.
+ * This MCTS is on a non-deterministic game so specify the amount of random
+ * determinizations to test it on, and the number of runs to do per
+ * determinization.
+ *
+ * Args:
+ *  s: The current state from which to start simulation.
+ *  engine: The game engine with which to step through game logic.
+ *  runs: The number of times run a given determinization.
+ *  deters: The number of determinizations to run through.
+ *
+ * Returns:
+ *  The state with the highest value and the expected value associated with it.
+ */
+func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
+    // TODO: Is there a better way than this dual map way. This probably isn't
+    // a bottleneck however.
+    weights := make(map[interface{}]float64)
+    conv := make(map[interface{}]State)
 
-    if n.children.Len() > 0 {
-        topNode := n.children.Poll()
-        for i := 0; i < n.children.Len(); i++ {
-            child := n.children[i]
-            fmt.Printf("%d\t%d\t%f\n", child.(*Node).wins, child.(*Node).simulations, child.GetPriority())
+    for i := 0; i < deters; i++ {
+        copyState := s.Copy()
+        copyState.Determinize()
+        n := NewNode()
+        n.Value(s)
+
+        for i := 0; i < runs; i++ {
+            RunPlayout(n, engine)
         }
 
-        return topNode.GetValue().(State), topNode.GetPriority()
-    } else {
-        return n.GetValue().(State), n.GetPriority()
+        if n.children.Len() > 0 {
+            topNode := n.children.Poll()
+            topState := topNode.GetState()
+
+            conv[topState.Hash()] = topState
+            weights[topState.Hash()] += topNode.GetPriority()
+        } else {
+            nState := n.GetState()
+            conv[topState.Hash()] = topState
+            weights[nState.Hash()] += n.GetPriority()
+        }
     }
+
+    maxWeight := 0
+    var maxState State
+    for hash, weight := range weights {
+        if weight > maxWeight {
+            maxState = conv[hash]
+            maxWeight = weight
+        }
+    }
+
+    return maxState, maxWeight / (runs * deters)
 }
 
 

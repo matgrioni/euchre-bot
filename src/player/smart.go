@@ -55,7 +55,8 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     }
 
     nPlayer := (who + 1) % 4
-    s := euchre.NewState(setup, nPlayer, actualHand[:], played, prior, deck.Card{})
+    s := euchre.NewUndeterminizedState(setup, nPlayer, actualHand[:], played,
+                                       prior, deck.Card{})
     e := euchre.Engine{ }
     _, expected := ai.MCTS(s, e, 75000)
 
@@ -127,7 +128,8 @@ func (p *SmartPlayer) Discard(hand [5]deck.Card,
     return hand, minCard
 }
 
-func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit, bool) {
+func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card,
+                           who int) (deck.Suit, bool) {
     played := make([]deck.Card, 0)
     prior := make([]euchre.Trick, 0)
     max := math.Inf(-1)
@@ -146,9 +148,10 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit
                 deck.Card{},
             }
 
-            s := euchre.NewState(setup, 0, hand[:], played, prior, deck.Card{})
+            s := euchre.NewUndeterminizedState(setup, 0, hand[:], played, prior,
+                                               deck.Card{})
             e := euchre.Engine{ }
-            _, expected := ai.MCTS(s, e, 5000)
+            _, expected := ai.MCTS(s, e, 50, 100)
 
             if expected > max {
                 max = expected
@@ -160,15 +163,17 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit
     return maxSuit, max > 0.6
 }
 
+
 // TODO: Maybe don't edit the hand. Return a completely new version?
 // Not sure yet.
 func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
     var card deck.Card
 
-    s := euchre.NewState(setup, 0, hand, played, prior, deck.Card{})
+    s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
+                                       deck.Card{})
     e := euchre.Engine{ }
-    chosenState, _ := ai.MCTS(s, e, 75000)
+    chosenState, _ := ai.MCTS(s, e, 75, 300)
 
     card = chosenState.(euchre.State).Move
 

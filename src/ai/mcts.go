@@ -13,6 +13,9 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 type State interface {
     Hash() interface{}
     Determinize()
+    // TODO: Is there a more efficient way than copying to get new
+    //       determinizations?
+    Copy() State
 }
 
 // This is a Node that is used for the MCTS tree. It has the attributes necessary

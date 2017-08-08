@@ -116,6 +116,44 @@ func (s State) Determinize() {
 
 
 /*
+ * Creates a copy of this state. This copy is deep so the value returned is a
+ * whole new state in memory with the same value as the caller.
+ *
+ * Returns:
+ *  A new state that is identical to the current one in value, but not in
+ *  memory. In other words, a deep copy!
+ */
+func (s State) Copy() State {
+    var copyHands := make([][]deck.Card, len(s.Hands))
+    for i, hand := range s.Hands {
+        copyHand := make([]deck.Card, len(hand))
+        copy(copyHand, hand)
+
+        copyHands[i] = hand
+    }
+
+    var copyKitty := make([]deck.Card, len(s.Kitty))
+    copy(copyKitty, s.Kitty)
+
+    var copyPlayed := make([]deck.Card, len(s.Played))
+    copy(copyPlayed, s.Played)
+
+    var copyPrior := make([]Trick, len(s.Prior))
+    copy(copyPrior, s.Prior)
+
+    return State {
+        s.Setup,
+        s.Player,
+        copyHands,
+        copyKitty,
+        copyPlayed,
+        copyPrior,
+        s.Move,
+    }
+}
+
+
+/*
  * Create a new state that only has the known information for any given instance
  * and is therefore undeterminized.
  *

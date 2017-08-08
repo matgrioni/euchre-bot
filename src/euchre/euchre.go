@@ -34,6 +34,7 @@ type Trick struct {
     Trump deck.Suit
 }
 
+
 type State struct {
     Setup Setup
     Player int
@@ -45,6 +46,12 @@ type State struct {
 }
 
 
+/*
+ * Provides a hashable value that can identify this state.
+ *
+ * Returns:
+ *  A hashable value to represent this state.
+ */
 func (s State) Hash() interface{} {
     return s.Move
 }

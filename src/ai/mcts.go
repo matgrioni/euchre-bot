@@ -139,19 +139,19 @@ func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
         }
 
         if n.children.Len() > 0 {
-            topNode := n.children.Poll()
+            topNode := n.children.Poll().(*Node)
             topState := topNode.GetState()
 
             conv[topState.Hash()] = topState
             weights[topState.Hash()] += topNode.GetPriority()
         } else {
             nState := n.GetState()
-            conv[topState.Hash()] = topState
+            conv[nState.Hash()] = nState
             weights[nState.Hash()] += n.GetPriority()
         }
     }
 
-    maxWeight := 0
+    maxWeight := float64(0)
     var maxState State
     for hash, weight := range weights {
         if weight > maxWeight {
@@ -160,7 +160,7 @@ func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
         }
     }
 
-    return maxState, maxWeight / (runs * deters)
+    return maxState, maxWeight / float64(runs * deters)
 }
 
 

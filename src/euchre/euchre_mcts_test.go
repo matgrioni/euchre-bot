@@ -65,7 +65,7 @@ func TestRunPlayout(t *testing.T) {
 
     var prior []Trick
 
-    s := NewState(setup, 0, hand, played, prior, deck.Card{ })
+    s := NewUndeterminizedState(setup, 0, hand, played, prior, deck.Card{ })
     n := ai.NewNode()
     n.Value(s)
     e := Engine{ }

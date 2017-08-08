@@ -242,23 +242,32 @@ func TestPossibleCanFollow(t *testing.T) {
 }
 
 
-// euchre#noSuits
-// Checks whether we correctly learn what suits a player has based on their
-// inability to follow.
-// -----------------------------------------------------------------------------
+/* Test euchre#noSuits.
+ *
+ * Checks whether we correctly learn what suits a player has based on their
+ * inability to follow.
+ */
+
+
+/*
+ * Test whether no players are identified as having no suits, since no cards
+ * were played yet.
+ */
 func TestNoSuitsEmpty(t *testing.T) {
     prior := make([]Trick, 0)
-    player := 1
     trump := deck.H
 
-    res := noSuits(prior, player, trump)
+    res := noSuits(prior, trump)
 
     if len(res) > 0 {
-        t.Errorf("Expected all suits to be possible, but %d aren't.", len(res))
+        t.Errorf("Expected no players to lack a suit, but %d do.\n", len(res))
     }
 }
 
 
+/*
+ * Test when only one player does not a given suit.
+ */
 func TestNoSuitsOne(t *testing.T) {
     prior := make([]Trick, 2)
     player := 1
@@ -273,8 +282,8 @@ func TestNoSuitsOne(t *testing.T) {
     cards2 := [4]deck.Card {
         deck.Card{ deck.S, deck.K },
         deck.Card{ deck.S, deck.Ten },
-        deck.Card{ deck.C, deck.Ten },
-        deck.Card{ deck.C, deck.A },
+        deck.Card{ deck.S, deck.Q },
+        deck.Card{ deck.S, deck.A },
     }
 
     trick1 := Trick {
@@ -291,33 +300,43 @@ func TestNoSuitsOne(t *testing.T) {
     prior[0] = trick1
     prior[1] = trick2
 
-    res := noSuits(prior, player, trump)
-    if len(res) != 1 || (len(res) >= 1 && res[0] != deck.H) {
-        t.Errorf("Expected only H to be impossible, but these are:", len(res))
+    res := noSuits(prior, trump)
+    if len(res) != 1 {
+        t.Errorf("Expected 1 player to not have suits, but %d do\n", len(res))
+    }
 
-        for _, suit := range res {
+    playerRes := res[player]
+    if len(playerRes) != 1 || (len(playerRes) >= 1 && playerRes[0] != deck.H) {
+        t.Errorf("Expected only H to be impossible, but these are: %d\n",
+                 len(playerRes))
+
+        for _, suit := range playerRes {
             t.Errorf(" %s ", suit)
         }
     }
 }
 
 
+/*
+ * Test if unpresent suits can be detected for player 3, who is last in the
+ * modulo order.
+ */
 func TestNoSuitsThree(t *testing.T) {
     prior := make([]Trick, 2)
     player := 3
     trump := deck.C
 
     cards1 := [4]deck.Card {
-        deck.Card{ deck.H, deck.A },
-        deck.Card{ deck.C, deck.K },
-        deck.Card{ deck.H, deck.K },
-        deck.Card{ deck.H, deck.Q },
+        deck.Card { deck.H, deck.A },
+        deck.Card { deck.C, deck.K },
+        deck.Card { deck.H, deck.K },
+        deck.Card { deck.H, deck.Q },
     }
     cards2 := [4]deck.Card {
-        deck.Card{ deck.S, deck.K },
-        deck.Card{ deck.S, deck.Ten },
-        deck.Card{ deck.C, deck.Ten },
-        deck.Card{ deck.C, deck.A },
+        deck.Card { deck.S, deck.K },
+        deck.Card { deck.S, deck.Ten },
+        deck.Card { deck.C, deck.Ten },
+        deck.Card { deck.C, deck.A },
     }
 
     trick1 := Trick {
@@ -334,17 +353,27 @@ func TestNoSuitsThree(t *testing.T) {
     prior[0] = trick1
     prior[1] = trick2
 
-    res := noSuits(prior, player, trump)
-    if len(res) != 1 || (len(res) >= 1 && res[0] != deck.S) {
+    res := noSuits(prior, trump)
+    if len(res) != 3 {
+        t.Errorf("Expected 3 players to not have some suit, but %d do.\n",
+                 len(res))
+    }
+
+    playerRes := res[player]
+    if len(playerRes) != 1 || (len(playerRes) == 1 && playerRes[0] != deck.S) {
         t.Errorf("Expected only S to be impossible, but these are:")
 
-        for _, suit := range res {
+        for _, suit := range playerRes {
             t.Errorf(" %s ", suit)
         }
     }
 }
 
 
+/*
+ * Test that the module arithmetic works and that tricks whose player numbers
+ * wrap accurately keep track of what player followed or did not follow suit.
+ */
 func TestNoSuitsPlayerWraps(t *testing.T) {
     prior := make([]Trick, 2)
     player := 0
@@ -377,8 +406,14 @@ func TestNoSuitsPlayerWraps(t *testing.T) {
     prior[0] = trick1
     prior[1] = trick2
 
-    res := noSuits(prior, player, trump)
-    if len(res) != 1 || (len(res) >= 1 && res[0] != deck.H) {
+    res := noSuits(prior, trump)
+    if len(res) != 3 {
+        t.Errorf("Expected 3 players to not have some suit, but %d do.\n",
+                 len(res))
+    }
+
+    playerRes := res[player]
+    if len(playerRes) != 1 || (len(playerRes) >= 1 && playerRes[0] != deck.H) {
         t.Errorf("Expected only H to be impossible, but these are:")
 
         for _, suit := range res {
@@ -388,6 +423,9 @@ func TestNoSuitsPlayerWraps(t *testing.T) {
 }
 
 
+/*
+ * Test that multiple no suits for one player can be detected.
+ */
 func TestNoSuitsMultiple(t *testing.T) {
     prior  := make([]Trick, 4)
     player := 1
@@ -444,13 +482,19 @@ func TestNoSuitsMultiple(t *testing.T) {
     prior[2] = trick3
     prior[3] = trick4
 
-    res := noSuits(prior, player, trump)
-    if len(res) != 2 {
-        if (res[0] == deck.D && res[1] == deck.H) ||
-           (res[0] == deck.H && res[1] == deck.D) {
+    res := noSuits(prior, trump)
+    if len(res) != 3 {
+        t.Errorf("Expected 3 players to not have some suit, but %d do.\n",
+                 len(res))
+    }
+
+    playerRes := res[player]
+    if len(playerRes) != 2 {
+        if (playerRes[0] == deck.D && playerRes[1] == deck.H) ||
+           (playerRes[0] == deck.H && playerRes[1] == deck.D) {
             t.Errorf("Expected H and D to not be possible but got:")
 
-            for _, suit := range res {
+            for _, suit := range playerRes {
                 t.Errorf(" %s ", suit)
             }
         }

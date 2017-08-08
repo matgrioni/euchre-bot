@@ -12,6 +12,7 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 type State interface {
     Hash() interface{}
+    Determinize()
 }
 
 // This is a Node that is used for the MCTS tree. It has the attributes necessary

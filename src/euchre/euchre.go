@@ -63,33 +63,51 @@ func (s State) Hash() interface{} {
  */
 func (s State) Determinize() {
     cardsSet := deck.NewCardsSet()
+    left := len(cardsSet)
 
     // Remove all prior cards from contention.
     for _, trick := range s.Prior {
         for _, card := range trick.Cards {
             cardsSet[card] = false
+            left--
         }
     }
 
     // Remove all played cards from contention.
     for _, card := range s.Played {
         cardsSet[card] = false
+        left--
     }
 
     // Remove the top card from contention if it was flipped over, or remove
     // the discarded card if you were the one who put it down.
     if s.Setup.Dealer == 0 && s.Setup.PickedUp {
         cardsSet[s.Setup.Discard] = false
+        left--
     } else if !s.Setup.PickedUp {
         cardsSet[s.Setup.Top] = false
+        left--
     }
 
-    idxs := r.Perm(len(cardsSet))
+    idxs := r.Perm(left)
     cards := extractAvailableCards(cardsSet)
 
+
     noSuits := noSuits(s.Prior, s.Setup.Trump)
-    // Go through each opponent player.
+    // Go through each opponent player giving them cards until they have a
+    // full hand given the current trick and player.
     for player := 1; player < 4; player++ {
+        playerHandSize := 5 - len(s.Prior)
+
+        // TODO: This expression seems like it can be simplified. LM-A0
+        start := ((s.Player + 4) - len(s.Played)) % 4
+        dist := ((s.Player + 4) - start) % 4
+        for i := start; i < start + dist; i++ {
+            if i % 4 == player {
+                playerHandSize--
+                break
+            }
+        }
 
         // Go through each card in the random permutation. Go backwards so that
         // the idxs can be deleted as cards are chosen as valid.
@@ -113,7 +131,7 @@ func (s State) Determinize() {
             if possible {
                 s.Hands[player] = append(s.Hands[player], curCard)
                 idxs = append(idxs[:i], idxs[:i+1]...)
-                if len(s.Hands[player]) == 5 {
+                if len(s.Hands[player]) == playerHandSize {
                     break
                 }
             }
@@ -131,13 +149,7 @@ func (s State) Determinize() {
  *  memory. In other words, a deep copy!
  */
 func (s State) Copy() ai.State {
-    copyHands := make([][]deck.Card, len(s.Hands))
-    for i, hand := range s.Hands {
-        copyHand := make([]deck.Card, len(hand))
-        copy(copyHand, hand)
-
-        copyHands[i] = hand
-    }
+    copyHands := copyAllHands(s)
 
     copyKitty := make([]deck.Card, len(s.Kitty))
     copy(copyKitty, s.Kitty)
@@ -166,7 +178,9 @@ func (s State) Copy() ai.State {
  *
  * Args:
  *  setup: The setup for the game. Information such as top card, dealer, etc.
- *  player: The current player number.
+ *  player: The current player number. Note that this player number must be
+ *          valid as the current player number given other constraints in the
+ *          parameters.
  *  hand: The current cards in your hand.
  *  played: The cards played in the current trick.
  *  prior: The prior tricks.
@@ -355,6 +369,8 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
     nmPlayer := (cState.Player + 1) % 4
 
     for i, card := range curHand {
+        nHands := copyAllHands(cState)
+
         if len(cState.Played) < 3 {
             // Copy the old played cards into memory and add the new card.
             nPlayed = make([]deck.Card, len(cState.Played))
@@ -396,8 +412,9 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
         }
 
         nHand := make([]deck.Card, len(curHand))
-        nHand = append(nHand[:i], nHand[i+1:]...)
-        nHands := cState.Hands
+        copy(nHand, curHand)
+        nHand[i] = nHand[len(nHand) - 1]
+        nHand = nHand[:len(nHand) - 1]
         nHands[cState.Player] = nHand
 
         nextState := NewDeterminizedState(cState.Setup, nPlayer, nHands,
@@ -494,4 +511,26 @@ func extractAvailableCards(cardsSet map[deck.Card]bool) []deck.Card {
     }
 
     return cards
+}
+
+
+/*
+ * Creates a new copy of the hands in memory from the given state.
+ *
+ * Args:
+ *  state: A euchre state whose player hands are to be copied.
+ *
+ * Returns:
+ *  A copy of the players hands. A [][]deck.Card copy.
+ */
+func copyAllHands(state State) [][]deck.Card {
+    copyHands := make([][]deck.Card, len(state.Hands))
+    for i, hand := range state.Hands {
+        copyHand := make([]deck.Card, len(hand))
+        copy(copyHand, hand)
+
+        copyHands[i] = copyHand
+    }
+
+    return copyHands
 }

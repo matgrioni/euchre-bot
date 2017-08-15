@@ -25,7 +25,7 @@ func (p *RandPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
 }
 
 
-func (p *RandPlayer) Discard(hand []deck.Card, top deck.Card) deck.Card {
+func (p *RandPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {
     // TODO: Move r outside.
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -34,10 +34,10 @@ func (p *RandPlayer) Discard(hand []deck.Card, top deck.Card) deck.Card {
     // Delete a random card not preserving order.
     i := r.Intn(len(hand))
     chosen := hand[i]
-    hand[i] = hand[len(total) - 1]
-    hand = hand[:len(total) - 1]
+    hand[i] = hand[len(hand) - 1]
+    hand = hand[:len(hand) - 1]
 
-    return chosen
+    return hand, chosen
 }
 
 
@@ -65,5 +65,5 @@ func (p *RandPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     hand[chosen] = hand[len(hand) - 1]
     hand = hand[:len(hand) - 1]
 
-    return final
+    return hand, final
 }

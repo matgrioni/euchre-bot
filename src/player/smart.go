@@ -4,36 +4,39 @@ import (
     "ai"
     "deck"
     "euchre"
-    "fmt"
     "math"
 )
+
+
 
 type Decision struct {
     Move int
     Value int
 }
 
+
+
 type SmartPlayer struct { }
+
 
 func NewSmart() (*SmartPlayer) {
     return &SmartPlayer{ }
 }
 
-func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
+
+func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
     var setup euchre.Setup
     var discard deck.Card
 
-    // TODO: clean up this hand nonsense.
-    var actualHand [5]deck.Card
+    actualHand := make([]deck.Card, len(hand))
 
     played := make([]deck.Card, 0)
     prior := make([]euchre.Trick, 0)
 
     if who == 0 {
-        var newHand [5]deck.Card
-        copy(newHand[:], hand[:])
+        copy(actualHand, hand)
 
-        actualHand, discard = p.Discard(newHand, top)
+        actualHand, discard = p.Discard(actualHand, top)
         setup = euchre.Setup {
             who,
             0,
@@ -43,7 +46,7 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
             discard,
         }
     } else {
-        copy(actualHand[:], hand[:])
+        copy(actualHand, hand)
         setup = euchre.Setup {
             who,
             0,
@@ -55,7 +58,7 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     }
 
     nPlayer := (who + 1) % 4
-    s := euchre.NewUndeterminizedState(setup, nPlayer, actualHand[:], played,
+    s := euchre.NewUndeterminizedState(setup, nPlayer, actualHand, played,
                                        prior, deck.Card{})
     e := euchre.Engine{ }
     _, expected := ai.MCTS(s, e, 3000, 100)
@@ -63,13 +66,11 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     return (expected > 0.2 && nPlayer % 2 == 0) || (expected < -0.2 && nPlayer % 2 == 1)
 }
 
-// TODO: Change contract to just give back number.
-func (p *SmartPlayer) Discard(hand [5]deck.Card,
-                              top deck.Card) ([5]deck.Card, deck.Card) {
+func (p *SmartPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {
     // First construct a map that holds counts for all of the suits.
     suitsCount := make(map[deck.Suit]int)
     lowest := make(map[deck.Suit]int)
-    for i , card := range hand {
+    for i, card := range hand {
         adjSuit := hand[i].AdjSuit(top.Suit)
         suitsCount[adjSuit]++
         if _, ok := lowest[adjSuit]; !ok {
@@ -127,7 +128,7 @@ func (p *SmartPlayer) Discard(hand [5]deck.Card,
     return hand, minCard
 }
 
-func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card,
+func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
                            who int) (deck.Suit, bool) {
     played := make([]deck.Card, 0)
     prior := make([]euchre.Trick, 0)
@@ -147,7 +148,7 @@ func (p *SmartPlayer) Call(hand [5]deck.Card, top deck.Card,
                 deck.Card{},
             }
 
-            s := euchre.NewUndeterminizedState(setup, 0, hand[:], played, prior,
+            s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
                                                deck.Card{})
             e := euchre.Engine{ }
             _, expected := ai.MCTS(s, e, 50, 100)

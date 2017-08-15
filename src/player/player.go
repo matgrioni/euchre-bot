@@ -25,12 +25,11 @@ type Player interface {
     Pickup(hand []deck.Card, top deck.Card, who int) bool
 
     // Determines what to discard if a player has just picked up the top card
-    // after their deal. This will modify the hand slice to the new hand after
-    // discarding.
+    // after their deal.
     // hand - The 5 cards currently in the dealer's hand.
     // top  - The card that was on top and is now to be picked up.
     // Returns the new hand after discarding and the card to be discarded.
-    Discard(hand []deck.Card, top deck.Card) deck.Card
+    Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card)
 
     // Determines whether a player should call a certain suit, such as when all
     // players have passed on picking it up.
@@ -52,5 +51,5 @@ type Player interface {
     // Returns the user's new hand and the card that was chosen from the user's
     // hand.
     Play(setup euchre.Setup, hand []deck.Card, played []deck.Card,
-         prior []euchre.Trick) deck.Card
+         prior []euchre.Trick) ([]deck.Card, deck.Card)
 }

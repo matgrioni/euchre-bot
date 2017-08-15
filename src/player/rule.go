@@ -17,7 +17,7 @@ import (
 // features.
 type Input struct {
     Top deck.Card
-    Hand [5]deck.Card
+    Hand []deck.Card
     Dealer int
 }
 
@@ -156,7 +156,7 @@ func (p *RulePlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
 }
 
 
-func (p *RulePlayer) Discard(hand []deck.Card, top deck.Card) deck.Card {
+func (p *RulePlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {
     // TODO: For now just use the random approach. Later add the smart player.
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
@@ -165,10 +165,10 @@ func (p *RulePlayer) Discard(hand []deck.Card, top deck.Card) deck.Card {
     // Delete a random card not preserving order.
     i := r.Intn(len(hand))
     chosen := hand[i]
-    hand[i] = hand[len(total) - 1]
-    hand = hand[:len(total) - 1]
+    hand[i] = hand[len(hand) - 1]
+    hand = hand[:len(hand) - 1]
 
-    return chosen
+    return hand, chosen
 }
 
 func (p *RulePlayer) Call(hand []deck.Card, top deck.Card,
@@ -244,7 +244,7 @@ func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     hand[chosen] = hand[len(hand) - 1]
     hand = hand[:len(hand) - 1]
 
-    return final
+    return hand, final
 }
 
 // Loads the inputs in a file and returns a slice of the inputs and their

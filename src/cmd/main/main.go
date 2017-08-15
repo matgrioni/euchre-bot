@@ -38,7 +38,7 @@ func main() {
     fmt.Println()
 
     fmt.Println("Enter the 5 cards in your hand...")
-    var hand [5]deck.Card
+    hand := make([]deck.Card, 5)
     for i := 0; i < 5; i++ {
         hand[i] = inputValidCard()
     }
@@ -181,10 +181,8 @@ func main() {
             played = append(played, card)
         }
 
-        var playedArr [4]deck.Card
-        copy(playedArr[:], played[:])
         trick := euchre.Trick {
-            playedArr,
+            played,
             led,
             trump,
         }

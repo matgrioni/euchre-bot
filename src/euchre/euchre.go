@@ -29,7 +29,7 @@ type Setup struct {
 // Namely, who led in the trick (using our famililar number designation) and
 // what the trump suit was.
 type Trick struct {
-    Cards [4]deck.Card
+    Cards []deck.Card
     Led int
     Trump deck.Suit
 }
@@ -394,12 +394,12 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             nPrior = make([]Trick, len(cState.Prior))
             copy(nPrior, cState.Prior)
 
-            var arrPlayed [4]deck.Card
-            copy(arrPlayed[:], cState.Played)
-            arrPlayed[3] = card
+            trickPlayed := make([]deck.Card, 4)
+            copy(trickPlayed, cState.Played)
+            trickPlayed[3] = card
 
             nPlayed = make([]deck.Card, 0, 4)
-            nPlayer = Winner(arrPlayed[:], cState.Setup.Trump, nmPlayer)
+            nPlayer = Winner(trickPlayed, cState.Setup.Trump, nmPlayer)
 
             // If this is the last trick to be played, then don't move the
             // player to the next one. This is because when we evaluate the
@@ -411,7 +411,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             }
 
             nextPrior := Trick {
-                arrPlayed,
+                trickPlayed,
                 nmPlayer,
                 cState.Setup.Trump,
             }

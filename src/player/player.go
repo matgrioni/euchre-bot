@@ -14,7 +14,7 @@ import (
 type Player interface {
     // Returns whether or not a player should tell the top card to be ordered up
     // based on their current cards and who is picking it up.
-    // hand - The 5 cards currently in the player's hand. TODO: Change to slice.
+    // hand - The 5 cards currently in the player's hand.
     // top  - The card on top of the kitty and currenty in question to be
     //        picked up.
     // who  - Who is picking up the card (the dealer). The number designation
@@ -22,14 +22,15 @@ type Player interface {
     //        left (1), opp to right (3). So a clockwise order.
     // Returns true if the card should be ordered up when the player gets the
     // chance and false otherwise.
-    Pickup(hand [5]deck.Card, top deck.Card, who int) bool
+    Pickup(hand []deck.Card, top deck.Card, who int) bool
 
     // Determines what to discard if a player has just picked up the top card
-    // after their deal.
+    // after their deal. This will modify the hand slice to the new hand after
+    // discarding.
     // hand - The 5 cards currently in the dealer's hand.
     // top  - The card that was on top and is now to be picked up.
     // Returns the new hand after discarding and the card to be discarded.
-    Discard(hand [5]deck.Card, top deck.Card) ([5]deck.Card, deck.Card)
+    Discard(hand []deck.Card, top deck.Card) deck.Card
 
     // Determines whether a player should call a certain suit, such as when all
     // players have passed on picking it up.
@@ -39,7 +40,7 @@ type Player interface {
     // Returns the suit that should be called if given the chance. This result
     // valid iff true is returned as well. Otherwise, the returned suit is
     // meaningless.
-    Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit, bool)
+    Call(hand []deck.Card, top deck.Card, who int) (deck.Suit, bool)
 
     // Determines which card to play given the current euchre situation.
     // setup  - The setup of the euchre game before any tricks which consists

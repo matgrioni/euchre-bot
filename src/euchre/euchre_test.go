@@ -273,13 +273,13 @@ func TestNoSuitsOne(t *testing.T) {
     player := 1
     trump := deck.C
 
-    cards1 := [4]deck.Card {
+    cards1 := []deck.Card {
         deck.Card{ deck.H, deck.A },
         deck.Card{ deck.C, deck.K },
         deck.Card{ deck.H, deck.K },
         deck.Card{ deck.H, deck.Q },
     }
-    cards2 := [4]deck.Card {
+    cards2 := []deck.Card {
         deck.Card{ deck.S, deck.K },
         deck.Card{ deck.S, deck.Ten },
         deck.Card{ deck.S, deck.Q },
@@ -326,13 +326,13 @@ func TestNoSuitsThree(t *testing.T) {
     player := 3
     trump := deck.C
 
-    cards1 := [4]deck.Card {
+    cards1 := []deck.Card {
         deck.Card { deck.H, deck.A },
         deck.Card { deck.C, deck.K },
         deck.Card { deck.H, deck.K },
         deck.Card { deck.H, deck.Q },
     }
-    cards2 := [4]deck.Card {
+    cards2 := []deck.Card {
         deck.Card { deck.S, deck.K },
         deck.Card { deck.S, deck.Ten },
         deck.Card { deck.C, deck.Ten },
@@ -379,13 +379,13 @@ func TestNoSuitsPlayerWraps(t *testing.T) {
     player := 0
     trump := deck.C
 
-    cards1 := [4]deck.Card {
+    cards1 := []deck.Card {
         deck.Card{ deck.H, deck.A },
         deck.Card{ deck.C, deck.K },
         deck.Card{ deck.H, deck.K },
         deck.Card{ deck.H, deck.Q },
     }
-    cards2 := [4]deck.Card {
+    cards2 := []deck.Card {
         deck.Card{ deck.S, deck.K },
         deck.Card{ deck.S, deck.Ten },
         deck.Card{ deck.C, deck.Ten },
@@ -431,25 +431,25 @@ func TestNoSuitsMultiple(t *testing.T) {
     player := 1
     trump  := deck.S
 
-    cards1 := [4]deck.Card {
+    cards1 := []deck.Card {
         deck.Card{ deck.D, deck.A },
         deck.Card{ deck.S, deck.J },
         deck.Card{ deck.D, deck.Ten },
         deck.Card{ deck.D, deck.J },
     }
-    cards2 := [4]deck.Card {
+    cards2 := []deck.Card {
         deck.Card{ deck.C, deck.A },
         deck.Card{ deck.C, deck.Q },
         deck.Card{ deck.C, deck.K },
         deck.Card{ deck.S, deck.Ten },
     }
-    cards3 := [4]deck.Card {
+    cards3 := []deck.Card {
         deck.Card{ deck.H, deck.K },
         deck.Card{ deck.H, deck.Ten },
         deck.Card{ deck.H, deck.Nine },
         deck.Card{ deck.H, deck.A },
     }
-    cards4 := [4]deck.Card {
+    cards4 := []deck.Card {
         deck.Card{ deck.H, deck.Q },
         deck.Card{ deck.S, deck.A },
         deck.Card{ deck.C, deck.Ten },

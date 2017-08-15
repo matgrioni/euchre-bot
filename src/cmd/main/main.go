@@ -53,7 +53,6 @@ func main() {
     var dealer int
     var caller int
     fmt.Scanf("%d", &dealer)
-    fmt.Printf("%d\n", dealer)
     fmt.Println()
 
     flag.Parse()

@@ -63,7 +63,7 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
     e := euchre.Engine{ }
     _, expected := ai.MCTS(s, e, 3000, 100)
 
-    return (expected > 0.2 && nPlayer % 2 == 0) || (expected < -0.2 && nPlayer % 2 == 1)
+    return (expected > 0.6 && nPlayer % 2 == 0) || (expected < -0.6 && nPlayer % 2 == 1)
 }
 
 func (p *SmartPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {

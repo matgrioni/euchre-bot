@@ -79,6 +79,12 @@ func (s State) Determinize() {
         left--
     }
 
+    // Remove all known cards of a player's hand.
+    for _, card := range s.Hands[0] {
+        cardsSet[card] = false
+        left--
+    }
+
     // Remove the top card from contention if it was flipped over, or remove
     // the discarded card if you were the one who put it down.
     if s.Setup.Dealer == 0 && s.Setup.PickedUp {
@@ -91,7 +97,6 @@ func (s State) Determinize() {
 
     idxs := r.Perm(left)
     cards := extractAvailableCards(cardsSet)
-
 
     noSuits := noSuits(s.Prior, s.Setup.Trump)
     // Go through each opponent player giving them cards until they have a
@@ -130,7 +135,7 @@ func (s State) Determinize() {
             // isn't included in further players.
             if possible {
                 s.Hands[player] = append(s.Hands[player], curCard)
-                idxs = append(idxs[:i], idxs[:i+1]...)
+                idxs = idxs[:len(idxs) - 1]
                 if len(s.Hands[player]) == playerHandSize {
                     break
                 }
@@ -362,13 +367,15 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
     nextStates := make([]ai.State, 0)
 
     curHand := cState.Hands[cState.Player]
+    possibleIdxs := Possible(curHand, cState.Played, cState.Setup.Trump)
 
     var nPlayed []deck.Card
     var nPrior []Trick
     var nPlayer int
     nmPlayer := (cState.Player + 1) % 4
 
-    for i, card := range curHand {
+    for _, idx := range possibleIdxs {
+        card := curHand[idx]
         nHands := copyAllHands(cState)
 
         if len(cState.Played) < 3 {
@@ -413,7 +420,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
 
         nHand := make([]deck.Card, len(curHand))
         copy(nHand, curHand)
-        nHand[i] = nHand[len(nHand) - 1]
+        nHand[idx] = nHand[len(nHand) - 1]
         nHand = nHand[:len(nHand) - 1]
         nHands[cState.Player] = nHand
 

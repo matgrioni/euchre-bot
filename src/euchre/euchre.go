@@ -394,12 +394,10 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             nPrior = make([]Trick, len(cState.Prior))
             copy(nPrior, cState.Prior)
 
-            trickPlayed := make([]deck.Card, 4)
-            copy(trickPlayed, cState.Played)
-            trickPlayed[3] = card
+            cState.Played = append(cState.Played, card)
 
             nPlayed = make([]deck.Card, 0, 4)
-            nPlayer = Winner(trickPlayed, cState.Setup.Trump, nmPlayer)
+            nPlayer = Winner(cState.Played, cState.Setup.Trump, nmPlayer)
 
             // If this is the last trick to be played, then don't move the
             // player to the next one. This is because when we evaluate the
@@ -411,7 +409,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             }
 
             nextPrior := Trick {
-                trickPlayed,
+                cState.Played,
                 nmPlayer,
                 cState.Setup.Trump,
             }

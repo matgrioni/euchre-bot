@@ -3,8 +3,10 @@ package euchre
 import (
     "ai"
     "deck"
+    "fmt"
     "testing"
 )
+
 
 /*
  * Tests the ai package in conjunction with the euchre package. Some of these
@@ -15,9 +17,6 @@ import (
 
 /*
  * Tests the output for a run playout for the first card played by the computer.
- *
- * Args:
- *  t - The testing context.
  */
 func TestRunPlayout(t *testing.T) {
     setup := Setup {
@@ -50,5 +49,6 @@ func TestRunPlayout(t *testing.T) {
     n.Value(s)
     e := Engine{ }
 
+    fmt.Println("Playout debug output")
     ai.RunPlayoutDebug(n, e)
 }

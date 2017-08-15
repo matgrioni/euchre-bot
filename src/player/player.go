@@ -42,7 +42,8 @@ type Player interface {
     // meaningless.
     Call(hand []deck.Card, top deck.Card, who int) (deck.Suit, bool)
 
-    // Determines which card to play given the current euchre situation.
+    // Determines which card to play given the current euchre situation. This
+    // method removes the played card from the hand.
     // setup  - The setup of the euchre game before any tricks which consists
     //          of who was dealer, what the top card was, etc.
     // hand   - The cards currently in the user's hand.
@@ -51,5 +52,5 @@ type Player interface {
     // Returns the user's new hand and the card that was chosen from the user's
     // hand.
     Play(setup euchre.Setup, hand []deck.Card, played []deck.Card,
-         prior []euchre.Trick) ([]deck.Card, deck.Card)
+         prior []euchre.Trick) deck.Card
 }

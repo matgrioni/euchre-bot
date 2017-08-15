@@ -137,7 +137,8 @@ func NewRule(pickupFn string) (*RulePlayer) {
     return &RulePlayer{ pickupFn, }
 }
 
-func (p *RulePlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
+
+func (p *RulePlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
     inputs, expected := loadInputs(p.pickupFn)
     prcp := ai.CreatePerceptron(12, 0, 1)
 
@@ -154,25 +155,24 @@ func (p *RulePlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     return res == 1
 }
 
-func (p *RulePlayer) Discard(hand [5]deck.Card,
-                             top deck.Card) ([5]deck.Card, deck.Card) {
-    // TODO: For now just use the random approach.
+
+func (p *RulePlayer) Discard(hand []deck.Card, top deck.Card) deck.Card {
+    // TODO: For now just use the random approach. Later add the smart player.
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-    total := hand[:]
-    total = append(total, top)
+    hand = append(hand, top)
 
-    i := r.Intn(len(total))
-    chosen := total[i]
-    total[i] = total[len(total) - 1]
-    total = total[:len(total) - 1]
+    // Delete a random card not preserving order.
+    i := r.Intn(len(hand))
+    chosen := hand[i]
+    hand[i] = hand[len(total) - 1]
+    hand = hand[:len(total) - 1]
 
-    copy(hand[:], total[:5])
-
-    return hand, chosen
+    return chosen
 }
 
-func (p *RulePlayer) Call(hand [5]deck.Card, top deck.Card, who int) (deck.Suit, bool) {
+func (p *RulePlayer) Call(hand []deck.Card, top deck.Card,
+                          who int) (deck.Suit, bool) {
     chosen := false
     maxT := top.Suit
     maxConf := float32(0)
@@ -244,7 +244,7 @@ func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     hand[chosen] = hand[len(hand) - 1]
     hand = hand[:len(hand) - 1]
 
-    return hand, final
+    return final
 }
 
 // Loads the inputs in a file and returns a slice of the inputs and their

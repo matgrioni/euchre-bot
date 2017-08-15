@@ -65,5 +65,5 @@ func (p *RandPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     hand[chosen] = hand[len(hand) - 1]
     hand = hand[:len(hand) - 1]
 
-    return hand, final
+    return final
 }

@@ -50,7 +50,7 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
             true,
             top,
             top.Suit,
-            deck.Card{},
+            deck.Card{ },
         }
     }
 
@@ -58,10 +58,9 @@ func (p *SmartPlayer) Pickup(hand [5]deck.Card, top deck.Card, who int) bool {
     s := euchre.NewUndeterminizedState(setup, nPlayer, actualHand[:], played,
                                        prior, deck.Card{})
     e := euchre.Engine{ }
-    _, expected := ai.MCTS(s, e, 75000)
+    _, expected := ai.MCTS(s, e, 3000, 100)
 
-    fmt.Printf("%f\n", expected)
-    return (expected > 0.6 && nPlayer % 2 == 0) || (expected < -0.6 && nPlayer % 2 == 1)
+    return (expected > 0.2 && nPlayer % 2 == 0) || (expected < -0.2 && nPlayer % 2 == 1)
 }
 
 // TODO: Change contract to just give back number.
@@ -173,7 +172,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
                                        deck.Card{})
     e := euchre.Engine{ }
-    chosenState, _ := ai.MCTS(s, e, 75, 300)
+    chosenState, _ := ai.MCTS(s, e, 3000, 100)
 
     card = chosenState.(euchre.State).Move
 

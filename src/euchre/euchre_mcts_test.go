@@ -24,48 +24,28 @@ func TestRunPlayout(t *testing.T) {
         1,
         1,
         true,
-        deck.Card{ deck.D, deck.Nine },
+        deck.Card { deck.D, deck.Nine },
         deck.D,
         deck.Card{ },
     }
 
     hand := []deck.Card {
-        deck.Card {
-            deck.H,
-            deck.Nine,
-        },
-        deck.Card {
-            deck.H,
-            deck.Ten,
-        },
-        deck.Card {
-            deck.S,
-            deck.A,
-        },
-        deck.Card {
-            deck.D,
-            deck.Q,
-        },
-        deck.Card {
-            deck.C,
-            deck.Q,
-        },
+        deck.Card { deck.H, deck.Nine },
+        deck.Card { deck.H, deck.Ten },
+        deck.Card { deck.S, deck.A },
+        deck.Card { deck.D, deck.Q },
+        deck.Card { deck.C, deck.Q },
     }
 
     played := []deck.Card {
-        deck.Card {
-            deck.C,
-            deck.J,
-        },
-        deck.Card {
-            deck.C,
-            deck.A,
-        },
+        deck.Card { deck.C, deck.J },
+        deck.Card { deck.C, deck.A },
     }
 
     var prior []Trick
 
     s := NewUndeterminizedState(setup, 0, hand, played, prior, deck.Card{ })
+    s.Determinize()
     n := ai.NewNode()
     n.Value(s)
     e := Engine{ }

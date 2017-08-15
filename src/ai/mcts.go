@@ -127,31 +127,35 @@ func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
     // a bottleneck however.
     weights := make(map[interface{}]float64)
     conv := make(map[interface{}]State)
+    counts := make(map[interface{}]int)
 
     for i := 0; i < deters; i++ {
         copyState := s.Copy()
         copyState.Determinize()
         n := NewNode()
-        n.Value(s)
+        n.Value(copyState)
 
-        for i := 0; i < runs; i++ {
+        for j := 0; j < runs; j++ {
             RunPlayout(n, engine)
-        }
 
-        if n.children.Len() > 0 {
-            topNode := n.children.Poll().(*Node)
-            topState := topNode.GetState()
+            if n.children.Len() > 0 {
+                topNode := n.children.Poll().(*Node)
+                topState := topNode.GetState()
 
-            conv[topState.Hash()] = topState
-            weights[topState.Hash()] += topNode.GetPriority()
-        } else {
-            nState := n.GetState()
-            conv[nState.Hash()] = nState
-            weights[nState.Hash()] += n.GetPriority()
+                conv[topState.Hash()] = topState
+                weights[topState.Hash()] += topNode.GetPriority()
+                counts[topState.Hash()] += 1
+            } else {
+                fmt.Println("HEre")
+                nState := n.GetState()
+                conv[nState.Hash()] = nState
+                weights[nState.Hash()] += n.GetPriority()
+                counts[nState.Hash()] += 1
+            }
         }
     }
 
-    maxWeight := float64(0)
+    maxWeight := math.Inf(-1)
     var maxState State
     for hash, weight := range weights {
         if weight > maxWeight {
@@ -160,7 +164,7 @@ func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
         }
     }
 
-    return maxState, maxWeight / float64(runs * deters)
+    return maxState, maxWeight / float64(counts[maxState.Hash()])
 }
 
 
@@ -262,17 +266,12 @@ func runPlayout(node *Node, engine MCTSEngine, log bool) int {
         eval = runPlayout(next, engine, log)
 
         adjEval := eval
+        if eval < 0 {
+            adjEval = -1 * eval
+        }
         if engine.Favorable(node.GetValue().(State), eval) {
-            if eval < 0 {
-                adjEval = -1 * eval
-            }
-
             next.wins += adjEval
         } else {
-            if eval < 0 {
-                adjEval = -1 * eval
-            }
-
             next.wins -= adjEval
         }
 

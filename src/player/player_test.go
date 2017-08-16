@@ -102,8 +102,11 @@ var fixtures = []fixture {
     },
 }
 
-// TODO: Improve test modularity. Logic can be condensed together.
 
+/*
+ * The main driver for discard tests that runs all fixtures outlined above
+ * globally on all testable players.
+ */
 func TestDiscard(t *testing.T) {
     players := getTestablePlayers()
 

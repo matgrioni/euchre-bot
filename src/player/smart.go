@@ -77,7 +77,6 @@ func (p *SmartPlayer) Discard(hand []deck.Card,
         if _, ok := lowest[adjSuit]; !ok {
             lowest[adjSuit] = i
         } else if int(card.Value) < int(hand[lowest[adjSuit]].Value) {
-            // TODO: Isn't this an error?... Yes, yes it is.
             lowest[adjSuit] = i
         }
     }
@@ -165,8 +164,6 @@ func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
 }
 
 
-// TODO: Maybe don't edit the hand. Return a completely new version?
-// Not sure yet.
 func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
     var card deck.Card

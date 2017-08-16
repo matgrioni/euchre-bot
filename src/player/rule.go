@@ -167,7 +167,6 @@ func (p *RulePlayer) Discard(hand []deck.Card,
         if _, ok := lowest[adjSuit]; !ok {
             lowest[adjSuit] = i
         } else if int(card.Value) < int(hand[lowest[adjSuit]].Value) {
-            // TODO: Isn't this an error?
             lowest[adjSuit] = i
         }
     }

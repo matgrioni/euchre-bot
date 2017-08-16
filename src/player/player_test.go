@@ -87,7 +87,7 @@ var fixtures = []fixture {
 
     /*
      * Test that a suit with only one card is discarded. This makes sense if you
-     * have trumps. TODO: Otherwise, maybe something else should happen.
+     * have trumps. Otherwise, the lowest overall card should be dropped.
      */
     fixture {
         []deck.Card {
@@ -99,6 +99,22 @@ var fixtures = []fixture {
         },
         deck.Card { deck.H, deck.Q },
         deck.Card { deck.C, deck.Q },
+    },
+
+    /*
+     * When there is only one card for a certain suit but no trumps, just
+     * discard the lowest valued card.
+     */
+    fixture {
+        []deck.Card {
+            deck.Card { deck.C, deck.Q },
+            deck.Card { deck.H, deck.Nine },
+            deck.Card { deck.H, deck.A },
+            deck.Card { deck.S, deck.K },
+            deck.Card { deck.S, deck.Q },
+        },
+        deck.Card { deck.D, deck.A },
+        deck.Card { deck.H, deck.Nine },
     },
 }
 

@@ -39,7 +39,6 @@ type State struct {
     Setup Setup
     Player int
     Hands [][]deck.Card
-    Kitty []deck.Card
     Played []deck.Card
     Prior []Trick
     Move deck.Card
@@ -156,9 +155,6 @@ func (s State) Determinize() {
 func (s State) Copy() ai.State {
     copyHands := copyAllHands(s)
 
-    copyKitty := make([]deck.Card, len(s.Kitty))
-    copy(copyKitty, s.Kitty)
-
     copyPlayed := make([]deck.Card, len(s.Played))
     copy(copyPlayed, s.Played)
 
@@ -169,7 +165,6 @@ func (s State) Copy() ai.State {
         s.Setup,
         s.Player,
         copyHands,
-        copyKitty,
         copyPlayed,
         copyPrior,
         s.Move,
@@ -197,8 +192,7 @@ func (s State) Copy() ai.State {
  */
 func NewUndeterminizedState(setup Setup, player int, hand, played []deck.Card,
                             prior []Trick, move deck.Card) State {
-    // Create blank values for the kitty and other hands other than your own.
-    kitty := make([]deck.Card, 0)
+    // Create blank values for hands other than your own.
     hands := make([][]deck.Card, 4)
     hands[0] = hand
     hands[1] = make([]deck.Card, 0)
@@ -209,7 +203,6 @@ func NewUndeterminizedState(setup Setup, player int, hand, played []deck.Card,
         setup,
         player,
         hands,
-        kitty,
         played,
         prior,
         move,
@@ -228,7 +221,6 @@ func NewUndeterminizedState(setup Setup, player int, hand, played []deck.Card,
  *  setup: The setup for the game. Information such as top card, dealer, etc.
  *  player: The current player number.
  *  hands: A slice of each players cards.
- *  kitty: The slice of cards in the kitty. TODO: This might not be needed.
  *  played: The slice of cards played in the current trick.
  *  prior: The prior tricks.
  *  move: The move that was played prior to get the current state.
@@ -237,14 +229,13 @@ func NewUndeterminizedState(setup Setup, player int, hand, played []deck.Card,
  *  A new state that is determinized, ie has created some known universe where
  *  information that is usually not known by an opponent is now assumed.
  */
-func NewDeterminizedState(setup Setup, player int, hands [][]deck.Card, kitty,
+func NewDeterminizedState(setup Setup, player int, hands [][]deck.Card,
                           played []deck.Card, prior []Trick,
                           move deck.Card) State {
     return State {
         setup,
         player,
         hands,
-        kitty,
         played,
         prior,
         move,
@@ -423,7 +414,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
         nHands[cState.Player] = nHand
 
         nextState := NewDeterminizedState(cState.Setup, nPlayer, nHands,
-                                          cState.Kitty, nPlayed, nPrior, card)
+                                          nPlayed, nPrior, card)
 
         nextStates = append(nextStates, nextState)
     }

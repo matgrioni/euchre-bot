@@ -156,19 +156,67 @@ func (p *RulePlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
 }
 
 
-func (p *RulePlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {
-    // TODO: For now just use the random approach. Later add the smart player.
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+func (p *RulePlayer) Discard(hand []deck.Card,
+                             top deck.Card) ([]deck.Card, deck.Card) {
+    // First construct a map that holds counts for all of the suits.
+    suitsCount := make(map[deck.Suit]int)
+    lowest := make(map[deck.Suit]int)
+    for i, card := range hand {
+        adjSuit := hand[i].AdjSuit(top.Suit)
+        suitsCount[adjSuit]++
+        if _, ok := lowest[adjSuit]; !ok {
+            lowest[adjSuit] = i
+        } else if int(card.Value) < int(hand[lowest[adjSuit]].Value) {
+            // TODO: Isn't this an error?
+            lowest[adjSuit] = i
+        }
+    }
 
-    hand = append(hand, top)
+    minCard := deck.Card { top.Suit, deck.J }
+    minIndex := -1
+    singleFound := false
+    for suit, i := range lowest {
+        card := hand[i]
 
-    // Delete a random card not preserving order.
-    i := r.Intn(len(hand))
-    chosen := hand[i]
-    hand[i] = hand[len(hand) - 1]
-    hand = hand[:len(hand) - 1]
+        // If there's only one of a card that is not trump and is not an A and
+        // the current min card is of greater value (it is trump or its value is
+        // less), or the current min card is not the only card of its suit then
+        // update the trackers.
+        if suitsCount[suit] == 1 && suit != top.Suit && card.Value != deck.A &&
+           (minCard.AdjSuit(top.Suit) == top.Suit ||
+            int(card.Value) < int(minCard.Value) ||
+            suitsCount[minCard.Suit] > 1) {
+            singleFound = true
+            minCard = card
+            minIndex = i
+        } else if !singleFound {
+        // If a single card that is non-trump and non-ace has not been found
+        // then try to find the smallest card otherwise. In other words, any
+        // single suit card is preferred to a multi-suit card as long as said
+        // card is not trump or A.
 
-    return hand, chosen
+            // If the two cards of the same suit we can compare them using Beat
+            // since it wouldn't matter who led.
+            if card.AdjSuit(top.Suit) == minCard.AdjSuit(top.Suit) {
+                if euchre.Beat(minCard, card, top.Suit) {
+                    minCard = card
+                    minIndex = i
+                }
+            } else {
+            // If the cards are not of the same suit then if the current min is
+            // trump, the new card must be less. Otherwise, as long as the
+            // card in question is not trump and it's value is less then the
+            // current min card, update the trackers.
+                if minCard.AdjSuit(top.Suit) == top.Suit || (card.AdjSuit(top.Suit) != top.Suit && int(card.Value) < int(minCard.Value)) {
+                    minCard = card
+                    minIndex = i
+                }
+            }
+        }
+    }
+
+    hand[minIndex] = top
+    return hand, minCard
 }
 
 func (p *RulePlayer) Call(hand []deck.Card, top deck.Card,

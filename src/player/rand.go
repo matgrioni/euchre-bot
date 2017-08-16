@@ -7,11 +7,13 @@ import (
     "time"
 )
 
+var r = rand.New(rand.NewSource(time.Now().UnixNano()))
+
+
 type RandPlayer struct {
 }
 
 
-// TODO: This might be weird semantics. player.NewRand().
 // Used to create a new RandPlayer struct that is properly constructed.
 // Returns a RandPlayer pointer.
 func NewRand() (*RandPlayer) {
@@ -20,15 +22,11 @@ func NewRand() (*RandPlayer) {
 
 
 func (p *RandPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
     return r.Intn(2) == 1
 }
 
 
 func (p *RandPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {
-    // TODO: Move r outside.
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
     hand = append(hand, top)
 
     // Delete a random card not preserving order.
@@ -43,8 +41,6 @@ func (p *RandPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck
 
 func (p *RandPlayer) Call(hand []deck.Card, top deck.Card,
                           who int) (deck.Suit, bool) {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
     s := deck.SUITS[r.Intn(len(deck.SUITS))]
     for s == top.Suit {
         s = deck.SUITS[r.Intn(len(deck.SUITS))]
@@ -56,8 +52,6 @@ func (p *RandPlayer) Call(hand []deck.Card, top deck.Card,
 
 func (p *RandPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                           prior []euchre.Trick) ([]deck.Card, deck.Card) {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
     playable := euchre.Possible(hand, played, setup.Trump)
 
     chosen := playable[r.Intn(len(playable))]

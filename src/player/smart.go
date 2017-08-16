@@ -66,7 +66,8 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
     return (expected > 0.6 && nPlayer % 2 == 0) || (expected < -0.6 && nPlayer % 2 == 1)
 }
 
-func (p *SmartPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {
+func (p *SmartPlayer) Discard(hand []deck.Card,
+                              top deck.Card) ([]deck.Card, deck.Card) {
     // First construct a map that holds counts for all of the suits.
     suitsCount := make(map[deck.Suit]int)
     lowest := make(map[deck.Suit]int)
@@ -76,7 +77,7 @@ func (p *SmartPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, dec
         if _, ok := lowest[adjSuit]; !ok {
             lowest[adjSuit] = i
         } else if int(card.Value) < int(hand[lowest[adjSuit]].Value) {
-            // TODO: Isn't this an error?
+            // TODO: Isn't this an error?... Yes, yes it is.
             lowest[adjSuit] = i
         }
     }

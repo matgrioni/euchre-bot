@@ -389,15 +389,6 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             nPlayed = make([]deck.Card, 0, 4)
             nPlayer = Winner(cState.Played, cState.Setup.Trump, nmPlayer)
 
-            // If this is the last trick to be played, then don't move the
-            // player to the next one. This is because when we evaluate the
-            // final state, we want it to be in reference to this last player,
-            // not the next one. TODO: Actually I don't really know if this
-            // makes a difference anymore.
-            if len(cState.Prior) == 4 {
-                nPlayer = cState.Player
-            }
-
             nextPrior := Trick {
                 cState.Played,
                 nmPlayer,

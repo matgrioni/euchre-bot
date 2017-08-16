@@ -70,6 +70,24 @@ const (
     A
 )
 
+
+/*
+ * Compares two card values. The order of cards is: 9, 10, J, Q, K, A. If this
+ * value (v1) is greater then v2, then a positive number is returned. If v1 is
+ * less than v2 then negative number is returned, and if they are equal 0 is
+ * returned.
+ *
+ * Args:
+ *  v2: The value to compare this to.
+ *
+ * Returns:
+ *  A positive, 0, or negative number if this is greater than, equal to, or less
+ *  than v2, respectively.
+ */
+func (v1 Value) Compare(v2 Value) int {
+    return int(v1) - int(v2)
+}
+
 // An array of all the values in ascending order of value.
 var VALUES = [6]Value { Nine, Ten, J, Q, K, A }
 
@@ -186,8 +204,6 @@ func createCardsSet() map[Card]bool {
     return set
 }
 
-// TODO: This copies the array. Is that a problem / when should I use array vs
-// slice in golang.
 // A helper method that simply creates an array that has all the cards in a
 // euchre deck.
 func createCards() [24]Card {

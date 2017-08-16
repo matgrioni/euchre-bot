@@ -249,7 +249,6 @@ func NewDeterminizedState(setup Setup, player int, hands [][]deck.Card,
 // b     - The card that we are asking if it beats a if it is led.
 // trump - The current trump suit.
 // Returns if a beats b, if a is led and we are given the trump suit.
-// TODO: int casting?
 func Beat(a deck.Card, b deck.Card, trump deck.Suit) bool {
     var res bool
     // If a is a trump card but b is not, then a wins.
@@ -274,12 +273,12 @@ func Beat(a deck.Card, b deck.Card, trump deck.Suit) bool {
         } else {
         // If neither are one of the bowers, then the values of the cards are
         // compared as normal.
-            res = int(a.Value) > int(b.Value)
+            res = a.Value.Compare(b.Value) > 0
         }
     } else if a.Suit == b.Suit {
     // Otherwise, if they are both the same and they are not both trump, then
     // whoever has the higher value will win.
-        res = int(a.Value) > int(b.Value)
+        res = a.Value.Compare(b.Value) > 0
     } else {
     // And lastly if they have different suits, then a wins automatically since
     // b did not lead.

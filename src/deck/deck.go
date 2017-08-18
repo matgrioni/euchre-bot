@@ -2,9 +2,11 @@ package deck
 
 import "errors"
 
-// Define a Suit type off of the string type. This Suit type should only take on
-// 4 values. These are the constants defined below for the 4 suits of a standard
-// 52 card deck, H, D, S, C.
+/*
+ * Define a Suit type off of the string type. This Suit type should only take on
+ * 4 values. These are the constants defined below for the 4 suits of a standard
+ * 52 card deck, H, D, S, C.
+ */
 type Suit string
 const (
     H Suit = "H"
@@ -13,14 +15,24 @@ const (
     C Suit = "C"
 )
 
-// An array of all the suits. In order they are hearts, diamonds, spades, clubs.
+
+/*
+ * An array of all the suits. In order they are hearts, diamonds, spades, clubs.
+ */
 var SUITS = [4]Suit { H, D, S, C, }
 
-// Create a Suit from the input string. An error is provided if the input is not
-// a valid Suit.
-// s - The string value to convert to a Suit. Intuitive mapping.
-// Returns the converted Suit or an error if something went wrong.
-func CreateSuit(s string) (Suit, error){
+
+/*
+ * Create a Suit from the input string. An error is provided if the input is not
+ * a valid Suit.
+ *
+ * Args:
+ *  s: The string value to convert to a Suit. Intuitive mapping.
+ *
+ * Returns:
+ *  Returns the converted Suit or an error if something went wrong.
+ */
+func CreateSuit(s string) (Suit, error) {
     var res Suit
     switch s {
     case "H":
@@ -38,7 +50,13 @@ func CreateSuit(s string) (Suit, error){
     return res, nil
 }
 
-// Return the suit of the left bower given what the current suit is.
+
+/*
+ * The left bower suit given the current suit.
+ *
+ * Returns:
+ *  The suit of the left bower if the right bower is this.
+ */
 func (s Suit) Left() Suit {
     switch s {
     case H:
@@ -54,12 +72,23 @@ func (s Suit) Left() Suit {
     return H
 }
 
+
+/*
+ * Convert the suit to a string representation.
+ *
+ * Returns:
+ *  A string representation of the suit.
+ */
 func (s Suit) String() string {
     return string(s)
 }
 
-// Define a Value type off the int type. Each Value corresponds to the different
-// cards used in euchre. A is high at value 14, and Nine is low at value 9.
+
+
+/*
+ * Define a Value type off the int type. Each Value corresponds to the different
+ * cards used in euchre. A is high at value 14, and Nine is low at value 9.
+ */
 type Value int
 const (
     Nine Value = iota + 9
@@ -69,6 +98,12 @@ const (
     K
     A
 )
+
+
+/*
+ * An array of all the values in ascending order of value.
+ */
+var VALUES = [6]Value { Nine, Ten, J, Q, K, A }
 
 
 /*
@@ -88,14 +123,18 @@ func (v1 Value) Compare(v2 Value) int {
     return int(v1) - int(v2)
 }
 
-// An array of all the values in ascending order of value.
-var VALUES = [6]Value { Nine, Ten, J, Q, K, A }
 
-// Returns a Value type from the input string. The mapping is evident from the
-// standard 52 card deck.
-// s - The string to convert to a value. Intuitive mapping.
-// Returns a Value type that represents the parameter and an error if anything
-// went wrong.
+/*
+ * Returns a Value type from the input string. The mapping is evident from the
+ * standard 52 card deck.
+ *
+ * Args:
+ *  s: The string to convert to a value. Intuitive mapping.
+ *
+ * Returns:
+ *  A Value type that represents the parameter and an error if anything went
+ *  wrong.
+ */
 func CreateValue(s string) (Value, error) {
     var res Value
     switch s {
@@ -118,6 +157,14 @@ func CreateValue(s string) (Value, error) {
     return res, nil
 }
 
+
+/*
+ * Converts a value type to a string. Nine goes to "9", Ten to "10", Q to "Q",
+ * and so on.
+ *
+ * Returns:
+ *  A string representation of the Value. Intuitive mapping.
+ */
 func (v Value) String() string {
     switch v {
     case Nine:
@@ -137,21 +184,39 @@ func (v Value) String() string {
     return ""
 }
 
-// A Card represents a playing card from a standard 52 card deck. It consists of
-// a suit, such as Hearts (H), and a value such as J. The suit is represented by
-// the Suit type, and the value is a simple int that should be in the range
-// [9, 14], where 14 is A, 13 is K, and so on.
+
+
+/*
+ * A Card represents a playing card from a standard 52 card deck. It consists of
+ * a suit, such as Hearts (H), and a value such as J. The suit is represented by
+ * the Suit type, and the value is a simple int that should be in the range
+ * [9, 14], where 14 is A, 13 is K, and so on.
+ */
 type Card struct {
     Suit Suit
     Value Value
 }
 
-// Create an array of the all the cards in the euchre deck.
+
+/*
+ * Create an array of the all the cards in the euchre deck.
+ */
 var CARDS = createCards()
 var CARDS_SET = createCardsSet()
 
-// Creates a card given the string in the format of VS, where V is the value, and
-// S is the suit.
+
+/*
+ * Creates a card given the string in the format of {V}{S}, where V is the value
+ * and S is the suit.
+ *
+ * Args:
+ *  s: The string to convert to a card. This string is in the format {V}{S}.
+ *
+ * Returns:
+ *  A Card whose value and suit match those in the string provied. If there is
+ *  any error in creating the value of string from the substrings, an error is
+ *  bubbled up.
+ */
 func CreateCard(s string) (Card, error) {
     var card Card
     var sErr, vErr error
@@ -166,18 +231,48 @@ func CreateCard(s string) (Card, error) {
     return card, nil
 }
 
+
+/*
+ * Converts a card to a string representation.
+ *
+ * Returns:
+ *  A string representation of a card, which is essentially {V}{S}, where V is
+ *  the value of the card and {S} is the Suit of the card.
+ */
 func (c Card) String() string {
     return c.Value.String() + c.Suit.String()
 }
 
+
+/*
+ * Checks if a card is a trump card. This method accounts for the left bower
+ * oddity in suits.
+ *
+ * Args:
+ *  t: The trump suit.
+ *
+ * Returns:
+ *  True if the card has a trump suit and false otherwise. A card is a trump if
+ *  it's suit matches that of the trump suit, or it is the other bower suit and
+ *  and the value of the card is J.
+ */
 func (c Card) IsTrump(t Suit) bool {
     return c.AdjSuit(t) == t
 }
 
-// Adjusts suit of this card based on the trump suit. This is only really
-// valuable when it matters if the card can be the left bower. In this case,
-// this method returns that the suit of this card is the trump suit. For all
-// other cards, the suit is simply outputted.
+
+/*
+ * Adjusts suit of this card based on the trump suit. This is only really
+ * valuable when it matters if the card can be the left bower. In this case,
+ * this method returns that the suit of this card is the trump suit. For all
+ * other cards, the suit is simply outputted.
+ *
+ * Args:
+ *  t: The trump suit.
+ *
+ * Returns:
+ *  The effective suit of the card accounting for the left bower oddity.
+ */
 func (c Card) AdjSuit(t Suit) Suit {
     adjSuit := c.Suit
     if c.Value == J && c.Suit == t.Left() {
@@ -187,6 +282,17 @@ func (c Card) AdjSuit(t Suit) Suit {
     return adjSuit
 }
 
+
+
+/*
+ * Creates a set of the cards, initialized to true. This method does not give
+ * back a new set each time, there is only one global set behind it all. This
+ * means this method is not thread safe.
+ *
+ * Returns:
+ *  A set (map[Card]bool) with each value initialized to true. All cards in
+ *  a euchre game are in this set.
+ */
 func NewCardsSet() map[Card]bool {
     for k, _ := range CARDS_SET {
         CARDS_SET[k] = true
@@ -195,6 +301,14 @@ func NewCardsSet() map[Card]bool {
     return CARDS_SET
 }
 
+
+/*
+ * Creates a new card set with each value initialized to true.
+ *
+ * Returns:
+ *  A new set (map[Card]bool) with each value initialized to true. All cards in
+ *  a euchre game are in this set.
+ */
 func createCardsSet() map[Card]bool {
     set := make(map[Card]bool)
     for i := 0; i < len(CARDS); i++ {
@@ -204,8 +318,13 @@ func createCardsSet() map[Card]bool {
     return set
 }
 
-// A helper method that simply creates an array that has all the cards in a
-// euchre deck.
+/*
+ * A helper method that simply creates an array that has all the cards in a
+ * euchre deck.
+ *
+ * Returns:
+ *  A new array with the 24 cards used in euchre.
+ */
 func createCards() [24]Card {
     var cards [24]Card
     for i, value := range VALUES {

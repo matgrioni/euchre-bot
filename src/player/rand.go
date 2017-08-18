@@ -14,8 +14,10 @@ type RandPlayer struct {
 }
 
 
-// Used to create a new RandPlayer struct that is properly constructed.
-// Returns a RandPlayer pointer.
+/*
+ * Used to create a new RandPlayer struct that is properly constructed. Returns
+ * a RandPlayer pointer.
+ */
 func NewRand() (*RandPlayer) {
     return &RandPlayer{ }
 }

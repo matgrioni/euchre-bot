@@ -137,7 +137,7 @@ func (p *Perceptron) Converge(inputs []Input, expected []int,
             actual := p.Process(input)
             del := expected[i] - actual
 
-            p.Adjust(input, del, rate)
+            p.adjust(input, del, rate)
 
             if del != 0 {
                 wrong++

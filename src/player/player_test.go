@@ -116,6 +116,22 @@ var fixtures = []fixture {
         deck.Card { deck.D, deck.A },
         deck.Card { deck.H, deck.Nine },
     },
+
+    /*
+     * When there is more than one card that is non-ace, non-trump and solitary
+     * in its suit, then choose the smallest one.
+     */
+     fixture {
+        []deck.Card {
+            deck.Card { deck.D, deck.J },
+            deck.Card { deck.S, deck.A },
+            deck.Card { deck.H, deck.Nine },
+            deck.Card { deck.S, deck.Q },
+            deck.Card { deck.C, deck.J },
+        },
+        deck.Card { deck.S, deck.J },
+        deck.Card { deck.H, deck.Nine },
+     },
 }
 
 

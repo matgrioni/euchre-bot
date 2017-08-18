@@ -12,6 +12,7 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
  * hands and so on using the random package in go.
  */
 
+
 /*
  * Generates a random card. The suit is generated randomly and so is the value.
  *
@@ -26,29 +27,22 @@ func GenCard() Card {
     return card
 }
 
+
 /*
  * Randomly generates n unique cards.
  *
  * Args:
- *  n, type(int): The number of unique cards to randomly generate.
+ *  n: The number of unique cards to randomly generate.
  *
  * Returns:
- *  type([]deck.Card): A slice of n random cards.
+ *  A slice of n random, unique cards.
  */
 func GenHand(n int) []Card {
     hand := make([]Card, n)
-    present := make(map[Card]bool)
+    perm := r.Perm(len(CARDS))
 
-    for i := range hand {
-        gen := GenCard()
-
-        // Ensure that any generated card is only included once.
-        for _, in := present[gen]; in ; _, in = present[gen] {
-            gen = GenCard()
-        }
-
-        present[gen] = true
-        hand[i] = gen
+    for i := 0; i < n; i++ {
+        hand[i] = CARDS[perm[i]]
     }
 
     return hand

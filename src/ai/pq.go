@@ -1,8 +1,6 @@
 package ai
 
-import (
-    "container/heap"
-)
+import "container/heap"
 
 // This file provides a MaxHeap / PriorityQueue for a PQItem. To use the
 // PriorityQueue, create a struct that implements PQItem.

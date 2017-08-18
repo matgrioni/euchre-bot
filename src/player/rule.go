@@ -11,31 +11,39 @@ import (
     "time"
 )
 
-// The input data type is used to represent an input into the perceptron
-// based approach to calling for the dealer to pick it up or not. It implements
-// the ai.Input interface by providing a method to export its data to a slice of
-// features.
+/*
+ * The Input data struct is used to represent an input into the perceptron based
+ * approach to telling the dealer to pick it up or not. It implements the
+ * ai.Input interface.
+ */
 type Input struct {
     Top deck.Card
     Hand []deck.Card
     Dealer int
 }
 
-// Converts an input to a Perceptron used to tell a player to tell the dealer to
-// pick up a card or not to a vector of binary features. The slice is of size 12
-// and has the following features in order:
-// - Nine of trump
-// - Ten of trump
-// - J of trump
-// - Q of trump
-// - K of trump
-// - A of trump
-// - J of same color as trump
-// - AH
-// - AD
-// - AS
-// - AC
-// - Hand only has 2 suits.
+
+/*
+ * Converts an input to a Perceptron used to tell a player to tell the dealer to
+ * pick up a card or not to a vector of binary features. The slice is of size 12
+ * and has the following features in order:
+ *  Nine of trump
+ *  Ten of trump
+ *  J of trump
+ *  Q of trump
+ *  K of trump
+ *  A of trump
+ *  J of same color as trump
+ *  AH
+ *  AD
+ *  AS
+ *  AC
+ *  Hand only has 2 suits.
+ *
+ * Returns:
+ *  A integer vector where each position corresponds with the above features.
+ *  If the feature existed then the value is 1, and 0 otherwise.
+ */
 func (i Input) Features() []int {
     features := make([]int, 12, 12)
 
@@ -126,13 +134,22 @@ func (i Input) Features() []int {
     return features
 }
 
+
+
 type RulePlayer struct {
     pickupFn string
 }
 
-// Used to create a new RulePlayer struct that is properly constructed.
-// pickupFn - The location of the file with the pickup / answer data samples.
-// Returns a RulePlayer pointer.
+
+/*
+ * Used to create a new RulePlayer struct along with a data source for training.
+ *
+ * Args:
+ *  pickupFn: The location of the file with the pickup / answer data samples.
+ *
+ * Returns:
+ *  A RulePlayer pointer that reads data from the given filename.
+ */
 func NewRule(pickupFn string) (*RulePlayer) {
     return &RulePlayer{ pickupFn, }
 }
@@ -218,6 +235,7 @@ func (p *RulePlayer) Discard(hand []deck.Card,
     return hand, minCard
 }
 
+
 func (p *RulePlayer) Call(hand []deck.Card, top deck.Card,
                           who int) (deck.Suit, bool) {
     chosen := false
@@ -279,6 +297,7 @@ func (p *RulePlayer) Call(hand []deck.Card, top deck.Card,
     return maxT, chosen
 }
 
+
 func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                           prior []euchre.Trick) ([]deck.Card, deck.Card) {
     // TODO: For now just use the random approach.
@@ -294,11 +313,18 @@ func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     return hand, final
 }
 
-// Loads the inputs in a file and returns a slice of the inputs and their
-// expected values.
-// fn - The filename where the inputs are located.
-// Returns a slice of ai.Input values and a parallel slice of the expected
-// values for each of these inputs.
+
+/*
+ * Loads the inputs in a file and returns a slice of the inputs and their
+ * expected values.
+ *
+ * Args:
+ *  fn: The filename where the inputs are located.
+ *
+ * Returns:
+ *  A slice of ai.Input values and a parallel slice of the expected values for
+ *  each of these inputs.
+ */
 func loadInputs(fn string) ([]ai.Input, []int) {
     file, err := os.Open(fn)
     check(err)
@@ -337,7 +363,14 @@ func loadInputs(fn string) ([]ai.Input, []int) {
     return samples, expected
 }
 
-// Simple utility method to check and abort if there was an error.
+
+/*
+ * Small utility method to see if an error is actually an error. If it is an
+ * actual error then the program panics.
+ *
+ * Args:
+ *  err: The possible error to check.
+ */
 func check(err error) {
     if err != nil {
         panic(err)

@@ -9,13 +9,16 @@ import (
 
 var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
-// Contains all the relevant information the setup portion of a euchre game.
-// This includes who was dealer, who called it up, what the top card was, if it
-// was picked up, what the trump suit is and if anything was discarded. Not all
-// of these values will be valid. For example, discard only makes since if the
-// top was picked up and you are the dealer, and in this case trump is not
-// necessary. However, together these 6 fields cover all possible starting
-// scenarios of interest.
+
+/*
+ * Contains all the relevant information the setup portion of a euchre game.
+ * This includes who was dealer, who called it up, what the top card was, if it
+ * was picked up, what the trump suit is and if anything was discarded. Not all
+ * of these values will be valid. For example, discard only makes since if the
+ * top was picked up and you are the dealer, and in this case trump is not
+ * necessary. However, together these 6 fields cover all possible starting
+ * scenarios of interest.
+ */
 type Setup struct {
     Dealer int
     Caller int
@@ -25,9 +28,13 @@ type Setup struct {
     Discard deck.Card
 }
 
-// A Trick in Euchre consists of the cards that were played and some context.
-// Namely, who led in the trick (using our famililar number designation) and
-// what the trump suit was.
+
+
+/*
+ * A Trick in Euchre consists of the cards that were played and some context.
+ * Namely, who led in the trick (using our famililar number designation) and
+ * what the trump suit was.
+ */
 type Trick struct {
     Cards []deck.Card
     Led int
@@ -35,6 +42,12 @@ type Trick struct {
 }
 
 
+
+/*
+ * All informative state in the euchre state tree. A state contains all
+ * information prior to this moment including the move that created this current
+ * state.
+ */
 type State struct {
     Setup Setup
     Player int
@@ -54,6 +67,7 @@ type State struct {
 func (s State) Hash() interface{} {
     return s.Move
 }
+
 
 /*
  * Create a determinized euchre state off of an incomplete (non-terminal) euchre
@@ -242,13 +256,21 @@ func NewDeterminizedState(setup Setup, player int, hands [][]deck.Card,
     }
 }
 
-// Returns whether a beats b given the current trump suit. a and b are assumed
-// to be different cards. Also it is assumed a leads before b, such that if a
-// and b are two different non-trump suits, a wins automatically.
-// a     - The card that we are asking if it is greater.
-// b     - The card that we are asking if it beats a if it is led.
-// trump - The current trump suit.
-// Returns if a beats b, if a is led and we are given the trump suit.
+
+
+/*
+ * Returns whether a beats b given the current trump suit. a and b are assumed
+ * to be different cards. Also it is assumed a leads before b, such that if a
+ * and b are two different non-trump suits, a wins automatically.
+ *
+ * Args:
+ *  a: The card that we are asking if it is greater.
+ *  b: The card that we are asking if it beats a if it is led.
+ *  trump: The current trump suit.
+ *
+ * Returns:
+ *  True if a beats b, if a is led and we are given the trump suit.
+ */
 func Beat(a deck.Card, b deck.Card, trump deck.Suit) bool {
     var res bool
     // If a is a trump card but b is not, then a wins.
@@ -288,15 +310,21 @@ func Beat(a deck.Card, b deck.Card, trump deck.Suit) bool {
     return res
 }
 
-// Given a player's current hand and the cards that have been played, the
-// possible cards for a player to play are returned. In other words, all cards
-// in the player's hand that match the suit of the led card are returned or all
-// cards otherwise. Also, the actual cards are not returned, rather their
-// position in the hand is returned. This is to make deletion easier.
-// hand   - The player's current cards.
-// played - The cards that have already been played.
-// trump  - The suit that is currently trump.
-// Returns the index of cards that can be played according to euchre rules.
+/*
+ * Given a player's current hand and the cards that have been played, the
+ * possible cards for a player to play are returned. In other words, all cards
+ * in the player's hand that match the suit of the led card are returned or all
+ * cards otherwise. Also, the actual cards are not returned, rather their
+ * position in the hand is returned. This is to make deletion easier.
+ *
+ * Args:
+ *  hand: The player's current cards.
+ *  played: The cards that have already been played.
+ *  trump: The suit that is currently trump.
+ *
+ * Returns:
+ *  The index of cards in hand that can be played according to euchre rules.
+ */
 func Possible(hand, played []deck.Card, trump deck.Suit) []int {
     possible := make([]int, 0, len(hand))
     if len(played) > 0 {
@@ -316,9 +344,19 @@ func Possible(hand, played []deck.Card, trump deck.Suit) []int {
     return possible
 }
 
-// A function that returns the winning player (using the same number designation
-// as before) based on the trump suit, the cards that have been played, and
-// what the player number is for the first player.
+/*
+ * A function that returns the winning player (using the same number designation
+ * as before) based on the trump suit, the cards that have been played, and
+ * what the player number is for the first player.
+ *
+ * Args:
+ *  played: The cards that were played.
+ *  trump: The trump suit.
+ *  led: The number designation of the person who played the first card.
+ *
+ * Returns:
+ *  The number designation of the person who won the trick.
+ */
 func Winner(played []deck.Card, trump deck.Suit, led int) int {
     highPlayer := led
 
@@ -336,6 +374,11 @@ func Winner(played []deck.Card, trump deck.Suit, led int) int {
 }
 
 
+
+/*
+ * A MCTSEngine. This engine encapsulates all the game logic needed for decision
+ * making in euchre.
+ */
 type Engine struct { }
 
 

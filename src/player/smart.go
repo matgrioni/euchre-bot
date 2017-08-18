@@ -66,6 +66,7 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
     return (expected > 0.6 && nPlayer % 2 == 0) || (expected < -0.6 && nPlayer % 2 == 1)
 }
 
+
 func (p *SmartPlayer) Discard(hand []deck.Card,
                               top deck.Card) ([]deck.Card, deck.Card) {
     // First construct a map that holds counts for all of the suits.
@@ -127,6 +128,7 @@ func (p *SmartPlayer) Discard(hand []deck.Card,
     hand[minIndex] = top
     return hand, minCard
 }
+
 
 func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
                            who int) (deck.Suit, bool) {

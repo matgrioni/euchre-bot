@@ -283,6 +283,22 @@ func (c Card) AdjSuit(t Suit) Suit {
 }
 
 
+/*
+ * A helper to compare the values of two cards. This is a wrapper around the
+ * Card compare function.
+ *
+ * Args:
+ *  card1: The Card the comparison result is reference to.
+ *  card2: The Card to compare against.
+ *
+ * Returns:
+ *  A postive, zero, or negative number if card1 is greater, equal, or less than
+ *  card2 respectively.
+ */
+func ValueCompare(card1 deck.Card, card2 deck.Card) int {
+    return card1.Value.Compare(card2.Value)
+}
+
 
 /*
  * Creates a set of the cards, initialized to true. This method does not give

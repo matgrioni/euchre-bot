@@ -69,22 +69,33 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
 
 func (p *SmartPlayer) Discard(hand []deck.Card,
                               top deck.Card) ([]deck.Card, deck.Card) {
-    // First construct a map that holds counts for all of the suits.
+    // First construct a map that holds counts for all of the suits and the
+    // lowest card for each suit.
     suitsCount := make(map[deck.Suit]int)
     lowest := make(map[deck.Suit]int)
+
+    hand = append(hand, top)
     for i, card := range hand {
         adjSuit := hand[i].AdjSuit(top.Suit)
         suitsCount[adjSuit]++
+
         if _, ok := lowest[adjSuit]; !ok {
             lowest[adjSuit] = i
-        } else if int(card.Value) < int(hand[lowest[adjSuit]].Value) {
-            lowest[adjSuit] = i
+        } else {
+            // If the lowest card for a given suit can beat the current card,
+            // the current card is smaller.
+            curLowest := hand[lowest[adjSuit]]
+            if euchre.Beat(curLowest, card, top.Suit) {
+                lowest[adjSuit] = i
+            }
         }
     }
 
+    singleFound := false
+    trumpExists := suitsCount[top.Suit] > 1
     minCard := deck.Card { top.Suit, deck.J }
     minIndex := -1
-    singleFound := false
+
     for suit, i := range lowest {
         card := hand[i]
 
@@ -92,10 +103,10 @@ func (p *SmartPlayer) Discard(hand []deck.Card,
         // the current min card is of greater value (it is trump or its value is
         // less), or the current min card is not the only card of its suit then
         // update the trackers.
-        if suitsCount[suit] == 1 && suit != top.Suit && card.Value != deck.A &&
-           (minCard.AdjSuit(top.Suit) == top.Suit ||
-            int(card.Value) < int(minCard.Value) ||
-            suitsCount[minCard.Suit] > 1) {
+        if trumpExists && suitsCount[suit] == 1 && suit != top.Suit &&
+           card.Value != deck.A && (minCard.IsTrump(top.Suit) ||
+           deck.ValueCompare(card, minCard) < 0 ||
+           suitsCount[minCard.Suit] > 1) {
             singleFound = true
             minCard = card
             minIndex = i
@@ -112,20 +123,21 @@ func (p *SmartPlayer) Discard(hand []deck.Card,
                     minCard = card
                     minIndex = i
                 }
-            } else {
+            } else if minCard.IsTrump(top.Suit) || (!card.IsTrump(top.Suit) &&
+                      deck.ValueCompare(card, minCard) < 0) {
             // If the cards are not of the same suit then if the current min is
             // trump, the new card must be less. Otherwise, as long as the
             // card in question is not trump and it's value is less then the
             // current min card, update the trackers.
-                if minCard.AdjSuit(top.Suit) == top.Suit || (card.AdjSuit(top.Suit) != top.Suit && int(card.Value) < int(minCard.Value)) {
-                    minCard = card
-                    minIndex = i
-                }
+                minCard = card
+                minIndex = i
             }
         }
     }
 
     hand[minIndex] = top
+    hand = hand[:len(hand) - 1]
+
     return hand, minCard
 }
 

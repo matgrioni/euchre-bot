@@ -9,18 +9,52 @@ import (
 
 
 
-type Decision struct {
-    Move int
-    Value int
+type SmartPlayer struct {
+    pickupConfidence float64
+    callConfidence float64
+
+    pickupRuns int
+    pickupDeterminizations int
+
+    callRuns int
+    callDeterminizations int
+
+    playRuns int
+    playDeterminizations int
 }
 
 
+/*
+ * TODO
+ *
+ * Args:
+ *  pickupConfidence:
+ *  callConfidence:
+ *  pickupRuns:
+ *  pickupDeterminizations:
+ *  callRuns:
+ *  callDeterminizations:
+ *  playRuns:
+ *  playDeterminizations:
+ *
+ * Returns:
+ *  TODO
+ */
+func NewSmart(pickupConfidence float64, callConfidence float64,
+              pickupRuns int, pickupDeterminizations int,
+              callRuns int, callDeterminizations int,
+              playRuns int, playDeterminizations int) (*SmartPlayer) {
 
-type SmartPlayer struct { }
-
-
-func NewSmart() (*SmartPlayer) {
-    return &SmartPlayer{ }
+    return &SmartPlayer{
+        pickupConfidence,
+        callConfidence,
+        pickupRuns,
+        pickupDeterminizations,
+        callRuns,
+        callDeterminizations,
+        playRuns,
+        playDeterminizations,
+    }
 }
 
 
@@ -61,9 +95,10 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
     s := euchre.NewUndeterminizedState(setup, nPlayer, actualHand, played,
                                        prior, deck.Card{})
     e := euchre.Engine{ }
-    _, expected := ai.MCTS(s, e, 3000, 100)
+    _, expected := ai.MCTS(s, e, p.pickupRuns, p.pickupDeterminizations)
 
-    return (expected > 0.6 && nPlayer % 2 == 0) || (expected < -0.6 && nPlayer % 2 == 1)
+    return (nPlayer % 2 == 0 && expected > p.pickupConfidence) ||
+           (nPlayer % 2 == 1 && expected < -1 * p.pickupConfidence)
 }
 
 
@@ -165,7 +200,7 @@ func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
             s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
                                                deck.Card{})
             e := euchre.Engine{ }
-            _, expected := ai.MCTS(s, e, 50, 100)
+            _, expected := ai.MCTS(s, e, p.callRuns, p.callDeterminizations)
 
             if expected > max {
                 max = expected
@@ -174,7 +209,7 @@ func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
         }
     }
 
-    return maxSuit, max > 0.6
+    return maxSuit, max > p.callConfidence
 }
 
 
@@ -185,7 +220,7 @@ func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
     s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
                                        deck.Card{})
     e := euchre.Engine{ }
-    chosenState, _ := ai.MCTS(s, e, 3000, 100)
+    chosenState, _ := ai.MCTS(s, e, p.playRuns, p.playDeterminizations)
 
     card = chosenState.(euchre.State).Move
 

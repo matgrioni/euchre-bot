@@ -211,7 +211,7 @@ func (p *RulePlayer) Discard(hand []deck.Card,
         // update the trackers.
         if trumpExists && suitsCount[suit] == 1 && suit != top.Suit &&
            card.Value != deck.A && (minCard.IsTrump(top.Suit) ||
-           ValueCompare(card, minCard) < 0 || suitsCount[minCard.Suit] > 1) {
+           deck.ValueCompare(card, minCard) < 0 || suitsCount[minCard.Suit] > 1) {
             singleFound = true
             minCard = card
             minIndex = i
@@ -229,7 +229,7 @@ func (p *RulePlayer) Discard(hand []deck.Card,
                     minIndex = i
                 }
             } else if minCard.IsTrump(top.Suit) || (!card.IsTrump(top.Suit) &&
-                      ValueCompare(card, minCard) < 0) {
+                      deck.ValueCompare(card, minCard) < 0) {
             // If the cards are not of the same suit then if the current min is
             // trump, the new card must be less. Otherwise, as long as the
             // card in question is not trump and it's value is less then the

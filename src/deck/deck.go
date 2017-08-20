@@ -295,7 +295,7 @@ func (c Card) AdjSuit(t Suit) Suit {
  *  A postive, zero, or negative number if card1 is greater, equal, or less than
  *  card2 respectively.
  */
-func ValueCompare(card1 deck.Card, card2 deck.Card) int {
+func ValueCompare(card1 Card, card2 Card) int {
     return card1.Value.Compare(card2.Value)
 }
 

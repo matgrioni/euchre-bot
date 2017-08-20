@@ -25,20 +25,25 @@ type SmartPlayer struct {
 
 
 /*
- * TODO
+ * Creates a new SmartPlayer with the given attributes. These attributes are the
+ * inputs to the models behind the SmartPlayer's logic. Confidence is on a scale
+ * from the maximum possible evaluation to the minimum possible evaluation
+ * according to the MCTS evaluation function. Runs is how many times to run a
+ * simulation on a given determinization. Determinizations says how many
+ * different determinizations to go through.
  *
  * Args:
- *  pickupConfidence:
- *  callConfidence:
- *  pickupRuns:
- *  pickupDeterminizations:
- *  callRuns:
- *  callDeterminizations:
- *  playRuns:
- *  playDeterminizations:
+ *  pickupConfidence: The confidence needed to tell the dealer to pickup.
+ *  callConfidence: The confidence needed to call suit after everybody passes.
+ *  pickupRuns: The amount of times to run a determinization for picking up.
+ *  pickupDeterminizations: The amount of determinizations for picking up.
+ *  callRuns: The amount of times to run a determinization for calling suit.
+ *  callDeterminizations: The amount of determinizations for calling suit.
+ *  playRuns: The amount of times to run a determinization for a general play.
+ *  playDeterminizations: The amount of determinizations for a general play.
  *
  * Returns:
- *  TODO
+ *  A SmartPlayer that uses the given parameters in its decision making.
  */
 func NewSmart(pickupConfidence float64, callConfidence float64,
               pickupRuns int, pickupDeterminizations int,

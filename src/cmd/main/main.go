@@ -12,6 +12,17 @@ import (
     "runtime/pprof"
 )
 
+const (
+    PICKUP_CONF = 0.6
+    CALL_CONF = 0.6
+    PICKUP_RUNS = 35
+    PICKUP_DETERMINIZATIONS = 1000
+    CALL_RUNS = 30
+    CALL_DETERMINIZATIONS = 1000
+    PLAY_RUNS = 25
+    PLAY_DETERMINIZATIONS = 3000
+)
+
 var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
 
 func inputValidCard() deck.Card {
@@ -29,7 +40,10 @@ func inputValidCard() deck.Card {
 }
 
 func main() {
-    player := player.NewSmart()
+    player := player.NewSmart(PICKUP_CONF, CALL_CONF,
+                              PICKUP_RUNS, PICKUP_DETERMINIZATIONS,
+                              CALL_RUNS, CALL_DETERMINIZATIONS,
+                              PLAY_RUNS, PLAY_DETERMINIZATIONS)
 
     fmt.Println("Welcome to the Euchre AI!.")
     fmt.Println("Albert is basically the best euchre player ever.")

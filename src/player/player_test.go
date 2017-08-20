@@ -6,6 +6,18 @@ import (
 )
 
 
+const (
+    PICKUP_CONF = 0.6
+    CALL_CONF = 0.6
+    PICKUP_RUNS = 35
+    PICKUP_DETERMINIZATIONS = 1000
+    CALL_RUNS = 30
+    CALL_DETERMINIZATIONS = 1000
+    PLAY_RUNS = 25
+    PLAY_DETERMINIZATIONS = 3000
+)
+
+
 /*
  * Tests the different types of players functionality.
  */
@@ -166,7 +178,10 @@ func TestDiscard(t *testing.T) {
  */
 func getTestablePlayers() []Player {
     rule := NewRule("")
-    smart := NewSmart()
+    smart := NewSmart(PICKUP_CONF, CALL_CONF,
+                      PICKUP_RUNS, PICKUP_DETERMINIZATIONS,
+                      CALL_RUNS, CALL_DETERMINIZATIONS,
+                      PLAY_RUNS, PLAY_DETERMINIZATIONS)
 
     players := []Player { rule, smart }
 

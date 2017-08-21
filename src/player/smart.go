@@ -12,6 +12,7 @@ import (
 type SmartPlayer struct {
     pickupConfidence float64
     callConfidence float64
+    aloneConfidence float64
 
     pickupRuns int
     pickupDeterminizations int
@@ -21,6 +22,9 @@ type SmartPlayer struct {
 
     playRuns int
     playDeterminizations int
+
+    aloneRuns int
+    aloneDeterminizations int
 }
 
 
@@ -41,24 +45,31 @@ type SmartPlayer struct {
  *  callDeterminizations: The amount of determinizations for calling suit.
  *  playRuns: The amount of times to run a determinization for a general play.
  *  playDeterminizations: The amount of determinizations for a general play.
+ *  aloneRuns: The amount of times to run a determinization for going alone.
+ *  aloneDeterminizations: The amount of determinizations for going alone.
  *
  * Returns:
  *  A SmartPlayer that uses the given parameters in its decision making.
  */
 func NewSmart(pickupConfidence float64, callConfidence float64,
+              aloneConfidence float64,
               pickupRuns int, pickupDeterminizations int,
               callRuns int, callDeterminizations int,
-              playRuns int, playDeterminizations int) (*SmartPlayer) {
+              playRuns int, playDeterminizations int,
+              aloneRuns int, aloneDeterminizations int) (*SmartPlayer) {
 
     return &SmartPlayer{
         pickupConfidence,
         callConfidence,
+        aloneConfidence,
         pickupRuns,
         pickupDeterminizations,
         callRuns,
         callDeterminizations,
         playRuns,
         playDeterminizations,
+        aloneRuns,
+        aloneDeterminizations,
     }
 }
 
@@ -215,6 +226,20 @@ func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
     }
 
     return maxSuit, max > p.callConfidence
+}
+
+
+func (p *SmartPlayer) Alone(setup euchre.Setup, hand []deck.Card) bool {
+    played := make([]deck.Card, 0)
+    prior := make([]euchre.Trick, 0)
+    nPlayer := (setup.Dealer + 1) % 4
+
+    s := euchre.NewUndeterminizedState(setup, nPlayer, hand, played, prior,
+                                       deck.Card{})
+    e := euchre.Engine{}
+    _, expected := ai.MCTS(s, e, p.aloneRuns, p.aloneDeterminizations)
+
+    return expected > p.aloneConfidence
 }
 
 

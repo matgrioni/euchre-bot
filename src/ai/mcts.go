@@ -266,8 +266,8 @@ func runPlayout(node *Node, engine MCTSEngine, log bool) int {
         eval = runPlayout(next, engine, log)
 
         adjEval := eval
-        if eval < 0 {
-            adjEval = -1 * eval
+        if adjEval < 0 {
+            adjEval *= -1
         }
         if engine.Favorable(node.GetValue().(State), eval) {
             next.wins += adjEval

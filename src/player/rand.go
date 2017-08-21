@@ -12,13 +12,15 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 /*
  * A RandomPlayer. This player is non determinisitic, so for the same input, you
- * can get different outputs. The distribution of picking up, or discarding can
- * are configurable. Discarding or playing is not since they would naturally
- * have to depend on card order, which does not necessairily have any meaning.
+ * can get different outputs. The distribution of picking up, discarding or
+ * going alone can are configurable. Discarding or playing is not since they
+ * would naturally have to depend on card order, which does not necessairily
+ * have any meaning.
  */
 type RandPlayer struct {
     pickupProb float64
     callProb float64
+    aloneProb float64
 }
 
 
@@ -31,9 +33,15 @@ type RandPlayer struct {
  *              picked up.
  *  callProb: The probability that the player will call the suit after everybody
  *            skips the first round.
+ *  aloneProb: The probability that the player will go alone if he calls the
+ *             the suit or tells the dealer to pickup.
  */
-func NewRand(pickupProb float64, callProb float64) (*RandPlayer) {
-    return &RandPlayer{ }
+func NewRand(pickupProb float64, callProb float64, aloneProb float64) (*RandPlayer) {
+    return &RandPlayer{
+        pickupProb,
+        callProb,
+        aloneProb,
+    }
 }
 
 
@@ -90,6 +98,22 @@ func (p *RandPlayer) Call(hand []deck.Card, top deck.Card,
     }
 
     return s, r.Float64() < p.callProb
+}
+
+
+/*
+ * Player decision method to go alone or not. The player will go alone with
+ * probability aloneProb.
+ *
+ * Args:
+ *  setup: The setup of the game from the first phases.
+ *  hand: The current player's hand.
+ *
+ * Returns:
+ *  True if the player calls going alone and false otherwise.
+ */
+func (p *RandPlayer) Alone(setup euchre.Setup, hand []deck.Card) bool {
+    return r.Float64() < p.aloneProb
 }
 
 

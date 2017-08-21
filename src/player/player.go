@@ -65,6 +65,22 @@ type Player interface {
 
 
     /*
+     * Determines whether the player should go alone on a certain hand. A player
+     * can only call "Going Alone!" when they called the card up.
+     *
+     * Args:
+     *  setup: The setup of the euchre game before any trick. This includes
+     *         information such as who the dealer was, if the top card was
+     *         picked up, what the discard was, etc.
+     *  hand: The player's current hand.
+     *
+     * Returns:
+     *  True if the player should call "Going Alone!" and false otherwise.
+     */
+    Alone(setup euchre.Setup, hand []deck.Card) bool
+
+
+    /*
      * Determines which card to play given the current euchre situation. This
      * method removes the played card from the hand.
      *

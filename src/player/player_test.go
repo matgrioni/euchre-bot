@@ -9,12 +9,15 @@ import (
 const (
     PICKUP_CONF = 0.6
     CALL_CONF = 0.6
-    PICKUP_RUNS = 35
-    PICKUP_DETERMINIZATIONS = 1000
-    CALL_RUNS = 30
-    CALL_DETERMINIZATIONS = 1000
-    PLAY_RUNS = 25
-    PLAY_DETERMINIZATIONS = 3000
+    ALONE_CONF = 1.2
+    PICKUP_RUNS = 5000
+    PICKUP_DETERMINIZATIONS = 50
+    CALL_RUNS = 5000
+    CALL_DETERMINIZATIONS = 50
+    PLAY_RUNS = 5000
+    PLAY_DETERMINIZATIONS = 50
+    ALONE_RUNS = 5000
+    ALONE_DETERMINIZATIONS = 50
 )
 
 
@@ -178,10 +181,11 @@ func TestDiscard(t *testing.T) {
  */
 func getTestablePlayers() []Player {
     rule := NewRule("")
-    smart := NewSmart(PICKUP_CONF, CALL_CONF,
+    smart := NewSmart(PICKUP_CONF, CALL_CONF, ALONE_CONF,
                       PICKUP_RUNS, PICKUP_DETERMINIZATIONS,
                       CALL_RUNS, CALL_DETERMINIZATIONS,
-                      PLAY_RUNS, PLAY_DETERMINIZATIONS)
+                      PLAY_RUNS, PLAY_DETERMINIZATIONS,
+                      ALONE_RUNS, ALONE_DETERMINIZATIONS)
 
     players := []Player { rule, smart }
 

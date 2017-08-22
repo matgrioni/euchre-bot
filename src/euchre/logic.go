@@ -162,7 +162,7 @@ func winner(played []deck.Card, trump deck.Suit, led int, alone int) int {
     }
 
     nextAfterHigh := (highPlayer + 1) % 4
-    if alone > 0 && alone < 4 {
+    if alone >= 0 && alone < 4 {
         for player := led; player != nextAfterHigh; player = (player + 1) % 4 {
             // If somewhere between the leading player, and the highPlayer the
             // player who is cucked by their partner calling going alone is

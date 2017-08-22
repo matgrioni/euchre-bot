@@ -26,6 +26,8 @@ type Setup struct {
     Top deck.Card
     Trump deck.Suit
     Discard deck.Card
+    Alone bool
+    AlonePlayer int
 }
 
 

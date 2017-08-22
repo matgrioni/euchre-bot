@@ -313,13 +313,14 @@ func (p *RulePlayer) Call(hand []deck.Card, top deck.Card,
  * Player decision method to go alone or not.
  *
  * Args:
- *  setup: The setup of the game from the first phases.
  *  hand: The current player's hand.
+ *  top: The card on top of the kitty.
+ *  who: The player number designation for the dealer.
  *
  * Returns:
  *  True if the player calls going alone and false otherwise.
  */
-func (p *RulePlayer) Alone(setup euchre.Setup, hand []deck.Card) bool {
+func (p *RulePlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
     // TODO: For now just use the random approach.
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
     return r.Float64() < 0.5

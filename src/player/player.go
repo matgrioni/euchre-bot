@@ -69,15 +69,14 @@ type Player interface {
      * can only call "Going Alone!" when they called the card up.
      *
      * Args:
-     *  setup: The setup of the euchre game before any trick. This includes
-     *         information such as who the dealer was, if the top card was
-     *         picked up, what the discard was, etc.
      *  hand: The player's current hand.
+     *  top: The top card on top of the kitty.
+     *  who: The player number designation for the dealer.
      *
      * Returns:
      *  True if the player should call "Going Alone!" and false otherwise.
      */
-    Alone(setup euchre.Setup, hand []deck.Card) bool
+    Alone(hand []deck.Card, top deck.Card, who int) bool
 
 
     /*

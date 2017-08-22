@@ -106,13 +106,14 @@ func (p *RandPlayer) Call(hand []deck.Card, top deck.Card,
  * probability aloneProb.
  *
  * Args:
- *  setup: The setup of the game from the first phases.
  *  hand: The current player's hand.
+ *  top: The card on top of the kitty.
+ *  who: The player number designation for the dealer.
  *
  * Returns:
  *  True if the player calls going alone and false otherwise.
  */
-func (p *RandPlayer) Alone(setup euchre.Setup, hand []deck.Card) bool {
+func (p *RandPlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
     return r.Float64() < p.aloneProb
 }
 

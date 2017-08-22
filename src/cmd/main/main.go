@@ -43,6 +43,15 @@ func inputValidCard() deck.Card {
 }
 
 func main() {
+    var (
+        dealer int
+        caller int
+        trump deck.Suit
+        d deck.Card
+        alone bool
+        alonePlayer int
+    )
+
     player := player.NewSmart(PICKUP_CONF, CALL_CONF, ALONE_CONF,
                               PICKUP_RUNS, PICKUP_DETERMINIZATIONS,
                               CALL_RUNS, CALL_DETERMINIZATIONS,
@@ -68,8 +77,7 @@ func main() {
 
     fmt.Println("You (0), Left (1), Partner (2), Right (3)")
     fmt.Println("Enter whose deal it was...")
-    var dealer int
-    var caller int
+
     fmt.Scanf("%d", &dealer)
     fmt.Println()
 
@@ -83,10 +91,6 @@ func main() {
         defer pprof.StopCPUProfile()
     }
 
-    var (
-        trump deck.Suit
-        d deck.Card
-    )
     pickedUp := player.Pickup(hand, top, dealer)
     if pickedUp {
         fmt.Println("Order it up.")
@@ -100,8 +104,16 @@ func main() {
         pickedUp = pickedUpIn == 1
 
         if pickedUp {
+            var aloneIn int
             fmt.Println("Who was it?")
             fmt.Scanf("%d", &caller)
+
+            fmt.Println("Is this person going alone? (1/0)")
+            fmt.Scanf("%d", &aloneIn)
+            alone = aloneIn == 1
+            if alone {
+                alonePlayer = caller
+            }
         }
 
         if !pickedUp {
@@ -138,6 +150,15 @@ func main() {
         }
     }
 
+    if caller == 0 {
+        alone = player.Alone(hand, top, dealer)
+
+        if alone {
+            fmt.Println("Go alone!")
+            alonePlayer = 0
+        }
+    }
+
     setup := euchre.Setup {
         dealer,
         caller,
@@ -145,16 +166,10 @@ func main() {
         top,
         trump,
         d,
+        alone,
+        alonePlayer,
     }
 
-    var alone bool
-    if pickedUp {
-        alone = player.Alone(setup, hand)
-
-        if alone {
-            fmt.Println("Go alone!")
-        }
-    }
 
     led := (dealer + 1) % 4
     var prior []euchre.Trick

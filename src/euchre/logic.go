@@ -5,7 +5,6 @@ import (
 )
 
 
-
 /*
  * Returns whether a beats b given the current trump suit. a and b are assumed
  * to be different cards. Also it is assumed a leads before b, such that if a
@@ -95,6 +94,41 @@ func Winner(played []deck.Card, trump deck.Suit, led int) int {
 func WinnerAlone(played []deck.Card, trump deck.Suit, led int, alone int) int {
     return winner(played, trump, led, alone)
 }
+
+/*
+ * Given a player's current hand and the cards that have been played, the
+ * possible cards for a player to play are returned. In other words, all cards
+ * in the player's hand that match the suit of the led card are returned or all
+ * cards otherwise. Also, the actual cards are not returned, rather their
+ * position in the hand is returned. This is to make deletion easier.
+ *
+ * Args:
+ *  hand: The player's current cards.
+ *  played: The cards that have already been played.
+ *  trump: The suit that is currently trump.
+ *
+ * Returns:
+ *  The index of cards in hand that can be played according to euchre rules.
+ */
+func Possible(hand, played []deck.Card, trump deck.Suit) []int {
+    possible := make([]int, 0, len(hand))
+    if len(played) > 0 {
+        for i := range hand {
+            if hand[i].AdjSuit(trump) == played[0].AdjSuit(trump) {
+                possible = append(possible, i)
+            }
+        }
+    }
+
+    if len(possible) == 0 {
+        for i := range hand {
+            possible = append(possible, i)
+        }
+    }
+
+    return possible
+}
+
 
 
 /*

@@ -108,7 +108,11 @@ func (s State) Determinize() {
         left--
     }
 
-    if s.Setup.Dealer != s.Player {
+    // If the top card was picked up, and the top card has not already been
+    // excluded due to it already being played in the current or previous
+    // tricks, then remove it from contention. It can only be with the person
+    // who picked it up at this moment.
+    if s.Setup.PickedUp && cardsSet[s.Setup.Top] {
         cardsSet[s.Setup.Top] = false
         left--
     }
@@ -120,7 +124,7 @@ func (s State) Determinize() {
     // Go through each opponent player giving them cards until they have a
     // full hand given the current trick and player.
     for player := 1; player < 4; player++ {
-        if s.Setup.Dealer == player {
+        if s.Setup.PickedUp && s.Setup.Dealer == player {
             s.Hands[player] = append(s.Hands[player], s.Setup.Top)
         }
 

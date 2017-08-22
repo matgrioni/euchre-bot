@@ -8,7 +8,6 @@ import (
 )
 
 
-
 type SmartPlayer struct {
     pickupConfidence float64
     callConfidence float64
@@ -239,7 +238,8 @@ func (p *SmartPlayer) Alone(setup euchre.Setup, hand []deck.Card) bool {
     e := euchre.Engine{}
     _, expected := ai.MCTS(s, e, p.aloneRuns, p.aloneDeterminizations)
 
-    return expected > p.aloneConfidence
+    return (nPlayer % 2 == 0 && expected > p.aloneConfidence) ||
+           (nPlayer % 2 == 1 && expected < -1 * p.aloneConfidence)
 }
 
 

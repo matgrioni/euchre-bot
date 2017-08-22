@@ -7,6 +7,19 @@ import (
 
 
 /*
+ * A test struct for going alone. This struct constitutes one test case for
+ * the WinnerAlone method.
+ */
+type winnerAloneTest struct {
+    played []deck.Card
+    trump deck.Suit
+    led int
+    alone int
+    expected int
+}
+
+
+/*
  * Test euchre#Beat. A helper to determine which card wins in a head to head
  * faceoff where one card is chosen to be leading and there is a defined
  * trump suit.
@@ -214,5 +227,88 @@ func TestWinnerManyTrump(t *testing.T) {
     res := Winner(played, trump, led)
     if answer != res {
         t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
+    }
+}
+
+
+/*
+ * Test WinnerAlone.
+ */
+
+var winnerAloneTests = []winnerAloneTest {
+    /*
+     * A test where the discarded player doesn't matter since the winner is
+     * before him.
+     */
+    winnerAloneTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.A },
+            deck.Card { deck.C, deck.Ten },
+            deck.Card { deck.C, deck.Q },
+        },
+        deck.H,
+        0,
+        0,
+        0,
+    },
+
+    /*
+     * A test where the winner is after the person who is cucked.
+     */
+    winnerAloneTest {
+        []deck.Card {
+            deck.Card { deck.D, deck.J },
+            deck.Card { deck.H, deck.J },
+            deck.Card { deck.S, deck.Q },
+        },
+        deck.H,
+        1,
+        0,
+        3,
+    },
+
+    /*
+     * A test where the leader is the one going alone.
+     */
+    winnerAloneTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.Q },
+            deck.Card { deck.S, deck.A },
+            deck.Card { deck.H, deck.A },
+        },
+        deck.H,
+        1,
+        1,
+        0,
+    },
+
+    /*
+     * Just another normal test case.
+     */
+    winnerAloneTest {
+        []deck.Card {
+            deck.Card { deck.C, deck.Nine },
+            deck.Card { deck.H, deck.Q },
+            deck.Card { deck.S, deck.J },
+        },
+        deck.S,
+        2,
+        1,
+        1,
+    },
+}
+
+
+/*
+ * Test we are able to properly determine the winner when there is a player
+ * who is going alone.
+ */
+func TestWinnerAlone(t *testing.T) {
+    for _, test := range winnerAloneTests {
+        res := WinnerAlone(test.played, test.trump, test.led, test.alone)
+
+        if res != test.expected {
+            t.Errorf("Expected error to be %d but got %d\n", test.expected, res)
+        }
     }
 }

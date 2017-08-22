@@ -10,7 +10,7 @@ import (
  * A test struct for going alone. This struct constitutes one test case for
  * the WinnerAlone method.
  */
-type winnerAloneTest struct {
+type winnerTest struct {
     played []deck.Card
     trump deck.Suit
     led int
@@ -93,154 +93,121 @@ func TestBeatBowers(t *testing.T) {
 
 
 /*
- * euchre#Winner. A helper to determine which player is the winner given the
- * player who led, the list of cards, and the trump suit.
+ * Test Winner
  */
 
+var winnerTests = []winnerTest {
+    /*
+     * The start of the non-going alone tests (i.e. where everybody plays).
+     */
 
-func TestWinnerOneTrump1(t *testing.T) {
-    played := []deck.Card {
-        deck.Card{ deck.D, deck.A },
-        deck.Card{ deck.H, deck.Q },
-        deck.Card{ deck.D, deck.Ten },
-        deck.Card{ deck.D, deck.Q },
-    }
+    // Only one trump
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.D, deck.A },
+            deck.Card { deck.H, deck.Q },
+            deck.Card { deck.D, deck.Ten },
+            deck.Card { deck.D, deck.Q },
+        },
+        deck.H,
+        2,
+        -1,
+        3,
+    },
 
-    trump := deck.H
-    led := 2
-    answer := 3
+    // Only one trump v2
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.A },
+            deck.Card { deck.H, deck.Nine },
+            deck.Card { deck.S, deck.A },
+            deck.Card { deck.D, deck.Q },
+        },
+        deck.D,
+        2,
+        -1,
+        1,
+    },
 
-    res := Winner(played, trump, led)
-    if answer != res {
-        t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
-    }
-}
+    // Only one trump v3
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.D, deck.Q },
+            deck.Card { deck.D, deck.K },
+            deck.Card { deck.C, deck.Ten },
+            deck.Card { deck.D, deck.A },
+        },
+        deck.C,
+        1,
+        -1,
+        3,
+    },
 
+    // Only one trump v4
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.A },
+            deck.Card { deck.H, deck.J },
+            deck.Card { deck.H, deck.Q },
+            deck.Card { deck.C, deck.Ten },
+        },
+        deck.C,
+        2,
+        -1,
+        1,
+    },
 
-func TestWinnerOneTrump2(t *testing.T) {
-    played := []deck.Card {
-        deck.Card{ deck.H, deck.A },
-        deck.Card{ deck.H, deck.Nine },
-        deck.Card{ deck.S, deck.A },
-        deck.Card{ deck.D, deck.Q },
-    }
+    // Only one trump v5
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.A },
+            deck.Card { deck.H, deck.J },
+            deck.Card { deck.H, deck.Q },
+            deck.Card { deck.C, deck.Ten },
+        },
+        deck.C,
+        2,
+        -1,
+        1,
+    },
 
-    trump := deck.D
-    led := 2
-    answer := 1
+    // All non-trump
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.Ten },
+            deck.Card { deck.H, deck.A },
+            deck.Card { deck.H, deck.Q },
+            deck.Card { deck.H, deck.Ten },
+        },
+        deck.C,
+        3,
+        -1,
+        0,
+    },
 
-    res := Winner(played, trump, led)
-    if answer != res {
-        t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
-    }
-}
+    // Multiple trump in one trick.
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.D, deck.J },
+            deck.Card { deck.C, deck.Ten },
+            deck.Card { deck.S, deck.J },
+            deck.Card { deck.C, deck.A },
+        },
+        deck.C,
+        1,
+        -1,
+        3,
+    },
 
+    /*
+     * The start of going alone tests.
+     */
 
-func TestWinnerOneTrump3(t *testing.T) {
-    played := []deck.Card {
-        deck.Card{ deck.D, deck.Q },
-        deck.Card{ deck.D, deck.K },
-        deck.Card{ deck.C, deck.Ten },
-        deck.Card{ deck.D, deck.A },
-    }
-
-    led := 1
-    trump := deck.C
-    answer := 3
-
-    res := Winner(played, trump, led)
-    if answer != res {
-        t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
-    }
-}
-
-
-func TestWinnerOneTrump4(t *testing.T) {
-    played := []deck.Card {
-        deck.Card{ deck.H, deck.A },
-        deck.Card{ deck.H, deck.J },
-        deck.Card{ deck.H, deck.Q },
-        deck.Card{ deck.C, deck.Ten },
-    }
-
-    led := 2
-    trump := deck.C
-    answer := 1
-
-    res := Winner(played, trump, led)
-    if answer != res {
-        t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
-    }
-}
-
-
-func TestWinnerOneTrump5(t *testing.T) {
-    played := []deck.Card {
-        deck.Card{ deck.H, deck.A },
-        deck.Card{ deck.H, deck.J },
-        deck.Card{ deck.H, deck.Q },
-        deck.Card{ deck.C, deck.Ten },
-    }
-
-    led := 2
-    trump := deck.C
-    answer := 1
-
-    res := Winner(played, trump, led)
-    if answer != res {
-        t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
-    }
-}
-
-
-func TestWinnerNonTrump(t *testing.T) {
-    played := []deck.Card {
-        deck.Card{ deck.H, deck.Ten },
-        deck.Card{ deck.H, deck.A },
-        deck.Card{ deck.H, deck.Q },
-        deck.Card{ deck.H, deck.Ten },
-    }
-
-    led := 3
-    trump := deck.C
-    answer := 0
-
-    res := Winner(played, trump, led)
-    if answer != res {
-        t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
-    }
-}
-
-
-func TestWinnerManyTrump(t *testing.T) {
-    played := []deck.Card {
-        deck.Card{ deck.D, deck.J },
-        deck.Card{ deck.C, deck.Ten },
-        deck.Card{ deck.S, deck.J },
-        deck.Card{ deck.C, deck.A },
-    }
-
-    led := 1
-    trump := deck.C
-    answer := 3
-
-    res := Winner(played, trump, led)
-    if answer != res {
-        t.Errorf("Expected winner to be %d but got %d instead.", answer, res)
-    }
-}
-
-
-/*
- * Test WinnerAlone.
- */
-
-var winnerAloneTests = []winnerAloneTest {
     /*
      * A test where the discarded player doesn't matter since the winner is
      * before him.
      */
-    winnerAloneTest {
+    winnerTest {
         []deck.Card {
             deck.Card { deck.H, deck.A },
             deck.Card { deck.C, deck.Ten },
@@ -255,7 +222,7 @@ var winnerAloneTests = []winnerAloneTest {
     /*
      * A test where the winner is after the person who is cucked.
      */
-    winnerAloneTest {
+    winnerTest {
         []deck.Card {
             deck.Card { deck.D, deck.J },
             deck.Card { deck.H, deck.J },
@@ -270,7 +237,7 @@ var winnerAloneTests = []winnerAloneTest {
     /*
      * A test where the leader is the one going alone.
      */
-    winnerAloneTest {
+    winnerTest {
         []deck.Card {
             deck.Card { deck.H, deck.Q },
             deck.Card { deck.S, deck.A },
@@ -283,9 +250,9 @@ var winnerAloneTests = []winnerAloneTest {
     },
 
     /*
-     * Just another normal test case.
+     * Just another normal test case for the winner when going alone.
      */
-    winnerAloneTest {
+    winnerTest {
         []deck.Card {
             deck.Card { deck.C, deck.Nine },
             deck.Card { deck.H, deck.Q },
@@ -300,12 +267,11 @@ var winnerAloneTests = []winnerAloneTest {
 
 
 /*
- * Test we are able to properly determine the winner when there is a player
- * who is going alone.
+ *
  */
 func TestWinnerAlone(t *testing.T) {
-    for _, test := range winnerAloneTests {
-        res := WinnerAlone(test.played, test.trump, test.led, test.alone)
+    for _, test := range winnerTests {
+        res := Winner(test.played, test.trump, test.led, test.alone)
 
         if res != test.expected {
             t.Errorf("Expected error to be %d but got %d\n", test.expected, res)

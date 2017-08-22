@@ -327,7 +327,8 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
             cState.Played = append(cState.Played, card)
 
             nPlayed = make([]deck.Card, 0, 4)
-            nPlayer = Winner(cState.Played, cState.Setup.Trump, nmPlayer)
+            nPlayer = Winner(cState.Played, cState.Setup.Trump, nmPlayer,
+                             cState.Setup.AlonePlayer)
 
             nextPrior := Trick {
                 cState.Played,
@@ -361,7 +362,8 @@ func (engine Engine) Evaluation(state ai.State) int {
     for i := 0; i < len(cState.Prior); i++ {
         trick := cState.Prior[i]
 
-        w := Winner(trick.Cards[:], cState.Setup.Trump, trick.Led)
+        w := Winner(trick.Cards[:], cState.Setup.Trump, trick.Led,
+                    cState.Setup.AlonePlayer)
         if w % 2 == 0 {
             winCounts0++
         } else {

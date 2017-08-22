@@ -108,6 +108,11 @@ func (s State) Determinize() {
         left--
     }
 
+    if s.Setup.Dealer != s.Player {
+        cardsSet[s.Setup.Top] = false
+        left--
+    }
+
     idxs := r.Perm(left)
     cards := extractAvailableCards(cardsSet)
 
@@ -115,6 +120,10 @@ func (s State) Determinize() {
     // Go through each opponent player giving them cards until they have a
     // full hand given the current trick and player.
     for player := 1; player < 4; player++ {
+        if s.Setup.Dealer == player {
+            s.Hands[player] = append(s.Hands[player], s.Setup.Top)
+        }
+
         playerHandSize := 5 - len(s.Prior)
 
         // TODO: This expression seems like it can be simplified. LM-A0

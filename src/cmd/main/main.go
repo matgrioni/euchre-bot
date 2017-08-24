@@ -48,9 +48,9 @@ func main() {
         caller int
         trump deck.Suit
         d deck.Card
-        alone bool
-        alonePlayer int
     )
+    alonePlayer := -1
+
 
     player := player.NewSmart(PICKUP_CONF, CALL_CONF, ALONE_CONF,
                               PICKUP_RUNS, PICKUP_DETERMINIZATIONS,
@@ -110,8 +110,7 @@ func main() {
 
             fmt.Println("Is this person going alone? (1/0)")
             fmt.Scanf("%d", &aloneIn)
-            alone = aloneIn == 1
-            if alone {
+            if aloneIn == 1 {
                 alonePlayer = caller
             }
         }
@@ -151,7 +150,7 @@ func main() {
     }
 
     if caller == 0 {
-        alone = player.Alone(hand, top, dealer)
+        alone := player.Alone(hand, top, dealer)
 
         if alone {
             fmt.Println("Go alone!")
@@ -166,7 +165,6 @@ func main() {
         top,
         trump,
         d,
-        alone,
         alonePlayer,
     }
 
@@ -227,8 +225,9 @@ func main() {
             played,
             led,
             trump,
+            alonePlayer,
         }
         prior = append(prior, trick)
-        led = euchre.Winner(played, trump, led)
+        led = euchre.Winner(played, trump, led, alonePlayer)
     }
 }

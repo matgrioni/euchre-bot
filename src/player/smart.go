@@ -93,8 +93,7 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
             top,
             top.Suit,
             discard,
-            false,
-            0,
+            -1,
         }
     } else {
         copy(actualHand, hand)
@@ -105,8 +104,7 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
             top,
             top.Suit,
             deck.Card{ },
-            false,
-            0,
+            -1,
         }
     }
 
@@ -214,8 +212,7 @@ func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
                 top,
                 suit,
                 deck.Card{},
-                false,
-                0,
+                -1,
             }
 
             s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
@@ -250,7 +247,6 @@ func (p *SmartPlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
         top,
         top.Suit,
         discard,
-        true,
         0,
     }
 

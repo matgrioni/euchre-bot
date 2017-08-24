@@ -98,11 +98,13 @@ func TestNoSuitsOne(t *testing.T) {
         cards1,
         0,
         trump,
+        -1,
     }
     trick2 := Trick {
         cards2,
         1,
         trump,
+        -1,
     }
 
     prior[0] = trick1
@@ -204,11 +206,13 @@ func TestNoSuitsPlayerWraps(t *testing.T) {
         cards1,
         3,
         trump,
+        -1,
     }
     trick2 := Trick {
         cards2,
         0,
         trump,
+        -1,
     }
 
     prior[0] = trick1
@@ -268,21 +272,25 @@ func TestNoSuitsMultiple(t *testing.T) {
         cards1,
         0,
         trump,
+        -1,
     }
     trick2 := Trick {
         cards2,
         1,
         trump,
+        -1,
     }
     trick3 := Trick {
         cards3,
         0,
         trump,
+        -1,
     }
     trick4 := Trick {
         cards4,
         3,
         trump,
+        -1,
     }
 
     prior[0] = trick1

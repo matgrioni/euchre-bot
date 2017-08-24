@@ -18,8 +18,7 @@ func TestDeterminization(t *testing.T) {
         deck.Card { deck.C, deck.A },
         deck.S,
         deck.Card { },
-        false,
-        0,
+        -1,
     }
 
     hand := []deck.Card {
@@ -42,6 +41,7 @@ func TestDeterminization(t *testing.T) {
         cards1,
         2,
         deck.S,
+        -1,
     }
 
     prior := []Trick { trick1 }
@@ -66,8 +66,7 @@ func TestDeterminizationMiddleOfTrick(t *testing.T) {
         deck.Card { deck.C, deck.A },
         deck.S,
         deck.Card { },
-        false,
-        0,
+        -1,
     }
 
     hand := []deck.Card {
@@ -93,6 +92,7 @@ func TestDeterminizationMiddleOfTrick(t *testing.T) {
         cards1,
         2,
         deck.S,
+        -1,
     }
 
     prior := []Trick { trick1 }

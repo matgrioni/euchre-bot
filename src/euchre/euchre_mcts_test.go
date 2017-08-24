@@ -26,8 +26,7 @@ func TestRunPlayout(t *testing.T) {
         deck.Card { deck.D, deck.Nine },
         deck.D,
         deck.Card{ },
-        false,
-        0,
+        -1,
     }
 
     hand := []deck.Card {

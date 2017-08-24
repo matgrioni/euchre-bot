@@ -205,9 +205,25 @@ func noSuits(prior []Trick, trump deck.Suit) map[int][]deck.Suit {
         first := trick.Cards[0]
 
         for player := 0; player < 4; player++ {
+            if player == trick.Alone {
+                continue
+            }
+
+            // If between the leading player and the current player, there
+            // exists the player who is not playing because his partner is
+            // playing alone.
+            adjust := 0
+            for j := trick.Led; j != player; j = (j + 1) % 4 {
+                if trick.Alone >= 0 && trick.Alone < 4 {
+                    if j == (trick.Alone + 2) % 4 {
+                        adjust = -1
+                    }
+                }
+            }
+
             // Add 4 to player, so that it is guaranteed to be after trick.Led,
             // but it does not change the final result mod 4.
-            playedCard := trick.Cards[(player + 4 - trick.Led) % 4]
+            playedCard := trick.Cards[(player + 4 - trick.Led + adjust) % 4]
             if first.AdjSuit(trump) != playedCard.AdjSuit(trump) {
                 noSuits[player] = append(noSuits[player], first.AdjSuit(trump))
             }

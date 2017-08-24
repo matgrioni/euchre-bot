@@ -26,7 +26,6 @@ type Setup struct {
     Top deck.Card
     Trump deck.Suit
     Discard deck.Card
-    Alone bool
     AlonePlayer int
 }
 
@@ -34,13 +33,14 @@ type Setup struct {
 
 /*
  * A Trick in Euchre consists of the cards that were played and some context.
- * Namely, who led in the trick (using our famililar number designation) and
- * what the trump suit was.
+ * Namely, who led in the trick (using our famililar number designation), what
+ * the trump suit was, and if anybody was going alone.
  */
 type Trick struct {
     Cards []deck.Card
     Led int
     Trump deck.Suit
+    Alone int
 }
 
 
@@ -334,6 +334,7 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
                 cState.Played,
                 nmPlayer,
                 cState.Setup.Trump,
+                cState.Setup.AlonePlayer,
             }
             nPrior = append(nPrior, nextPrior)
         }

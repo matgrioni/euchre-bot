@@ -19,6 +19,13 @@ type winnerTest struct {
 }
 
 
+type noSuitsTest struct {
+    prior []Trick
+    trump deck.Suit
+    expected map[int][]deck.Suit
+}
+
+
 /*
  * Test euchre#Beat. A helper to determine which card wins in a head to head
  * faceoff where one card is chosen to be leading and there is a defined
@@ -267,7 +274,7 @@ var winnerTests = []winnerTest {
 
 
 /*
- *
+ * Tests all the above tests to make sure the expected winner is actually seen.
  */
 func TestWinnerAlone(t *testing.T) {
     for _, test := range winnerTests {
@@ -277,4 +284,356 @@ func TestWinnerAlone(t *testing.T) {
             t.Errorf("Expected error to be %d but got %d\n", test.expected, res)
         }
     }
+}
+
+
+/*
+ * Test noSuits.
+ *
+ * Checks whether we correctly learn what suits a player has based on their
+ * inability to follow.
+ */
+
+var noSuitsTests = []noSuitsTest {
+    // No tricks played yet returns no results.
+    noSuitsTest {
+        nil,
+        deck.H,
+        map[int][]deck.Suit { },
+    },
+
+    // Over two tricks, only one player does not follow suit.
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.H, deck.A },
+                    deck.Card { deck.C, deck.K },
+                    deck.Card { deck.H, deck.K },
+                    deck.Card { deck.H, deck.Q },
+                },
+                0,
+                deck.C,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.S, deck.K },
+                    deck.Card { deck.S, deck.Ten },
+                    deck.Card { deck.S, deck.Q },
+                    deck.Card { deck.S, deck.A },
+                },
+                1,
+                deck.C,
+                -1,
+            },
+        },
+        deck.C,
+        map[int][]deck.Suit {
+            1: []deck.Suit {
+                deck.H,
+            },
+        },
+    },
+
+    // Player 3 (last in modulo order) and 3 players in total are missing suits.
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.H, deck.A },
+                    deck.Card { deck.C, deck.K },
+                    deck.Card { deck.H, deck.K },
+                    deck.Card { deck.H, deck.Q },
+                },
+                0,
+                deck.C,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.S, deck.K },
+                    deck.Card { deck.S, deck.Ten },
+                    deck.Card { deck.C, deck.Ten },
+                    deck.Card { deck.C, deck.A },
+                },
+                1,
+                deck.C,
+                -1,
+            },
+        },
+        deck.C,
+        map[int][]deck.Suit {
+            1: []deck.Suit {
+                    deck.H,
+            },
+            3: []deck.Suit {
+                    deck.S,
+            },
+            0: []deck.Suit {
+                    deck.S,
+            },
+        },
+    },
+
+    // Check that modulo player numbers work in keeping track.
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.H, deck.A },
+                    deck.Card { deck.C, deck.K },
+                    deck.Card { deck.H, deck.K },
+                    deck.Card { deck.H, deck.Q },
+                },
+                3,
+                deck.C,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.S, deck.K },
+                    deck.Card { deck.S, deck.Ten },
+                    deck.Card { deck.C, deck.Ten },
+                    deck.Card { deck.C, deck.A },
+                },
+                0,
+                deck.C,
+                -1,
+            },
+        },
+        deck.C,
+        map[int][]deck.Suit {
+            0: []deck.Suit {
+                deck.H,
+            },
+            2: []deck.Suit {
+                deck.S,
+            },
+            3: []deck.Suit {
+                deck.S,
+            },
+        },
+    },
+
+    // One player is missing more than one suit.
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.D, deck.A },
+                    deck.Card { deck.S, deck.J },
+                    deck.Card { deck.D, deck.Ten },
+                    deck.Card { deck.D, deck.J },
+                },
+                0,
+                deck.S,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.C, deck.A },
+                    deck.Card { deck.C, deck.Q },
+                    deck.Card { deck.C, deck.K },
+                    deck.Card { deck.S, deck.Ten },
+                },
+                1,
+                deck.S,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.H, deck.K },
+                    deck.Card { deck.H, deck.Ten },
+                    deck.Card { deck.H, deck.Nine },
+                    deck.Card { deck.H, deck.A },
+                },
+                0,
+                deck.S,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.H, deck.Q },
+                    deck.Card { deck.S, deck.A },
+                    deck.Card { deck.C, deck.Ten },
+                    deck.Card { deck.S, deck.K },
+                },
+                3,
+                deck.S,
+                -1,
+            },
+        },
+        deck.S,
+        map[int][]deck.Suit {
+            0: []deck.Suit {
+                deck.C,
+                deck.H,
+            },
+            1: []deck.Suit {
+                deck.D,
+                deck.H,
+            },
+            2: []deck.Suit {
+                deck.H,
+            },
+        },
+    },
+
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.C, deck.A },
+                    deck.Card { deck.C, deck.Q },
+                    deck.Card { deck.H, deck.Nine, },
+                    deck.Card { deck.C, deck.Ten, },
+                },
+                0,
+                deck.C,
+                -1,
+            },
+        },
+        deck.C,
+        map[int][]deck.Suit {
+            2: []deck.Suit {
+                deck.C,
+            },
+        },
+    },
+
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.D, deck.J },
+                    deck.Card { deck.H, deck.J },
+                    deck.Card { deck.S, deck.A },
+                    deck.Card { deck.C, deck.Nine },
+                },
+                2,
+                deck.D,
+                -1,
+            },
+        },
+        deck.D,
+        map[int][]deck.Suit {
+            0: []deck.Suit {
+                deck.D,
+            },
+            1: []deck.Suit {
+                deck.D,
+            },
+        },
+    },
+
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.H, deck.Ten },
+                    deck.Card { deck.D, deck.K },
+                    deck.Card { deck.H, deck.Nine },
+                    deck.Card { deck.D, deck.A },
+                },
+                3,
+                deck.C,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.S, deck.K },
+                    deck.Card { deck.S, deck.A },
+                    deck.Card { deck.S, deck.Nine },
+                    deck.Card { deck.C, deck.A },
+                },
+                3,
+                deck.C,
+                -1,
+            },
+        },
+        deck.C,
+        map[int][]deck.Suit {
+            0: []deck.Suit {
+                deck.H,
+            },
+            2: []deck.Suit {
+                deck.H,
+                deck.S,
+            },
+        },
+    },
+
+}
+
+
+/*
+ * Test the noSuits method.
+ * TODO: Add going alone tests on this.
+ */
+func TestNoSuits(t *testing.T) {
+    for _, test := range noSuitsTests {
+        res := noSuits(test.prior, test.trump)
+
+        if len(res) != len(test.expected) {
+            errorOut(t, test.expected, res, "no suits")
+        }
+
+        for player, suits := range test.expected {
+            actualTmp, ok := res[player]
+            if !ok {
+                errorOut(t, test.expected, res, "no suits")
+            }
+            actual := suitsSliceToSet(actualTmp)
+            expected := suitsSliceToSet(suits)
+
+            if len(actual) != len(expected) {
+                errorOut(t, test.expected, res, "no suits")
+            }
+
+            for suit, _ := range expected {
+                _, ok := actual[suit]
+                if !ok {
+                    errorOut(t, test.expected, res, "no suits")
+                }
+            }
+        }
+    }
+}
+
+
+/*
+ * Converts a list of suits into a set of those suits.
+ *
+ * Args:
+ *  suits: The list of suits.
+ *
+ * Returns:
+ *  The set of suits. This is returned in the form of a map, where the key is
+ *  the suit and the value is true. If a suit was not in the list it is not in
+ *  the map.
+ */
+func suitsSliceToSet(suits []deck.Suit) map[deck.Suit]bool {
+    set := make(map[deck.Suit]bool)
+
+    for _, suit := range suits {
+        set[suit] = true
+    }
+
+    return set
+}
+
+
+/*
+ * Errors out the given test.
+ *
+ * Args:
+ *  t: The current testing context.
+ *  expected: The expected value from the test case.
+ *  actual: The value actually calculated.
+ *  test: The test name to output for clarification purposes.
+ */
+func errorOut(t *testing.T, expected interface{}, actual interface{},
+              test string) {
+    t.Errorf("Expected %v but got %v for %s\n", expected, actual, test)
 }

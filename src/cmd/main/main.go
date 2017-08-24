@@ -155,6 +155,8 @@ func main() {
         if alone {
             fmt.Println("Go alone!")
             alonePlayer = 0
+        } else {
+            fmt.Println("Do not go alone. Whatever you do, please....")
         }
     }
 

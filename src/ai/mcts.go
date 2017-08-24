@@ -111,7 +111,7 @@ type MCTSEngine interface {
  * Performs a Monte Carlo Tree search on the given the state and the game engine.
  * This MCTS is on a non-deterministic game so specify the amount of random
  * determinizations to test it on, and the number of runs to do per
- * determinization.
+ * determinization. The passed in state should not be a terminal state.
  *
  * Args:
  *  s: The current state from which to start simulation.
@@ -120,7 +120,8 @@ type MCTSEngine interface {
  *  deters: The number of determinizations to run through.
  *
  * Returns:
- *  The state with the highest value and the expected value associated with it.
+ *  The next state with the highest value and the expected value associated with
+ *  it.
  */
 func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
     // TODO: Is there a better way than this dual map way. This probably isn't
@@ -138,20 +139,12 @@ func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
         for j := 0; j < runs; j++ {
             RunPlayout(n, engine)
 
-            if n.children.Len() > 0 {
-                topNode := n.children.Poll().(*Node)
-                topState := topNode.GetState()
+            topNode := n.children.Poll().(*Node)
+            topState := topNode.GetState()
 
-                conv[topState.Hash()] = topState
-                weights[topState.Hash()] += topNode.GetPriority()
-                counts[topState.Hash()] += 1
-            } else {
-                fmt.Println("HEre")
-                nState := n.GetState()
-                conv[nState.Hash()] = nState
-                weights[nState.Hash()] += n.GetPriority()
-                counts[nState.Hash()] += 1
-            }
+            conv[topState.Hash()] = topState
+            weights[topState.Hash()] += topNode.GetPriority()
+            counts[topState.Hash()] += 1
         }
     }
 

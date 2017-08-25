@@ -8,7 +8,6 @@ import (
     "player"
     "strconv"
     "time"
-    "util"
 )
 
 
@@ -46,14 +45,34 @@ func indicesToCards(indices []int) []deck.Card {
 }
 
 
+// TODO: This should be moved into some configuration file.
+const (
+    PICKUP_CONF = 0.6
+    CALL_CONF = 0.6
+    ALONE_CONF = 1.2
+    PICKUP_RUNS = 50
+    PICKUP_DETERMINIZATIONS = 50
+    CALL_RUNS = 50
+    CALL_DETERMINIZATIONS = 50
+    PLAY_RUNS = 50
+    PLAY_DETERMINIZATIONS = 50
+    ALONE_RUNS = 50
+    ALONE_DETERMINIZATIONS = 50
+)
+
+
 func main() {
     r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
     players := make(map[int]player.Player)
-    players[0] = player.NewRand()
+    players[0] = player.NewRand(0.5, 0.5, 0)
     // TODO: Make non-hardcoded.
     players[1] = player.NewRule("data/train.dat")
-    players[2] = player.NewSmart()
+    players[2] = player.NewSmart(PICKUP_CONF, CALL_CONF, ALONE_CONF,
+                                 PICKUP_RUNS, PICKUP_DETERMINIZATIONS,
+                                 CALL_RUNS, CALL_DETERMINIZATIONS,
+                                 PLAY_RUNS, PLAY_DETERMINIZATIONS,
+                                 ALONE_RUNS, ALONE_DETERMINIZATIONS)
 
     // TODO: Use more robust library rather than command line arguments.
     playerType, _ := strconv.Atoi(os.Args[1])
@@ -61,17 +80,17 @@ func main() {
     player := players[playerType - 1]
 
     for i := 0; i < samples; i++ {
-        situation := util.RandMultinomial(24, 5, 1)
+        situation := r.Perm(len(deck.CARDS))[:6]
 
-        hands0 := indicesToCards(situation[0])
-        top := indicesToCards(situation[1])[0]
+        hand := indicesToCards(situation[:5])
+        top := deck.CARDS[situation[5]]
 
-        var copyHand [5]deck.Card
-        copy(copyHand[:], hands0)
+        copyHand := make([]deck.Card, len(hand))
+        copy(copyHand, hand)
 
         dealer := r.Intn(4)
-        player.Pickup(copyHand, top, dealer)
+        pickup := player.Pickup(copyHand, top, dealer)
 
-        fmt.Printf("%v\t%s\t%d\t%t\n", hands0, top, dealer, pickup)
+        fmt.Printf("%v\t%s\t%d\t%t\n", hand, top, dealer, pickup)
     }
 }

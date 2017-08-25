@@ -202,10 +202,11 @@ func noSuits(prior []Trick, trump deck.Suit) map[int][]deck.Suit {
         // For each trick, find out if a user did not follow suit and therefore
         // does not have this suit.
         trick := prior[i]
+        alonePlayer := trick.Alone >= 0 && trick.Alone < 4
         first := trick.Cards[0]
 
         for player := 0; player < 4; player++ {
-            if player == trick.Alone {
+            if alonePlayer && player == (trick.Alone + 2) % 4 {
                 continue
             }
 
@@ -214,10 +215,9 @@ func noSuits(prior []Trick, trump deck.Suit) map[int][]deck.Suit {
             // playing alone.
             adjust := 0
             for j := trick.Led; j != player; j = (j + 1) % 4 {
-                if trick.Alone >= 0 && trick.Alone < 4 {
-                    if j == (trick.Alone + 2) % 4 {
-                        adjust = -1
-                    }
+                if alonePlayer && j == (trick.Alone + 2) % 4 {
+                    adjust = -1
+                    break
                 }
             }
 

@@ -170,6 +170,13 @@ func main() {
         alonePlayer,
     }
 
+    var expectedCards int
+    if alonePlayer >= 0 {
+        expectedCards = 3
+    } else {
+        expectedCards = 4
+    }
+
 
     led := (dealer + 1) % 4
     var prior []euchre.Trick
@@ -182,7 +189,7 @@ func main() {
         fmt.Println("Cards already played (blank line when done)...")
 
         played := make([]deck.Card, 0, 3)
-        for i := 0; i < 3; i++ {
+        for i := 0; i < expectedCards - 1; i++ {
             scanner.Scan()
             line := scanner.Text()
             if line == "" {
@@ -207,7 +214,7 @@ func main() {
         fmt.Println()
 
         fmt.Println("Enter the rest of the cards played.")
-        left := 4 - len(played)
+        left := expectedCards - len(played)
         for i := 0; i < left; i++ {
             scanner.Scan()
             line := scanner.Text()

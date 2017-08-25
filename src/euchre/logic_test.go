@@ -480,6 +480,85 @@ var noSuitsTests = []noSuitsTest {
         },
     },
 
+    // Going alone v1
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.C, deck.A },
+                    deck.Card { deck.C, deck.K },
+                    deck.Card { deck.H, deck.Nine },
+                },
+                0,
+                deck.H,
+                3,
+            },
+        },
+        deck.H,
+        map[int][]deck.Suit {
+            3: []deck.Suit {
+                deck.C,
+            },
+        },
+    },
+
+    // Going alone v2, where we must pass the modulo wrap
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.S, deck.J },
+                    deck.Card { deck.C, deck.J },
+                    deck.Card { deck.H, deck.Nine },
+                },
+                3,
+                deck.S,
+                2,
+            },
+        },
+        deck.S,
+        map[int][]deck.Suit {
+            2: []deck.Suit {
+                deck.S,
+            },
+        },
+    },
+
+    // Going alone v3, where two players do not follow suit across two tricks.
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.H, deck.K },
+                    deck.Card { deck.S, deck.Nine },
+                    deck.Card { deck.H, deck.A },
+                },
+                1,
+                deck.S,
+                2,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.S, deck.K },
+                    deck.Card { deck.S, deck.Nine },
+                    deck.Card { deck.D, deck.Q },
+                },
+                2,
+                deck.S,
+                2,
+            },
+        },
+        deck.S,
+        map[int][]deck.Suit {
+            2: []deck.Suit {
+                deck.H,
+            },
+            1: []deck.Suit {
+                deck.S,
+            },
+        },
+    },
+
     noSuitsTest {
         []Trick {
             Trick {
@@ -568,18 +647,21 @@ var noSuitsTests = []noSuitsTest {
 
 
 /*
- * Test the noSuits method.
- * TODO: Add going alone tests on this.
+ * Test the noSuits method. The expected result matches the actual result if the
+ * maps contain the same content but not necessairily in the same order.
  */
 func TestNoSuits(t *testing.T) {
     for _, test := range noSuitsTests {
         res := noSuits(test.prior, test.trump)
 
+        // Check that the two maps are the same size.
         if len(res) != len(test.expected) {
             errorOut(t, test.expected, res, "no suits")
         }
 
+        // For each player check that the suits are the same.
         for player, suits := range test.expected {
+            // Check if this player does exists in the actual results.
             actualTmp, ok := res[player]
             if !ok {
                 errorOut(t, test.expected, res, "no suits")
@@ -587,6 +669,8 @@ func TestNoSuits(t *testing.T) {
             actual := suitsSliceToSet(actualTmp)
             expected := suitsSliceToSet(suits)
 
+            // Check that the two sets of suits are the same length, and then
+            // have the same contents.
             if len(actual) != len(expected) {
                 errorOut(t, test.expected, res, "no suits")
             }

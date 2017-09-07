@@ -356,14 +356,15 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
 
 
 func (engine Engine) Evaluation(state ai.State) int {
+    cState := state.(State)
+
     winCounts0 := 0
     winCounts1 := 0
 
-    cState := state.(State)
     for i := 0; i < len(cState.Prior); i++ {
         trick := cState.Prior[i]
 
-        w := Winner(trick.Cards[:], cState.Setup.Trump, trick.Led,
+        w := Winner(trick.Cards, cState.Setup.Trump, trick.Led,
                     cState.Setup.AlonePlayer)
         if w % 2 == 0 {
             winCounts0++
@@ -372,12 +373,23 @@ func (engine Engine) Evaluation(state ai.State) int {
         }
     }
 
+    // If a player calls going alone and wins all 5 tricks then they get 4
+    // points.
+    if winCounts0 == 5 && cState.Setup.AlonePlayer % 2 == 0 {
+        return 4
+    } else if winCounts1 == 5 && cState.Setup.AlonePlayer % 2 == 1 {
+        return 4
+    }
+
+    // If nobody who went alone won, but somebody won 5 hands or got euched then
+    // that's two points.
     if winCounts0 == 5 || (winCounts0 >= 3 && cState.Setup.Caller % 2 == 1) {
         return 2
     } else if winCounts0 == 0 || (winCounts0 < 3 && cState.Setup.Caller % 2 == 0) {
         return -2
     }
 
+    // For a normal win, that's worth one point.
     if winCounts0 > winCounts1 {
         return 1
     } else {

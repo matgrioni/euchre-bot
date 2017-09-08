@@ -140,7 +140,7 @@ func main() {
         }
     }
 
-    if pickedUp && caller == 0 {
+    if pickedUp {
         trump = top.Suit
 
         if dealer == 0 {

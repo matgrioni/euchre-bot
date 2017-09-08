@@ -116,8 +116,7 @@ func UpperConfBound(node *Node) float64 {
  *  The next state with the highest value and the expected value associated with
  *  it.
  */
-func MCTS(s State, engine TSEngine, runs int,
-          deters int) (State, float64) {
+func MCTS(s State, engine TSEngine, runs int, deters int) (State, float64) {
     // TODO: Is there a better way than this dual map way. This probably isn't
     // a bottleneck however.
     weights := make(map[interface{}]float64)
@@ -216,7 +215,6 @@ func runPlayout(node *Node, engine TSEngine, log bool) float64 {
     } else {
         // TODO: Remove this mapping.
         var nextMoves []Move
-        var nextStates []State
         if node.depth <= 2 {
             if node.memoize == nil {
                 node.memoize = engine.Successors(node.GetState())
@@ -227,29 +225,24 @@ func runPlayout(node *Node, engine TSEngine, log bool) float64 {
             nextMoves = engine.Successors(node.GetState())
         }
 
-        nextStates = make([]State, len(nextMoves), len(nextMoves))
-        for i := 0; i < len(nextMoves); i++ {
-            nextStates[i] = nextMoves[i].State.(State)
-        }
-
         var next *Node
 
         // If we don't have data on all the posssible next states, select one at
         // random. Otherwise, choose the one with the highest UCB.
-        if len(nextStates) > node.children.Len() {
+        if len(nextMoves) > node.children.Len() {
             takenMoves := make(map[interface{}]int)
 
             for i := 0; i < node.children.Len(); i++ {
                 takenMoves[node.children[i].(*Node).GetState().Hash()] = i
             }
 
-            nextState := nextStates[r.Intn(len(nextStates))]
+            nextMove := nextMoves[r.Intn(len(nextMoves))]
 
-            if _, ok := takenMoves[nextState.Hash()]; ok {
-                next = node.children[takenMoves[nextState.Hash()]].(*Node)
+            if _, ok := takenMoves[nextMove.Action]; ok {
+                next = node.children[takenMoves[nextMove.Action]].(*Node)
             } else {
                 next = NewNode()
-                next.Value(nextState)
+                next.Value(nextMove.State)
                 next.parent = node
                 next.depth = node.depth + 1
                 heap.Push(&node.children, next)

@@ -24,7 +24,7 @@ type State interface {
 // queue based on the node's UCB. Any data can be passed along with a node
 // through the Value methods, which accept a blank interface type.
 type Node struct {
-    value State
+    value Move
     priority float64
     index int
 
@@ -49,8 +49,12 @@ func NewNode() *Node {
     return &n
 }
 
-func (node *Node) GetState() State {
+func (node *Node) GetMove() Move {
     return node.value
+}
+
+func (node *Node) GetState() State {
+    return node.value.State.(State)
 }
 
 func (node *Node) GetValue() interface{} {
@@ -58,7 +62,7 @@ func (node *Node) GetValue() interface{} {
 }
 
 func (node *Node) Value(v interface{}) {
-    node.value = v.(State)
+    node.value = v.(Move)
 }
 
 // The priority of a node is based on how many times all of its siblings have
@@ -116,41 +120,45 @@ func UpperConfBound(node *Node) float64 {
  *  The next state with the highest value and the expected value associated with
  *  it.
  */
-func MCTS(s State, engine TSEngine, runs int, deters int) (State, float64) {
+func MCTS(s State, engine TSEngine, runs int, deters int) (Move, float64) {
     // TODO: Is there a better way than this dual map way. This probably isn't
     // a bottleneck however.
     weights := make(map[interface{}]float64)
-    conv := make(map[interface{}]State)
+    conv := make(map[interface{}]Move)
     counts := make(map[interface{}]int)
 
     for i := 0; i < deters; i++ {
         copyState := s.Copy()
         copyState.Determinize()
         n := NewNode()
-        n.Value(copyState)
+        m := Move {
+            nil,
+            copyState,
+        }
+        n.Value(m)
 
         for j := 0; j < runs; j++ {
             RunPlayout(n, engine)
 
             topNode := n.children.Poll().(*Node)
-            topState := topNode.GetState()
+            topMove := topNode.GetMove()
 
-            conv[topState.Hash()] = topState
-            weights[topState.Hash()] += topNode.GetPriority()
-            counts[topState.Hash()] += 1
+            conv[topMove.Action] = topMove
+            weights[topMove.Action] += topNode.GetPriority()
+            counts[topMove.Action] += 1
         }
     }
 
+    var maxMove Move
     maxWeight := math.Inf(-1)
-    var maxState State
     for hash, weight := range weights {
         if weight > maxWeight {
-            maxState = conv[hash]
+            maxMove = conv[hash]
             maxWeight = weight
         }
     }
 
-    return maxState, maxWeight / float64(counts[maxState.Hash()])
+    return maxMove, maxWeight / float64(counts[maxMove.Action])
 }
 
 
@@ -233,7 +241,7 @@ func runPlayout(node *Node, engine TSEngine, log bool) float64 {
             takenMoves := make(map[interface{}]int)
 
             for i := 0; i < node.children.Len(); i++ {
-                takenMoves[node.children[i].(*Node).GetState().Hash()] = i
+                takenMoves[node.children[i].(*Node).GetMove().Action] = i
             }
 
             nextMove := nextMoves[r.Intn(len(nextMoves))]
@@ -242,7 +250,7 @@ func runPlayout(node *Node, engine TSEngine, log bool) float64 {
                 next = node.children[takenMoves[nextMove.Action]].(*Node)
             } else {
                 next = NewNode()
-                next.Value(nextMove.State)
+                next.Value(nextMove)
                 next.parent = node
                 next.depth = node.depth + 1
                 heap.Push(&node.children, next)
@@ -257,7 +265,7 @@ func runPlayout(node *Node, engine TSEngine, log bool) float64 {
             adjEval *= -1
         }
 
-        fav := engine.Favorable(node.GetValue().(State))
+        fav := engine.Favorable(node.GetState())
         if (fav && eval > 0) || (!fav && eval < 0) {
             next.eval += adjEval
         } else {

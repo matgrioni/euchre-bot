@@ -56,18 +56,6 @@ type State struct {
     Hands [][]deck.Card
     Played []deck.Card
     Prior []Trick
-    Move deck.Card
-}
-
-
-/*
- * Provides a hashable value that can identify this state.
- *
- * Returns:
- *  A hashable value to represent this state.
- */
-func (s State) Hash() interface{} {
-    return s.Move
 }
 
 
@@ -196,7 +184,6 @@ func (s State) Copy() ai.State {
         copyHands,
         copyPlayed,
         copyPrior,
-        s.Move,
     }
 }
 
@@ -213,14 +200,13 @@ func (s State) Copy() ai.State {
  *  hand: The current cards in your hand.
  *  played: The cards played in the current trick.
  *  prior: The prior tricks.
- *  move: The prior card played to get to this state.
  *
  * Returns:
  *  A state that has undeterminized information. This means that not all fields
  *  of the state have valid values.
  */
 func NewUndeterminizedState(setup Setup, player int, hand, played []deck.Card,
-                            prior []Trick, move deck.Card) State {
+                            prior []Trick) State {
     // Create blank values for hands other than your own.
     hands := make([][]deck.Card, 4)
     hands[0] = hand
@@ -234,7 +220,6 @@ func NewUndeterminizedState(setup Setup, player int, hand, played []deck.Card,
         hands,
         played,
         prior,
-        move,
     }
 }
 
@@ -252,22 +237,19 @@ func NewUndeterminizedState(setup Setup, player int, hand, played []deck.Card,
  *  hands: A slice of each players cards.
  *  played: The slice of cards played in the current trick.
  *  prior: The prior tricks.
- *  move: The move that was played prior to get the current state.
  *
  * Returns:
  *  A new state that is determinized, ie has created some known universe where
  *  information that is usually not known by an opponent is now assumed.
  */
 func NewDeterminizedState(setup Setup, player int, hands [][]deck.Card,
-                          played []deck.Card, prior []Trick,
-                          move deck.Card) State {
+                          played []deck.Card, prior []Trick) State {
     return State {
         setup,
         player,
         hands,
         played,
         prior,
-        move,
     }
 }
 
@@ -345,7 +327,7 @@ func (engine Engine) Successors(state ai.TSState) []ai.Move {
         nHands[cState.Player] = nHand
 
         nextState := NewDeterminizedState(cState.Setup, nPlayer, nHands,
-                                          nPlayed, nPrior, card)
+                                          nPlayed, nPrior)
 
         nextMove := ai.Move {
             card,

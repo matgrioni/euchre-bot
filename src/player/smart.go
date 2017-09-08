@@ -110,7 +110,7 @@ func (p *SmartPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
 
     nPlayer := (who + 1) % 4
     s := euchre.NewUndeterminizedState(setup, nPlayer, actualHand, played,
-                                       prior, deck.Card{})
+                                       prior)
     e := euchre.Engine{ }
     _, expected := ai.MCTS(s, e, p.pickupRuns, p.pickupDeterminizations)
 
@@ -215,8 +215,7 @@ func (p *SmartPlayer) Call(hand []deck.Card, top deck.Card,
                 -1,
             }
 
-            s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
-                                               deck.Card{})
+            s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior)
             e := euchre.Engine{ }
             _, expected := ai.MCTS(s, e, p.callRuns, p.callDeterminizations)
 
@@ -250,8 +249,7 @@ func (p *SmartPlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
         0,
     }
 
-    s := euchre.NewUndeterminizedState(setup, nPlayer, hand, played, prior,
-                                       deck.Card{})
+    s := euchre.NewUndeterminizedState(setup, nPlayer, hand, played, prior)
     e := euchre.Engine{}
     _, expected := ai.MCTS(s, e, p.aloneRuns, p.aloneDeterminizations)
 
@@ -263,8 +261,7 @@ func (p *SmartPlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
 func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
 
-    s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior,
-                                       deck.Card{})
+    s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior)
     e := euchre.Engine{ }
     chosenMove, _ := ai.MCTS(s, e, p.playRuns, p.playDeterminizations)
 

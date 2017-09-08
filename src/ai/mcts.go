@@ -31,10 +31,10 @@ type Node struct {
     children PriorityQueue
     parent *Node
 
-    wins int
+    eval float64
     simulations int
 
-    memoize []State
+    memoize []Move
     depth int
 }
 
@@ -93,17 +93,10 @@ func UpperConfBound(node *Node) float64 {
     if node.simulations == 0 && node.parent != nil {
         ucb = math.Inf(1)
     } else if node.parent != nil {
-        ucb = float64(node.wins) / float64(node.simulations) +
+        ucb = float64(node.eval) / float64(node.simulations) +
               math.Sqrt(2.0 * (math.Log(float64(node.parent.simulations)) + 1) / float64(node.simulations))
     }
     return ucb
-}
-
-type MCTSEngine interface {
-    Favorable(state State, eval int) bool
-    IsTerminal(state State) bool
-    NextStates(state State) []State
-    Evaluation(state State) int
 }
 
 
@@ -123,7 +116,8 @@ type MCTSEngine interface {
  *  The next state with the highest value and the expected value associated with
  *  it.
  */
-func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
+func MCTS(s State, engine TSEngine, runs int,
+          deters int) (State, float64) {
     // TODO: Is there a better way than this dual map way. This probably isn't
     // a bottleneck however.
     weights := make(map[interface{}]float64)
@@ -173,7 +167,7 @@ func MCTS(s State, engine MCTSEngine, runs int, deters int) (State, float64) {
  *  An integer that represents the final terminal state of the playout per the
  *  engine's computation.
  */
-func RunPlayoutDebug(node *Node, engine MCTSEngine) int {
+func RunPlayoutDebug(node *Node, engine TSEngine) float64 {
     return runPlayout(node, engine, true)
 }
 
@@ -189,7 +183,7 @@ func RunPlayoutDebug(node *Node, engine MCTSEngine) int {
  *  An integer that represents the final terminal state of the playout per the
  *  engine's computation.
  */
-func RunPlayout(node *Node, engine MCTSEngine) int {
+func RunPlayout(node *Node, engine TSEngine) float64 {
     return runPlayout(node, engine, false)
 }
 
@@ -207,28 +201,35 @@ func RunPlayout(node *Node, engine MCTSEngine) int {
  *  An integer that represents the final terminal state of the playout per the
  *  engine's computation.
  */
-func runPlayout(node *Node, engine MCTSEngine, log bool) int {
+func runPlayout(node *Node, engine TSEngine, log bool) float64 {
     if log {
         fmt.Println(node.GetState())
     }
 
     node.simulations++
 
-    var eval int
+    var eval float64
     // We have been given a node state that is the last in the playout. Time to
     // return and backpropagate the results.
     if engine.IsTerminal(node.GetState()) {
         eval = engine.Evaluation(node.GetState())
     } else {
+        // TODO: Remove this mapping.
+        var nextMoves []Move
         var nextStates []State
         if node.depth <= 2 {
             if node.memoize == nil {
-                node.memoize = engine.NextStates(node.GetState())
+                node.memoize = engine.Successors(node.GetState())
             }
 
-            nextStates = node.memoize
+            nextMoves = node.memoize
         } else {
-            nextStates = engine.NextStates(node.GetState())
+            nextMoves = engine.Successors(node.GetState())
+        }
+
+        nextStates = make([]State, len(nextMoves), len(nextMoves))
+        for i := 0; i < len(nextMoves); i++ {
+            nextStates[i] = nextMoves[i].State.(State)
         }
 
         var next *Node
@@ -262,10 +263,12 @@ func runPlayout(node *Node, engine MCTSEngine, log bool) int {
         if adjEval < 0 {
             adjEval *= -1
         }
-        if engine.Favorable(node.GetValue().(State), eval) {
-            next.wins += adjEval
+
+        fav := engine.Favorable(node.GetValue().(State))
+        if (fav && eval > 0) || (!fav && eval < 0) {
+            next.eval += adjEval
         } else {
-            next.wins -= adjEval
+            next.eval -= adjEval
         }
 
         next.Priority(UpperConfBound(next))

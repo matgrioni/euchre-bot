@@ -273,28 +273,27 @@ func NewDeterminizedState(setup Setup, player int, hands [][]deck.Card,
 
 
 /*
- * A MCTSEngine. This engine encapsulates all the game logic needed for decision
- * making in euchre.
+ * A TreeSearchEngine. This engine encapsulates all the game logic needed for
+ * decision making in euchre in order to traverse the state tree.
  */
 type Engine struct { }
 
 
-func (engine Engine) Favorable(state ai.State, eval int) bool {
+func (engine Engine) Favorable(state ai.TSState) bool {
     cState := state.(State)
-    return (cState.Player % 2 == 0 && eval > 0) ||
-           (cState.Player % 2 == 1 && eval < 0)
+    return cState.Player % 2 == 0
 }
 
 
-func (engine Engine) IsTerminal(state ai.State) bool {
+func (engine Engine) IsTerminal(state ai.TSState) bool {
     cState := state.(State)
     return len(cState.Played) == 0 && len(cState.Prior) == 5
 }
 
 
-func (engine Engine) NextStates(state ai.State) []ai.State {
+func (engine Engine) Successors(state ai.TSState) []ai.Move {
     cState := state.(State)
-    nextStates := make([]ai.State, 0)
+    nextMoves := make([]ai.Move, 0)
 
     curHand := cState.Hands[cState.Player]
     possibleIdxs := Possible(curHand, cState.Played, cState.Setup.Trump)
@@ -348,14 +347,18 @@ func (engine Engine) NextStates(state ai.State) []ai.State {
         nextState := NewDeterminizedState(cState.Setup, nPlayer, nHands,
                                           nPlayed, nPrior, card)
 
-        nextStates = append(nextStates, nextState)
+        nextMove := ai.Move {
+            card,
+            nextState,
+        }
+        nextMoves = append(nextMoves, nextMove)
     }
 
-    return nextStates
+    return nextMoves
 }
 
 
-func (engine Engine) Evaluation(state ai.State) int {
+func (engine Engine) Evaluation(state ai.TSState) float64 {
     cState := state.(State)
 
     winCounts0 := 0

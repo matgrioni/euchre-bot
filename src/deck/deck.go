@@ -221,8 +221,13 @@ func CreateCard(s string) (Card, error) {
     var card Card
     var sErr, vErr error
 
-    card.Suit, sErr = CreateSuit(s[len(s) - 1:])
-    card.Value, vErr = CreateValue(s[:len(s) - 1])
+    lastChar := len(s) - 1
+    if lastChar < 0 {
+        lastChar = 0
+    }
+
+    card.Suit, sErr = CreateSuit(s[lastChar:])
+    card.Value, vErr = CreateValue(s[:lastChar])
 
     if sErr != nil || vErr != nil {
         return card, errors.New("There was an error in the input.")

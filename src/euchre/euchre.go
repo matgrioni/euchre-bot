@@ -114,7 +114,9 @@ func (s State) Determinize() {
     // Go through each opponent player giving them cards until they have a
     // full hand given the current trick and player.
     for player := 1; player < 4; player++ {
-        if s.Setup.PickedUp && s.Setup.Dealer == player {
+        topPlayed := !cardsSet[s.Setup.Top]
+
+        if s.Setup.PickedUp && s.Setup.Dealer == player && !topPlayed {
             s.Hands[player] = append(s.Hands[player], s.Setup.Top)
         }
 
@@ -151,8 +153,8 @@ func (s State) Determinize() {
             // isn't included in further players.
             if possible {
                 s.Hands[player] = append(s.Hands[player], curCard)
-                idxs = idxs[:len(idxs) - 1]
-                if len(s.Hands[player]) == playerHandSize {
+                idxs = append(idxs[:i], idxs[i + 1:]...)
+                if len(s.Hands[player]) >= playerHandSize {
                     break
                 }
             }

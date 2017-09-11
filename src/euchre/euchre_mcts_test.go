@@ -44,10 +44,14 @@ func TestRunPlayout(t *testing.T) {
 
     var prior []Trick
 
-    s := NewUndeterminizedState(setup, 0, hand, played, prior, deck.Card{ })
+    s := NewUndeterminizedState(setup, 0, hand, played, prior)
     s.Determinize()
     n := ai.NewNode()
-    n.Value(s)
+    m := ai.Move {
+        nil,
+        s,
+    }
+    n.Value(m)
     e := Engine{ }
 
     fmt.Println("Playout debug output")

@@ -183,4 +183,8 @@ func TestDeterminizationProblematic(t *testing.T) {
     state.Determinize()
 
     fmt.Printf("Sanity check: %v\n", state)
+    if len(state.Hands[0]) != 2 || len(state.Hands[1]) != 1 ||
+       len(state.Hands[2]) != 1 || len(state.Hands[3]) != 1 {
+        t.Errorf("Incorrect number of cards in some players hand.\n")
+    }
 }

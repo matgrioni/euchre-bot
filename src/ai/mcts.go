@@ -220,7 +220,6 @@ func runPlayout(node *Node, engine TSEngine, log bool) float64 {
     if engine.IsTerminal(node.GetState()) {
         eval = engine.Evaluation(node.GetState())
     } else {
-        // TODO: Remove this mapping.
         var nextMoves []Move
         if node.depth <= 2 {
             if node.memoize == nil {

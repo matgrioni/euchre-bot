@@ -80,10 +80,10 @@ func main() {
     player := players[playerType - 1]
 
     for i := 0; i < samples; i++ {
-        situation := r.Perm(len(deck.CARDS))[:6]
+        situation := deck.GenHand(6)
 
-        hand := indicesToCards(situation[:5])
-        top := deck.CARDS[situation[5]]
+        hand := situation[:5]
+        top := situation[5]
 
         copyHand := make([]deck.Card, len(hand))
         copy(copyHand, hand)

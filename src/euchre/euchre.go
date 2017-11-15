@@ -47,8 +47,7 @@ type Trick struct {
 
 /*
  * All informative state in the euchre state tree. A state contains all
- * information prior to this moment including the move that created this current
- * state.
+ * information prior to this moment.
  */
 type State struct {
     Setup Setup
@@ -382,4 +381,6 @@ func (engine Engine) Evaluation(state ai.TSState) float64 {
     } else {
         return -1
     }
+
+    return 0
 }

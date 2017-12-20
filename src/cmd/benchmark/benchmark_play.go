@@ -4,6 +4,7 @@ package main
 import (
     "ai"
     "bufio"
+    "deck"
     "euchre"
     "flag"
     "fmt"
@@ -118,6 +119,8 @@ func main() {
             // If the last turn was the AI's then the last trick was not added
             // automatically to the state. Further we know, who led, since we
             // were last. Namely, player 1.
+            // TODO: This is internal logic that is being handled very closely
+            // by the outside program. This should be encapsulated.
             if last == 0 {
                 trick := euchre.Trick {
                     state.Played,
@@ -125,6 +128,7 @@ func main() {
                     state.Setup.Trump,
                     state.Setup.AlonePlayer,
                 }
+                state.Played = make([]deck.Card, 0, 4)
                 state.Prior = append(state.Prior, trick)
 
                 state.Player = euchre.Winner(state.Played, state.Setup.Trump, 1,

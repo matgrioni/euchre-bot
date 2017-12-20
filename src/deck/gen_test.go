@@ -4,16 +4,17 @@ import "testing"
 
 
 /*
- * Test the generate hand functionality.
+ * Test the card drawing functionality.
+ * TODO: Add test for more cards than in deck, and test for 0 cards.
  */
 
 
 /*
- * Test that all cards in the generated hand are unique.
+ * Test that all cards in the randomly drawn cards are unique.
  */
-func TestGenHandUnique(t *testing.T) {
+func TestDrawNUnique(t *testing.T) {
     n := 5
-    hand := GenHand(n)
+    hand := DrawN(n)
     present := make(map[Card]bool)
 
     for _, card := range hand {
@@ -25,13 +26,13 @@ func TestGenHandUnique(t *testing.T) {
 
 
 /*
- * Test that the generated hand is of the expected length.
+ * Test that the randomly drawn cards are of the expected length.
  */
-func TestGenHandLength(t *testing.T) {
+func TestDrawNLength(t *testing.T) {
     ns := []int { 1, 2, 3, 4, 5 }
 
     for _, n := range ns {
-        hand := GenHand(n)
+        hand := DrawN(n)
 
         if len(hand) != n {
             t.Errorf("Expected hand length to be %s but it is %s.\n", n, len(hand))

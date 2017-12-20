@@ -19,7 +19,7 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
  * Returns:
  *  A random deck.Card.
  */
-func GenCard() Card {
+func Draw() Card {
     var card Card
     card.Suit = SUITS[r.Intn(4)]
     card.Value = VALUES[r.Intn(6)]
@@ -37,7 +37,7 @@ func GenCard() Card {
  * Returns:
  *  A slice of n random, unique cards.
  */
-func GenHand(n int) []Card {
+func DrawN(n int) []Card {
     hand := make([]Card, n)
     perm := r.Perm(len(CARDS))
 

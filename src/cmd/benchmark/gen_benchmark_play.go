@@ -31,27 +31,28 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 
 /*
- * Create a random setup given the current hand. The random setup randomly
+ * Create a random setup given the current situation. The random setup randomly
  * chooses who dealt and what trump is. Nobody is ever going alone though, and
  * nobody ever picks up. This allows us to focus on a given game state and not
  * worry about how other game logic components perform.
  *
  * Args:
- *  hands: The hands of the players.
+ *  splits: The splits of the cards. Between players and the kitty.
  *
  * Returns:
  *  The randomized euchre setup.
  */
-func randomSetup(hands [][]deck.Card) euchre.Setup {
+func randomNoAloneNoPickupSetup(splits [][]deck.Card) euchre.Setup {
     dealer := r.Intn(4)
+    caller := r.Intn(4)
     pickedUp := false
     top := hands[4][3]
-    trump := deck.SUITS[r.Intn(4)]
+    trump := deck.SUITS[r.Intn(len(deck.SUITS))]
     var discard deck.Card
 
     return euchre.Setup {
         dealer,
-        r.Intn(4),
+        caller,
         pickedUp,
         top,
         trump,
@@ -68,8 +69,8 @@ func main() {
 
     engine := euchre.Engine{ }
     for i := 0; i < samples; i++ {
-        hands := euchre.GenSituation()
-        setup := randomSetup(hands)
+        splits := euchre.GenSituation()
+        setup := randomNoAloneNoPickupSetup(splits)
 
         played := make([]deck.Card, 0, 4)
         prior := make([]euchre.Trick, 0, 5)

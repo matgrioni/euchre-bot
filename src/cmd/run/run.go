@@ -26,25 +26,6 @@ import (
  */
 
 
-/*
- * Transform a list of indices into the corresponding cards.
- *
- * Args:
- *  indices, type(int): A list of indices that correspond to cards in deck.CARDS
- *
- * Returns:
- *  type([]deck.Card): A slice that is the mapping from the indices to cards.
- */
-func indicesToCards(indices []int) []deck.Card {
-    cards := make([]deck.Card, len(indices))
-    for i, idx := range indices {
-        cards[i] = deck.CARDS[idx]
-    }
-
-    return cards
-}
-
-
 // TODO: This should be moved into some configuration file.
 const (
     PICKUP_CONF = 0.6
@@ -80,7 +61,7 @@ func main() {
     player := players[playerType - 1]
 
     for i := 0; i < samples; i++ {
-        situation := deck.GenHand(6)
+        situation := deck.DrawN(6)
 
         hand := situation[:5]
         top := situation[5]

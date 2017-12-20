@@ -33,7 +33,7 @@ type Setup struct {
 
 /*
  * A Trick in Euchre consists of the cards that were played and some context.
- * Namely, who led in the trick (using our famililar number designation), what
+ * Namely, who led in the trick (using our familiar number designation), what
  * the trump suit was, and if anybody was going alone.
  */
 type Trick struct {
@@ -101,61 +101,100 @@ func (s State) Determinize() {
     // excluded due to it already being played in the current or previous
     // tricks, then remove it from contention. It can only be with the person
     // who picked it up at this moment.
-    if s.Setup.PickedUp && cardsSet[s.Setup.Top] {
+    topPlayed := !cardsSet[s.Setup.Top]
+    // Add the card that was picked up, but not played yet to the dealer's hand.
+    if s.Setup.PickedUp && !topPlayed {
+        s.Hands[s.Setup.Dealer] = append(s.Hands[s.Setup.Dealer], s.Setup.Top)
         cardsSet[s.Setup.Top] = false
         left--
     }
 
-    idxs := r.Perm(left)
-    cards := extractAvailableCards(cardsSet)
-
     noSuits := noSuits(s.Prior, s.Setup.Trump)
-    // Go through each opponent player giving them cards until they have a
-    // full hand given the current trick and player.
-    for player := 1; player < 4; player++ {
-        topPlayed := !cardsSet[s.Setup.Top]
+    availableCards := extractAvailableCards(cardsSet)
 
-        if s.Setup.PickedUp && s.Setup.Dealer == player && !topPlayed {
-            s.Hands[player] = append(s.Hands[player], s.Setup.Top)
-        }
+    // Assign each card to the list of players that it can be assigned to.
+    // Further keep track of how many options each player currently has, this
+    // way we do not run out of possible cards for each player.
+    playerOptions := make(map[int]int)
+    cardToPlayers := make(map[deck.Card]map[int]bool)
+    for _, card := range availableCards {
+        for i := 1; i < 4; i++ {
+            if _, ok := noSuits[i]; ok {
+                for _, suit := range noSuits[i] {
+                    possible := true
+                    if card.AdjSuit(s.Setup.Trump) == suit {
+                        possible = false
+                    }
 
-        playerHandSize := 5 - len(s.Prior)
-
-        // TODO: This expression seems like it can be simplified. LM-A0
-        start := ((s.Player + 4) - len(s.Played)) % 4
-        dist := ((s.Player + 4) - start) % 4
-        for i := start; i < start + dist; i++ {
-            if i % 4 == player {
-                playerHandSize--
-                break
-            }
-        }
-
-        // Go through each card in the random permutation. Go backwards so that
-        // the idxs can be deleted as cards are chosen as valid.
-        for i := len(idxs) - 1; i >= 0; i-- {
-            cardIndex := idxs[i]
-            curCard := cards[cardIndex]
-
-            // If the current card is possible for the current player, then add
-            // it to the current player's hand.
-            possible := true
-            for _, suit := range noSuits[player] {
-                if curCard.AdjSuit(s.Setup.Trump) == suit {
-                    possible = false
+                    if possible {
+                        if cardToPlayers[card] == nil {
+                            cardToPlayers[card] = make(map[int]bool)
+                        }
+                        cardToPlayers[card][i] = true
+                        playerOptions[i]++
+                    }
                 }
+            } else {
+                if cardToPlayers[card] == nil {
+                    cardToPlayers[card] = make(map[int]bool)
+                }
+                cardToPlayers[card][i] = true
             }
+        }
+    }
 
-            // If the current card is possible by the rules of following suit,
-            // then add it. If we have all the cards for this player, then move
-            // on to the next as well. Also remove, the card index so that it
-            // isn't included in further players.
-            if possible {
-                s.Hands[player] = append(s.Hands[player], curCard)
-                idxs = append(idxs[:i], idxs[i + 1:]...)
-                if len(s.Hands[player]) >= playerHandSize {
+    playerHandSizes := make(map[int]int)
+    for i := 1; i < 4; i++ {
+        playerHandSize := 5 - len(s.Prior) - len(s.Hands[i])
+
+        // If the current player has already played subtract one more from
+        // the current needed card count.
+        start := ((s.Player + 4) - len(s.Played)) % 4
+        end := start + ((s.Player + 4) - start) % 4
+        if (i >= start && i < end) || i + 4 < end {
+           playerHandSize--
+        }
+        playerHandSizes[i] = playerHandSize
+    }
+
+    // The fact that a map is traversed randomly is needed, since otherwise the
+    // logic may be biased in what types of hands it produces.
+    notAtZero := map[int]bool {
+        1: playerHandSizes[1] != 0,
+        2: playerHandSizes[2] != 0,
+        3: playerHandSizes[3] != 0,
+    }
+    numAtZero := 0
+    for card, players := range cardToPlayers {
+        unFullPlayers := intersectPlayerSets(players, notAtZero)
+
+        if len(unFullPlayers) > 0 {
+            // For each player that can take this card, are there any that need to
+            // take it because otherwise, there will not be a valid euchre game.
+            chosen := -1
+            for player, _ := range unFullPlayers {
+                if playerOptions[player] == playerHandSizes[player] {
+                    chosen = player
                     break
                 }
+            }
+
+            if chosen < 0 {
+                chosen = randomPlayerFromSet(unFullPlayers)
+            }
+
+            s.Hands[chosen] = append(s.Hands[chosen], card)
+            for player, _ := range unFullPlayers {
+                playerOptions[player]--
+            }
+            playerHandSizes[chosen]--
+            if playerHandSizes[chosen] == 0 {
+                notAtZero[chosen] = false
+                numAtZero++
+            }
+
+            if numAtZero == 3 {
+                break
             }
         }
     }

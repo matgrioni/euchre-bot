@@ -6,7 +6,7 @@ type TSState interface { }
 
 /*
  * A type to represent a move in a game. A move consists of an action, and a
- * successsor state. In the case where the game is in a terminal state, this is
+ * successor state. In the case where the game is in a terminal state, this is
  * represented via a nil action.
  */
 type Move struct {

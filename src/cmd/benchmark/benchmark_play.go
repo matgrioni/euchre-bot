@@ -128,11 +128,10 @@ func main() {
                     state.Setup.Trump,
                     state.Setup.AlonePlayer,
                 }
-                state.Played = make([]deck.Card, 0, 4)
-                state.Prior = append(state.Prior, trick)
-
                 state.Player = euchre.Winner(state.Played, state.Setup.Trump, 1,
                                     state.Setup.AlonePlayer)
+                state.Played = make([]deck.Card, 0, 4)
+                state.Prior = append(state.Prior, trick)
             }
         }
 

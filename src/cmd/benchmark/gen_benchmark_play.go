@@ -21,9 +21,9 @@ import (
  * to evaluate actual game play, not pre game play.
  *
  * Usage:
- *  ./gen_benchmark_play {numSamples} > data.txt
+ *  ./gen_benchmark_play {samples} > data.txt
  *
- * numSamples are the number of situations you wish to compare.
+ * samples are the number of situations you wish to compare.
  */
 
 
@@ -46,7 +46,7 @@ func randomNoAloneNoPickupSetup(splits [][]deck.Card) euchre.Setup {
     dealer := r.Intn(4)
     caller := r.Intn(4)
     pickedUp := false
-    top := hands[4][3]
+    top := splits[4][3]
     trump := deck.SUITS[r.Intn(len(deck.SUITS))]
     var discard deck.Card
 
@@ -72,10 +72,15 @@ func main() {
         splits := euchre.GenSituation()
         setup := randomNoAloneNoPickupSetup(splits)
 
+        // Delete the kitty so that it is not included in the state.
+        copy(splits[4:], splits[5:])
+        splits[len(splits) - 1] = nil
+        splits = splits[:len(splits) - 1]
+
         played := make([]deck.Card, 0, 4)
         prior := make([]euchre.Trick, 0, 5)
         state := euchre.NewDeterminizedState(setup, (setup.Dealer + 1) % 4,
-                                             hands, played, prior)
+                                             splits, played, prior)
 
         score, _ := ai.Minimax(state, engine)
 

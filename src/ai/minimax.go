@@ -61,14 +61,14 @@ func minimaxHelper(state TSState, engine TSEngine, alpha float64,
                 extremeMove = nextMove
             }
 
-            alpha = math.Max(alpha, extremeValue)
+            alpha = math.Max(alpha, nextEval)
         } else {
             if nextEval < extremeValue {
                 extremeValue = nextEval
                 extremeMove = nextMove
             }
 
-            beta = math.Min(beta, extremeValue)
+            beta = math.Min(beta, nextEval)
         }
 
         if beta < alpha {

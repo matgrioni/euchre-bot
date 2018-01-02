@@ -126,13 +126,9 @@ func MCTS(s State, engine TSEngine, runs int, deters int) (Move, float64) {
     conv := make(map[interface{}]Move)
     counts := make(map[interface{}]int)
 
-    //fmt.Println("Undeterminized State")
-    //fmt.Println(s)
     for i := 0; i < deters; i++ {
         copyState := s.Copy()
         copyState.Determinize()
-        //fmt.Println("New Determinization")
-        //fmt.Println(copyState)
 
         n := NewNode()
         m := Move {

@@ -58,6 +58,35 @@ type State struct {
 }
 
 
+// TODO: Move state logic to another file.
+var players2And3 = map[int]bool {
+    2: true,
+    3: true,
+}
+
+var players1And3 = map[int]bool {
+    1: true,
+    3: true,
+}
+
+var players1And2 = map[int]bool {
+    1: true,
+    2: true,
+}
+
+var playerSubsets = map[int]map[int]bool {
+    4: players1And2,
+    5: players2And3,
+    6: players1And3,
+}
+
+var playerToSubsets = map[int][]int {
+    1: []int { 1, 4, 6 },
+    2: []int { 2, 4, 5 },
+    3: []int { 3, 5, 6 },
+}
+
+
 /*
  * Create a determinized euchre state off of an incomplete (non-terminal) euchre
  * state. Information can range from the first move to the last move, and the
@@ -114,83 +143,150 @@ func (s State) Determinize() {
 
     // Assign each card to the list of players that it can be assigned to.
     // Further keep track of how many options each player currently has, this
-    // way we do not run out of possible cards for each player.
-    playerOptions := make(map[int]int)
+    // way we do not run out of possible cards for each player. Also, we must
+    // keep track of each subset. The meaning of the keys is as follows:
+    // 1: player {1}
+    // 2: player {2}
+    // 3: player {3}
+    // 4: players {1, 2}
+    // 5: players {2, 3}
+    // 6: players {1, 3}
+    // At no point can the number of cards needed for a subset be less than the
+    // number of options for that subset. We do not need to include the whole
+    // set as a subset, because that must naturally have more options than
+    // needed cards if we are to have a valid game.
+    subsetOptions := make(map[int]int)
     cardToPlayers := make(map[deck.Card]map[int]bool)
     for _, card := range availableCards {
         for i := 1; i < 4; i++ {
             if _, ok := noSuits[i]; ok {
+                possible := true
                 for _, suit := range noSuits[i] {
-                    possible := true
                     if card.AdjSuit(s.Setup.Trump) == suit {
                         possible = false
+                        break
                     }
 
-                    if possible {
-                        if cardToPlayers[card] == nil {
-                            cardToPlayers[card] = make(map[int]bool)
-                        }
-                        cardToPlayers[card][i] = true
-                        playerOptions[i]++
+                    if !possible {
+                        break
                     }
+                }
+
+                if possible {
+                    if cardToPlayers[card] == nil {
+                        cardToPlayers[card] = make(map[int]bool)
+                    }
+                    cardToPlayers[card][i] = true
+                    subsetOptions[i]++
                 }
             } else {
                 if cardToPlayers[card] == nil {
                     cardToPlayers[card] = make(map[int]bool)
                 }
                 cardToPlayers[card][i] = true
+                subsetOptions[i]++
             }
         }
     }
 
-    playerHandSizes := make(map[int]int)
+    // subsetOptions now has the singleton set counts. Now use cardToPlayers to
+    // compile the cardinality 2 subsets.
+    for idx, subset := range playerSubsets {
+        for _, players := range cardToPlayers {
+            union := intersectPlayerSets(players, subset)
+            if len(union) > 0 {
+                subsetOptions[idx]++
+            }
+        }
+    }
+
+    subsetHandSizes := make(map[int]int)
     for i := 1; i < 4; i++ {
-        playerHandSize := 5 - len(s.Prior) - len(s.Hands[i])
+        subsetHandSize := 5 - len(s.Prior) - len(s.Hands[i])
 
         // If the current player has already played subtract one more from
         // the current needed card count.
         start := ((s.Player + 4) - len(s.Played)) % 4
         end := start + ((s.Player + 4) - start) % 4
         if (i >= start && i < end) || i + 4 < end {
-           playerHandSize--
+           subsetHandSize--
         }
-        playerHandSizes[i] = playerHandSize
+        subsetHandSizes[i] = subsetHandSize
     }
+    subsetHandSizes[4] = subsetHandSizes[1] + subsetHandSizes[2]
+    subsetHandSizes[5] = subsetHandSizes[2] + subsetHandSizes[3]
+    subsetHandSizes[6] = subsetHandSizes[1] + subsetHandSizes[3]
 
     // The fact that a map is traversed randomly is needed, since otherwise the
     // logic may be biased in what types of hands it produces.
     notAtZero := map[int]bool {
-        1: playerHandSizes[1] != 0,
-        2: playerHandSizes[2] != 0,
-        3: playerHandSizes[3] != 0,
+        1: subsetHandSizes[1] != 0,
+        2: subsetHandSizes[2] != 0,
+        3: subsetHandSizes[3] != 0,
     }
     numAtZero := 0
+    for _, v := range notAtZero {
+        if !v {
+            numAtZero++
+        }
+    }
+
     for card, players := range cardToPlayers {
         unFullPlayers := intersectPlayerSets(players, notAtZero)
 
         if len(unFullPlayers) > 0 {
-            // For each player that can take this card, are there any that need to
-            // take it because otherwise, there will not be a valid euchre game.
+            shuffledUnFullPlayers := shufflePlayerSetKeys(unFullPlayers)
+
+            brokenConstraints := false
             chosen := -1
-            for player, _ := range unFullPlayers {
-                if playerOptions[player] == playerHandSizes[player] {
+            for _, player := range shuffledUnFullPlayers {
+                brokenConstraints = false
+
+                for _, other := range shuffledUnFullPlayers {
+                    if other != player {
+                        for _, subsetIdx := range playerToSubsets[other] {
+                            offset := 0
+                            dualSubset, dualOk := playerSubsets[subsetIdx]
+                            if dualOk {
+                                if pres, ok := dualSubset[player]; pres && ok {
+                                    offset = 1
+                                }
+                            }
+                            brokenConstraints = brokenConstraints || subsetHandSizes[subsetIdx] - offset > subsetOptions[subsetIdx] - 1
+                        }
+                    }
+                }
+
+                if !brokenConstraints {
                     chosen = player
                     break
                 }
             }
 
-            if chosen < 0 {
-                chosen = randomPlayerFromSet(unFullPlayers)
-            }
+            // If this card can be chosen given the current constraints than
+            // assign it.
+            if chosen > 0 {
+                s.Hands[chosen] = append(s.Hands[chosen], card)
 
-            s.Hands[chosen] = append(s.Hands[chosen], card)
-            for player, _ := range unFullPlayers {
-                playerOptions[player]--
-            }
-            playerHandSizes[chosen]--
-            if playerHandSizes[chosen] == 0 {
-                notAtZero[chosen] = false
-                numAtZero++
+                for _, subsetIdx := range playerToSubsets[chosen] {
+                    subsetHandSizes[subsetIdx]--
+                }
+
+                if subsetHandSizes[chosen] == 0 {
+                    notAtZero[chosen] = false
+                    numAtZero++
+                }
+
+                bitmap := 0
+                for player, _ := range unFullPlayers {
+                    for _, subsetIdx := range playerToSubsets[player] {
+                        subtracted := (bitmap & (1 << uint(subsetIdx))) != 0
+                        if !subtracted {
+                            subsetOptions[subsetIdx]--
+                            bitmap |= 1 << uint(subsetIdx)
+                        }
+                    }
+                }
             }
 
             if numAtZero == 3 {
@@ -345,14 +441,19 @@ func (engine Engine) Successors(state ai.TSState) []ai.Move {
             nPrior = make([]Trick, len(cState.Prior))
             copy(nPrior, cState.Prior)
 
-            cState.Played = append(cState.Played, card)
+            // TODO: Why does this work over this?
+            //cState.Played = append(cState.Played, card)
+            trickCards := make([]deck.Card, 3)
+            copy(trickCards, cState.Played)
+            trickCards = append(trickCards, card)
 
             nPlayed = make([]deck.Card, 0, 4)
-            nPlayer = Winner(cState.Played, cState.Setup.Trump, nmPlayer,
+            // TODO: nmPlayer is not correct for AlonePlayers.
+            nPlayer = Winner(trickCards, cState.Setup.Trump, nmPlayer,
                              cState.Setup.AlonePlayer)
 
             nextPrior := Trick {
-                cState.Played,
+                trickCards,
                 nmPlayer,
                 cState.Setup.Trump,
                 cState.Setup.AlonePlayer,

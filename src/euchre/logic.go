@@ -182,11 +182,14 @@ func WinnerIdx(played []deck.Card, trump deck.Suit) int {
  *  The player number designation that corresponds to the player who led off the
  *  current list of played cards.
  */
-func Leader(played []deck.Card, player int, alone int) int {
+func Leader(played []deck.Card, player, alone int) int {
     leader := (player + 4 - len(played)) % 4
 
-    if alone > 0 {
-        if alone >= leader && (alone < player || alone < player + 4) {
+    if alone >= 0 {
+        empty := (alone + 2) % 4
+        if (player > leader && empty >= leader && empty < player) ||
+           (player < leader && ((player + 4 > empty && empty >= leader) ||
+           (player > empty && empty + 4 >= leader))) {
             leader--
         }
     }

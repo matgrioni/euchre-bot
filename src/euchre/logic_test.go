@@ -15,6 +15,14 @@ type beatTest struct {
 }
 
 
+type leaderTest struct {
+    played []deck.Card
+    player int
+    alone int
+    expected int
+}
+
+
 type noSuitsTest struct {
     prior []Trick
     trump deck.Suit
@@ -97,6 +105,145 @@ func TestBeat(t *testing.T) {
 
         if res != test.expected {
             errorOut(t, test.expected, res, "beat", i)
+        }
+    }
+}
+
+
+var leaderTests = []leaderTest {
+    /*
+     * Routine test.
+     */
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.C, deck.J },
+        },
+        0,
+        -1,
+        3,
+    },
+
+    /*
+     * Test for wrapping of current player and leader.
+     */
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.S, deck.K },
+            deck.Card { deck.S, deck.A },
+        },
+        0,
+        -1,
+        2,
+    },
+
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.S, deck.A },
+            deck.Card { deck.S, deck.K },
+            deck.Card { deck.S, deck.Q },
+        },
+        2,
+        -1,
+        3,
+    },
+
+    /*
+     * Test for alone player when it that person has not played yet.
+     */
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.Nine },
+        },
+        0,
+        2,
+        3,
+    },
+
+    /*
+     * Test for alone player being the current player.
+     */
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.C, deck.Ten },
+            deck.Card { deck.C, deck.J },
+        },
+        1,
+        1,
+        2,
+    },
+
+    /*
+     * Another test for the alone player having to be considered.
+     */
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.A },
+        },
+        3,
+        0,
+        1,
+    },
+
+    /*
+     * More alone player tests.
+     */
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.C, deck.Ten },
+        },
+        1,
+        1,
+        0,
+    },
+
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.C, deck.Ten },
+            deck.Card { deck.H, deck.A },
+        },
+        0,
+        1,
+        1,
+    },
+
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.Ten },
+            deck.Card { deck.H, deck.J },
+        },
+        3,
+        3,
+        0,
+    },
+
+    leaderTest {
+        []deck.Card { },
+        3,
+        2,
+        3,
+    },
+
+    leaderTest {
+        []deck.Card {
+            deck.Card { deck.H, deck.J },
+            deck.Card { deck.H, deck.A },
+        },
+        1,
+        2,
+        2,
+    },
+}
+
+
+/*
+ *
+ */
+func TestLeader(t *testing.T) {
+    for i, fixture := range leaderTests {
+        res := Leader(fixture.played, fixture.player, fixture.alone)
+
+        if res != fixture.expected {
+           errorOut(t, fixture.expected, res, "leader", i)
         }
     }
 }

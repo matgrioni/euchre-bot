@@ -329,17 +329,121 @@ func (p *RulePlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
 
 func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
                           prior []euchre.Trick) ([]deck.Card, deck.Card) {
-    // TODO: For now just use the random approach.
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+    // The approach for the rule player will be to always try to win the current
+    // hand. If the player cannot win, it plays its least valuable card. If the
+    // player can possibly win, it has two logic branches. If the card that it
+    // can win with is a non-trump then it will play the highest such non-trump.
+    // If the highest card is a trump, it will the lowest such trump card.
+    // Other logic branches include, if the partner is already winning then do
+    // not try to win and throw off. Lastly, if no card has been played, the
+    // most valuable card will be played.
 
     playable := euchre.Possible(hand, played, setup.Trump)
 
-    chosen := playable[r.Intn(len(playable))]
-    final := hand[chosen]
-    hand[chosen] = hand[len(hand) - 1]
+    // Check if all the possible cards are of the same suit, (i.e. we have at
+    // least one card with the same suit) or there is some card that isn't the
+    // same.
+    first := deck.Card { }
+    matchingSuits := false
+    curWinnerIdx := -1
+    curWinCard := deck.Card { }
+    if len(played) > 0 {
+        first = played[0]
+        matchingSuits = deck.SameSuit(first, hand[playable[0]], setup.Trump)
+
+        curWinnerIdx = euchre.WinnerIdx(played, setup.Trump)
+        curWinCard = played[curWinnerIdx]
+    }
+
+    leader := euchre.Leader(played, 0, setup.AlonePlayer)
+    curWinner := euchre.Winner(played, setup.Trump, leader, setup.AlonePlayer)
+
+    var chosen deck.Card
+    chosenIdx := -1
+
+    // Logic for picking a winner. If the current winner is our partner, just
+    // play the lowest card in the hand.
+    if curWinner != 2 && len(played) > 0 {
+        for _, idx := range playable {
+            curCard := hand[idx]
+            var wins bool
+            wins = !euchre.Beat(curWinCard, curCard, setup.Trump)
+
+            // All cards are of the same suit and the first card played is not a
+            // trump. So pick the card with the lowest value that wins.
+            if (matchingSuits && !first.IsTrump(setup.Trump)) {
+                higher := true
+                if chosenIdx >= 0 {
+                    higher = !euchre.Beat(chosen, curCard, setup.Trump)
+                }
+
+                if wins && higher {
+                    chosenIdx = idx
+                    chosen = curCard
+                }
+            } else {
+                if curCard.IsTrump(setup.Trump) {
+                    // We don't have any matching cards of the same suit, so pick the
+                    // lowest card that can win. Which boils down to the lowest trump.
+
+                    less := true
+                    if chosenIdx >= 0 {
+                        less = euchre.Beat(chosen, curCard, setup.Trump)
+                    }
+
+                    // If this card can beat the current highest played card and is
+                    // valued less than the current chosen card, swap it.
+                    if wins && less {
+                        chosenIdx = idx
+                        chosen = curCard
+                    }
+                }
+            }
+        }
+    } else if len(played) == 0 {
+        // If no cards are currently played, play the highest value card.
+        chosenIdx = playable[0]
+        chosen = hand[chosenIdx]
+
+        for _, idx := range playable[1:] {
+            curCard := hand[idx]
+            var wins bool
+
+            if deck.SameSuit(curCard, chosen, setup.Trump) ||
+               curCard.IsTrump(setup.Trump) || chosen.IsTrump(setup.Trump) {
+                wins = euchre.Beat(curCard, chosen, setup.Trump)
+            } else {
+                wins = deck.ValueCompare(curCard, chosen) > 0
+            }
+
+            if wins {
+                chosenIdx = idx
+                chosen = curCard
+            }
+        }
+    }
+
+    // There is no card that can win amongst our possible choices or our partner
+    // is currently winning. So choose the least valuable card.
+    if chosenIdx < 0 {
+        chosenIdx = playable[0]
+        chosen = hand[chosenIdx]
+
+        for _, idx := range playable[:1] {
+            curCard := hand[idx]
+
+            if (chosen.IsTrump(setup.Trump) && euchre.Beat(chosen, curCard, setup.Trump)) ||
+               (!chosen.IsTrump(setup.Trump) && !curCard.IsTrump(setup.Trump) && deck.ValueCompare(chosen, curCard) > 0) {
+                chosenIdx = idx
+                chosen = curCard
+            }
+        }
+    }
+
+    hand[chosenIdx] = hand[len(hand) - 1]
     hand = hand[:len(hand) - 1]
 
-    return hand, final
+    return hand, chosen
 }
 
 

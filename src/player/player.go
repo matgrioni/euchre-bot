@@ -20,7 +20,7 @@ type Player interface {
      *
      * Args:
      *  hand: The 5 cards currently in the player's hand.
-     *  top: The card on top of the kitty and currenty in question to be
+     *  top: The card on top of the kitty and currently in question to be
      *       picked up.
      *  who: Who is picking up the card (the dealer). The number designation
      *       for each player is as follows. Yourself(0), partner(2), opp to

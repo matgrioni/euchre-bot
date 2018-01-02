@@ -27,21 +27,20 @@ const (
 
 
 /*
- * A test fixture that defines the inputs and the expected output for a given
- * test case.
+ * A test that defines the inputs and the expected output for a given test case.
  */
-type fixture struct {
+type discardTest struct {
     hand []deck.Card
     top deck.Card
     expected deck.Card
 }
 
 
-var fixtures = []fixture {
+var discardTests = []discardTest {
     /*
      * Test that the lowest trump card is discarded if all cards are trump.
      */
-    fixture {
+    discardTest {
         []deck.Card {
             deck.Card { deck.H, deck.J  },
             deck.Card { deck.H, deck.Ten },
@@ -57,7 +56,7 @@ var fixtures = []fixture {
      * Whitebox testing where trumps are in ascending order. The test is to see
      * if the lowest of a trump suit will be chosen independent of order.
      */
-    fixture {
+    discardTest {
         []deck.Card {
             deck.Card { deck.C, deck.Nine },
             deck.Card { deck.C, deck.Ten },
@@ -72,7 +71,7 @@ var fixtures = []fixture {
     /*
      * Another whitebox test to assure that discarding properly handles bowers.
      */
-    fixture {
+    discardTest {
         []deck.Card {
             deck.Card { deck.C, deck.J },
             deck.Card { deck.S, deck.J },
@@ -88,7 +87,7 @@ var fixtures = []fixture {
      * When there is a suit with only one card in it, but it is an A, do not discard
      * it since it is valuable. Discard the lowest card of a non-trump suit.
      */
-    fixture {
+    discardTest {
         []deck.Card {
             deck.Card { deck.C, deck.A },
             deck.Card { deck.H, deck.Nine },
@@ -104,7 +103,7 @@ var fixtures = []fixture {
      * Test that a suit with only one card is discarded. This makes sense if you
      * have trumps. Otherwise, the lowest overall card should be dropped.
      */
-    fixture {
+    discardTest {
         []deck.Card {
             deck.Card { deck.C, deck.Q },
             deck.Card { deck.H, deck.Nine },
@@ -120,7 +119,7 @@ var fixtures = []fixture {
      * When there is only one card for a certain suit but no trumps, just
      * discard the lowest valued card.
      */
-    fixture {
+    discardTest {
         []deck.Card {
             deck.Card { deck.C, deck.Q },
             deck.Card { deck.H, deck.Nine },
@@ -136,7 +135,7 @@ var fixtures = []fixture {
      * When there is more than one card that is non-ace, non-trump and solitary
      * in its suit, then choose the smallest one.
      */
-     fixture {
+     discardTest {
         []deck.Card {
             deck.Card { deck.D, deck.J },
             deck.Card { deck.S, deck.A },
@@ -151,13 +150,13 @@ var fixtures = []fixture {
 
 
 /*
- * The main driver for discard tests that runs all fixtures outlined above
+ * The main driver for discard tests that runs all discardTests outlined above
  * globally on all testable players.
  */
 func TestDiscard(t *testing.T) {
     players := getTestablePlayers()
 
-    for i, fixture := range fixtures {
+    for i, fixture := range discardTests {
         for j, player := range players {
             copyHand := make([]deck.Card, len(fixture.hand))
             copy(copyHand, fixture.hand)

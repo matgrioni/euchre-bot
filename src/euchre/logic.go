@@ -140,6 +140,62 @@ func Winner(played []deck.Card, trump deck.Suit, led int, alone int) int {
 
 
 /*
+ * Provides the index of the card that wins out of the provided played cards and
+ * current trump.
+ *
+ * Args:
+ *  played: The cards that have already been played.
+ *  trump: The current trump suit the cards are played in the context of.
+ *
+ * Returns:
+ *  The index of the card that is the current winner out of the played cards. If
+ *  no cards were played, -1 is returned instead.
+ */
+func WinnerIdx(played []deck.Card, trump deck.Suit) int {
+    highIdx := -1
+
+    if len(played) > 0 {
+        highIdx = 0
+        highest := played[0]
+        for i, card := range played[1:] {
+            if !Beat(highest, card, trump) {
+                highest = card
+                highIdx = i + 1
+            }
+        }
+    }
+
+    return highIdx
+}
+
+
+/*
+ * Given the current played cards, the current player's turn and who is going
+ * alone, find what player led the hand.
+ *
+ * Args:
+ *  played: The cards currently played.
+ *  player: The current player to go.
+ *  alone: The player, if any, who is going alone.
+ *
+ * Returns:
+ *  The player number designation that corresponds to the player who led off the
+ *  current list of played cards.
+ */
+func Leader(played []deck.Card, player int, alone int) int {
+    leader := (player + 4 - len(played)) % 4
+
+    if alone > 0 {
+        if alone >= leader && (alone < player || alone < player + 4) {
+            leader--
+        }
+    }
+
+    return leader
+}
+
+
+/*
  * Creates a new copy of the hands in memory from the given state.
  *
  * Args:

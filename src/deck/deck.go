@@ -297,11 +297,29 @@ func (c Card) AdjSuit(t Suit) Suit {
  *  card2: The Card to compare against.
  *
  * Returns:
- *  A postive, zero, or negative number if card1 is greater, equal, or less than
+ *  A positive, zero, or negative number if card1 is greater, equal, or less than
  *  card2 respectively.
  */
 func ValueCompare(card1 Card, card2 Card) int {
     return card1.Value.Compare(card2.Value)
+}
+
+
+/*
+ * A convenient helper to check if two cards have the same suit. This helps with
+ * checking for the edge case of bowers.
+ *
+ * Args:
+ *  card1: One card for the suit comparison.
+ *  card2: Another card for the suit comparison.
+ *  trump: The trump suit to use when comparing these cards.
+ *
+ * Returns:
+ *  True if the two cards have the same suit, accounting for the left bower on
+ *  both cards.
+ */
+func SameSuit(card1 Card, card2 Card, trump Suit) bool {
+    return card1.AdjSuit(trump) == card2.AdjSuit(trump)
 }
 
 

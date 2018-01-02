@@ -44,3 +44,29 @@ func randomPlayerFromSet(s map[int]bool) int {
 
     return keys[r.Intn(len(keys))]
 }
+
+
+/*
+ * Shuffle the players in a set of players.
+ *
+ * Args:
+ *  m: The player set to consider.
+ *
+ * Returns:
+ *  A slice of players in the set. The slice contains all players in the set and
+ *  is randomly ordered.
+ */
+func shufflePlayerSetKeys(m map[int]bool) []int {
+    src := make([]int, 0, len(m))
+    for k, _ := range m {
+        src = append(src, k)
+    }
+
+    dst := r.Perm(len(m))
+    shuffled := make([]int, len(m))
+    for i, item := range dst {
+        shuffled[i] = src[item]
+    }
+
+    return shuffled
+}

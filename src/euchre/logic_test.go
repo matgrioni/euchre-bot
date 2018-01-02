@@ -117,6 +117,44 @@ var noSuitsTests = []noSuitsTest {
         map[int][]deck.Suit { },
     },
 
+    // Routine check for sanity.
+    noSuitsTest {
+        []Trick {
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.S, deck.Nine },
+                    deck.Card { deck.D, deck.Ten },
+                    deck.Card { deck.S, deck.K },
+                    deck.Card { deck.H, deck.Nine },
+                },
+                1,
+                deck.S,
+                -1,
+            },
+            Trick {
+                []deck.Card {
+                    deck.Card { deck.C, deck.K },
+                    deck.Card { deck.C, deck.A },
+                    deck.Card { deck.C, deck.Nine },
+                    deck.Card { deck.H, deck.A },
+                },
+                3,
+                deck.S,
+                -1,
+            },
+        },
+        deck.S,
+        map[int][]deck.Suit {
+            0: []deck.Suit {
+                deck.S,
+            },
+            2: []deck.Suit {
+                deck.S,
+                deck.C,
+            },
+        },
+    },
+
     // Over two tricks, only one player does not follow suit.
     noSuitsTest {
         []Trick {

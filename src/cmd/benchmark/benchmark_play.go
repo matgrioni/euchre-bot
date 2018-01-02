@@ -89,7 +89,6 @@ func main() {
         json.Unmarshal([]byte(stateStr), &state)
         minimaxEval, _ := strconv.ParseFloat(line[tabIndex + 1:], 64)
 
-
         // Now that we have the game state, we can simulate the game. Using
         // Minimax players for the opponents and the desired player strategy
         // for user 0.
@@ -128,6 +127,8 @@ func main() {
                     state.Setup.Trump,
                     state.Setup.AlonePlayer,
                 }
+                // TODO: Note that 1 is not true, as the leading player if there
+                // is a player going alone.
                 state.Player = euchre.Winner(state.Played, state.Setup.Trump, 1,
                                     state.Setup.AlonePlayer)
                 state.Played = make([]deck.Card, 0, 4)

@@ -19,11 +19,11 @@ First a test dataset had to be created. I randomly generated various euchre situ
 
 Below is a bar chart that shows the average difference between the optimal player and different player implementations.
 
-INSERT IMAGE
+[Average difference](data/play/results/diff.png?raw=true)
 
 Below is a distribution of the differences. The differences are the integers between 0 (no difference) and 6 (minimax gets a loner, but player implementation is euched).
 
-INSERT IMAGE
+[Distribution comparison](data/play/results/dist.png?raw=true)
 
 So MCTS is definitely the best out of the three, but not much better than the rule implementation. The only difference between the two is 19 situations which have a difference of 3 under the rule player and a difference of 0 under the MCTS player. Across all possible euchre hands this might be more noticeable. It should be noted however that not all of these hands are equally likely especially with regards to the caller and suit picked, and so it is possible that these differences are not very important. So while MCTS seems to be better, it still has a way to go before it is worth as an alternative to rule based systems for euchre, especially if complex rules can be used.
 
@@ -40,6 +40,7 @@ Note that this system is using a very, very vanilla MCTS approach. The choosing 
 - ~~Figure out way to evaluate each approach automatically.~~
 - Evaluate picking up, calling, and going alone.
 - Add a MLPlayer along with the Smart, combinatorially good player.
+- Do the evaluation with partners being unoptimal, not just one player.
 
 Enjoy!
 

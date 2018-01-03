@@ -51,6 +51,7 @@ for (i, dist) in enumerate(dists):
     ids.append(rect[0])
 
 ax.set_ylabel('Percentage')
+ax.set_xlabel('Difference between Player and Minimax')
 ax.set_xticks(x_pos + WIDTH)
 ax.set_xticklabels(range(7))
 ax.legend(ids, keys)

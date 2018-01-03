@@ -29,6 +29,7 @@ x_pos = range(len(avgs))
 
 plt.bar(x_pos, avgs, align='center', alpha=0.5)
 plt.xticks(x_pos, names)
+plt.xlabel('Player Implementation')
 plt.ylabel('Difference to minimax')
 plt.title('Average Difference Between Player Implementations and Minimax Player')
 plt.show()

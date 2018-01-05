@@ -48,7 +48,7 @@ ax = fig.add_subplot(111)
 ids = []
 for (i, dist) in enumerate(dists):
     rect = ax.bar(x_pos + i * WIDTH, dist, WIDTH, color=COLORS[i],
-                  align='center')
+                  align='center', alpha=0.5)
     ids.append(rect[0])
 
 ax.set_ylabel('Percentage')

@@ -15,6 +15,7 @@ import (
  * based player will do.
  */
 type playTest struct {
+    player int
     setup euchre.Setup
     hand []deck.Card
     played []deck.Card
@@ -27,6 +28,7 @@ var playTests = []playTest {
      * Routine test with only one card played.
      */
     playTest {
+        0,
         euchre.Setup {
             2,
             3,
@@ -55,6 +57,7 @@ var playTests = []playTest {
      * played.
      */
     playTest {
+        0,
         euchre.Setup {
             3,
             0,
@@ -81,6 +84,7 @@ var playTests = []playTest {
      * should be thrown.
      */
     playTest {
+        0,
         euchre.Setup {
             3,
             0,
@@ -121,6 +125,7 @@ var playTests = []playTest {
      * lowest value card should be thrown, which is not trump if available.
      */
     playTest {
+        0,
         euchre.Setup {
             3,
             0,
@@ -161,6 +166,7 @@ var playTests = []playTest {
      * winning.
      */
     playTest {
+        0,
         euchre.Setup {
             3,
             0,
@@ -200,6 +206,7 @@ var playTests = []playTest {
      * Test for playing lowest card when there is no way to win.
      */
     playTest {
+        0,
         euchre.Setup {
             0,
             0,
@@ -250,6 +257,7 @@ var playTests = []playTest {
      * the current winner.
      */
     playTest {
+        0,
         euchre.Setup {
             1,
             3,
@@ -304,8 +312,8 @@ func TestPlay(t *testing.T) {
     player := NewRule("")
 
     for i, fixture := range playTests {
-        _, chosen := player.Play(fixture.setup, fixture.hand, fixture.played,
-                                 fixture.prior)
+        _, chosen := player.Play(fixture.player, fixture.setup, fixture.hand,
+                                 fixture.played, fixture.prior)
         if chosen != fixture.expected {
             t.Logf("Fixture %d failed.\n", i + 1)
             t.Errorf("Gave %s instead of %s", chosen, fixture.expected)

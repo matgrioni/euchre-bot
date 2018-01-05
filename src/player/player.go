@@ -12,6 +12,12 @@ import (
  * random, AI, rule based and possibly more. These options are chosen through a
  * struct that implements this Player interface. The underlying logic will then
  * follow different models.
+ *
+ * A player must be provided with all the game information it does not keep
+ * track of it through the game. A player is essentially an encapsulation of
+ * game logic. This game logic is housed in some person and can be used in any
+ * player position. Reasoning methods define the player, not the actual player
+ * through a euchre game.
  */
 type Player interface {
     /*
@@ -84,6 +90,7 @@ type Player interface {
      * method removes the played card from the hand.
      *
      * Args:
+     *  player: The current player number designation this player represents.
      *  setup: The setup of the euchre game before any tricks which consists
      *         of who was dealer, what the top card was, etc.
      *  hand: The cards currently in the user's hand.
@@ -94,6 +101,6 @@ type Player interface {
      *  Returns the user's new hand and the card that was chosen from the user's
      *  hand.
      */
-    Play(setup euchre.Setup, hand []deck.Card, played []deck.Card,
+    Play(player int, setup euchre.Setup, hand []deck.Card, played []deck.Card,
          prior []euchre.Trick) ([]deck.Card, deck.Card)
 }

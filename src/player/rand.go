@@ -11,10 +11,10 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
 
 /*
- * A RandomPlayer. This player is non determinisitic, so for the same input, you
+ * A RandPlayer. This player is non deterministic, so for the same input, you
  * can get different outputs. The distribution of picking up, discarding or
  * going alone can are configurable. Discarding or playing is not since they
- * would naturally have to depend on card order, which does not necessairily
+ * would naturally have to depend on card order, which does not necessarily
  * have any meaning.
  */
 type RandPlayer struct {
@@ -33,8 +33,8 @@ type RandPlayer struct {
  *              picked up.
  *  callProb: The probability that the player will call the suit after everybody
  *            skips the first round.
- *  aloneProb: The probability that the player will go alone if he calls the
- *             the suit or tells the dealer to pickup.
+ *  aloneProb: The probability that the player will go alone if he calls suit or
+ *             tells the dealer to pickup.
  */
 func NewRand(pickupProb float64, callProb float64, aloneProb float64) (*RandPlayer) {
     return &RandPlayer{
@@ -47,22 +47,15 @@ func NewRand(pickupProb float64, callProb float64, aloneProb float64) (*RandPlay
 
 /*
  * Player decides to pickup with probability pickupProb.
- *
- * Args:
- *  hand: The current hand of the player.
- *  top: The card on top of the kitty.
- *  who: The player number designation for the dealer.
- *
- * Returns:
- *  True if the player should tell the dealer to pickup the card. False if pass.
- *  The player decides the dealer should pickup it up with probability
- *  pickupProb.
  */
 func (p *RandPlayer) Pickup(hand []deck.Card, top deck.Card, who int) bool {
     return r.Float64() < p.pickupProb
 }
 
 
+/*
+ * TODO:
+ */
 func (p *RandPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck.Card) {
     hand = append(hand, top)
 
@@ -79,16 +72,6 @@ func (p *RandPlayer) Discard(hand []deck.Card, top deck.Card) ([]deck.Card, deck
 /*
  * Player decision method to call suit once all other players have passed on
  * telling the dealer to pickup.
- *
- * Args:
- *  hand: The hand of the player.
- *  top: The card on the top of the kitty.
- *  who: The player number designation for the dealer.
- *
- * Returns:
- *  The suit to call and True if the player should call this suit. False if the
- *  player should not call it. The player decides to call the suit with
- *  probability callProb.
  */
 func (p *RandPlayer) Call(hand []deck.Card, top deck.Card,
                           who int) (deck.Suit, bool) {
@@ -104,21 +87,14 @@ func (p *RandPlayer) Call(hand []deck.Card, top deck.Card,
 /*
  * Player decision method to go alone or not. The player will go alone with
  * probability aloneProb.
- *
- * Args:
- *  hand: The current player's hand.
- *  top: The card on top of the kitty.
- *  who: The player number designation for the dealer.
- *
- * Returns:
- *  True if the player calls going alone and false otherwise.
  */
 func (p *RandPlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
     return r.Float64() < p.aloneProb
 }
 
 
-func (p *RandPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
+func (p *RandPlayer) Play(player int, setup euchre.Setup, hand,
+                          played []deck.Card,
                           prior []euchre.Trick) ([]deck.Card, deck.Card) {
     playable := euchre.Possible(hand, played, setup.Trump)
 

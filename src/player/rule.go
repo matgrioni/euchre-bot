@@ -151,7 +151,7 @@ type RulePlayer struct {
  *  A RulePlayer pointer that reads data from the given filename.
  */
 func NewRule(pickupFn string) (*RulePlayer) {
-    return &RulePlayer{ pickupFn, }
+    return &RulePlayer{ pickupFn }
 }
 
 
@@ -327,7 +327,11 @@ func (p *RulePlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
 }
 
 
-func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
+/*
+ * TODO
+ */
+func (p *RulePlayer) Play(player int, setup euchre.Setup, hand,
+                          played []deck.Card,
                           prior []euchre.Trick) ([]deck.Card, deck.Card) {
     // The approach for the rule player will be to always try to win the current
     // hand. If the player cannot win, it plays its least valuable card. If the
@@ -355,15 +359,16 @@ func (p *RulePlayer) Play(setup euchre.Setup, hand, played []deck.Card,
         curWinCard = played[curWinnerIdx]
     }
 
-    leader := euchre.Leader(played, 0, setup.AlonePlayer)
+    leader := euchre.Leader(played, player, setup.AlonePlayer)
     curWinner := euchre.Winner(played, setup.Trump, leader, setup.AlonePlayer)
+    partner := (player + 2) % 4
 
     var chosen deck.Card
     chosenIdx := -1
 
     // Logic for picking a winner. If the current winner is our partner, just
     // play the lowest card in the hand.
-    if curWinner != 2 && len(played) > 0 {
+    if curWinner != partner && len(played) > 0 {
         for _, idx := range playable {
             curCard := hand[idx]
             var wins bool

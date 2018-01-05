@@ -258,10 +258,10 @@ func (p *SmartPlayer) Alone(hand []deck.Card, top deck.Card, who int) bool {
 }
 
 
-func (p *SmartPlayer) Play(setup euchre.Setup, hand, played []deck.Card,
+func (p *SmartPlayer) Play(player int, setup euchre.Setup, hand,
+                           played []deck.Card,
                            prior []euchre.Trick) ([]deck.Card, deck.Card) {
-
-    s := euchre.NewUndeterminizedState(setup, 0, hand, played, prior)
+    s := euchre.NewUndeterminizedState(setup, player, hand, played, prior)
     e := euchre.Engine{ }
     chosenMove, _ := ai.MCTS(s, e, p.playRuns, p.playDeterminizations)
 

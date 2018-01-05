@@ -207,7 +207,7 @@ func main() {
             played = append(played, card)
         }
 
-        curHand, chosen = player.Play(setup, curHand, played, prior)
+        curHand, chosen = player.Play(0, setup, curHand, played, prior)
         played = append(played, chosen)
 
         fmt.Printf("Play %s.\n", chosen)

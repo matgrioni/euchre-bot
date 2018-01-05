@@ -855,6 +855,20 @@ var winnerTests = []winnerTest {
         3,
     },
 
+    // Routine test
+    winnerTest {
+        []deck.Card {
+            deck.Card { deck.C, deck.Nine },
+            deck.Card { deck.S, deck.A },
+            deck.Card { deck.H, deck.Nine },
+            deck.Card { deck.H, deck.Ten },
+        },
+        deck.H,
+        2,
+        -1,
+        1,
+    },
+
     /*
      * The start of going alone tests.
      */

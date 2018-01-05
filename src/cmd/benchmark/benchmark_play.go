@@ -55,8 +55,10 @@ const (
 func main() {
     var dataLoc string
     var playerType int
+    var paired bool
     flag.StringVar(&dataLoc, "dataLoc", "", "Location of minimax evaluated games.")
-    flag.IntVar(&playerType, "playerType", 0, "Tye type of player to evaluate.")
+    flag.IntVar(&playerType, "playerType", 0, "The type of player to evaluate.")
+    flag.BoolVar(&paired, "paired", false, "Set if you wish partner play to be evaluated.")
     flag.Parse()
 
     // Create the mapping of playerType to player object and get the desired
@@ -102,10 +104,13 @@ func main() {
                 // If it is the AI's turn, use the chosen player logic to choose
                 // what card to use next. Then keep the state updated, so that the
                 // Minimax agents know what is going on.
-                if state.Player == 0 {
-                    curHand, chosen := chosenPlayer.Play(state.Setup, state.Hands[0], state.Played, state.Prior)
+                if state.Player == 0 || (paired && state.Player == 2) {
+                    curHand, chosen := chosenPlayer.Play(state.Player, state.Setup,
+                                                         state.Hands[state.Player],
+                                                         state.Played, state.Prior)
+
                     state.Played = append(state.Played, chosen)
-                    state.Hands[0] = curHand
+                    state.Hands[state.Player] = curHand
                     state.Player = (state.Player + 1) % 4
                 } else {
                 // If it is the Minimax agents' turn, use their logic. This agent
@@ -120,16 +125,16 @@ func main() {
             // were last. Namely, player 1.
             // TODO: This is internal logic that is being handled very closely
             // by the outside program. This should be encapsulated.
-            if last == 0 {
+            if last == 0 || (paired && last == 2) {
+                led := euchre.LeaderInclusive(state.Played, last,
+                                              state.Setup.AlonePlayer)
                 trick := euchre.Trick {
                     state.Played,
-                    1,
+                    led,
                     state.Setup.Trump,
                     state.Setup.AlonePlayer,
                 }
-                // TODO: Note that 1 is not true, as the leading player if there
-                // is a player going alone.
-                state.Player = euchre.Winner(state.Played, state.Setup.Trump, 1,
+                state.Player = euchre.Winner(state.Played, state.Setup.Trump, led,
                                     state.Setup.AlonePlayer)
                 state.Played = make([]deck.Card, 0, 4)
                 state.Prior = append(state.Prior, trick)

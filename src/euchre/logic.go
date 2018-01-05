@@ -199,6 +199,24 @@ func Leader(played []deck.Card, player, alone int) int {
 
 
 /*
+ * Given the current player cards and the last player's turn, and who is going
+ * alone, find out what player led the hand.
+ *
+ * Args:
+ *  played: The cards that were played.
+ *  player: The last player to play, should be in the range [0, 3].
+ *  alone: The player who is going alone, if any.
+ *
+ * Returns:
+ *  The player number designation for the player who played the first card in
+ *  played.
+ */
+func LeaderInclusive(played []deck.Card, player, alone int) int {
+    return Leader(played[:len(played) - 1], player, alone)
+}
+
+
+/*
  * Creates a new copy of the hands in memory from the given state.
  *
  * Args:

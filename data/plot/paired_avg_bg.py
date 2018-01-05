@@ -49,7 +49,7 @@ ax = fig.add_subplot(111)
 ids = []
 for i, dataset in enumerate((unpaired, paired)):
     rect = ax.bar(x_pos + i * WIDTH, dataset, WIDTH, color=COLORS[i],
-                  align='center')
+                  align='center', alpha=0.5)
     ids.append(rect[0])
 
 

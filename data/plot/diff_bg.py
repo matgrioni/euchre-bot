@@ -26,6 +26,7 @@ if len(args.results) > len(COLORS):
     raise ArgumentError('Too many results. Can at most be {}'.format(len(COLORS)))
 
 
+# TODO: Make this multibar chart its own component since I use it twice.
 dists = []
 keys = []
 for r in args.results:

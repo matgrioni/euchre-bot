@@ -1,17 +1,15 @@
 package main
 
-
 import (
-    "ai"
-    "deck"
-    "encoding/json"
-    "euchre"
-    "flag"
-    "fmt"
-    "math/rand"
-    "time"
+	"ai"
+	"deck"
+	"encoding/json"
+	"euchre"
+	"flag"
+	"fmt"
+	"math/rand"
+	"time"
 )
-
 
 /*
  * This script randomly generates a data set to evaluate different strategies
@@ -26,9 +24,7 @@ import (
  * samples are the number of situations you wish to compare.
  */
 
-
 var r = rand.New(rand.NewSource(time.Now().UnixNano()))
-
 
 /*
  * Create a random setup given the current situation. The random setup randomly
@@ -43,48 +39,47 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
  *  The randomized euchre setup.
  */
 func randomNoAloneNoPickupSetup(splits [][]deck.Card) euchre.Setup {
-    dealer := r.Intn(4)
-    caller := r.Intn(4)
-    pickedUp := false
-    top := splits[4][3]
-    trump := deck.SUITS[r.Intn(len(deck.SUITS))]
-    var discard deck.Card
+	dealer := r.Intn(4)
+	caller := r.Intn(4)
+	pickedUp := false
+	top := splits[4][3]
+	trump := deck.SUITS[r.Intn(len(deck.SUITS))]
+	var discard deck.Card
 
-    return euchre.Setup {
-        dealer,
-        caller,
-        pickedUp,
-        top,
-        trump,
-        discard,
-        -1,
-    }
+	return euchre.Setup{
+		dealer,
+		caller,
+		pickedUp,
+		top,
+		trump,
+		discard,
+		-1,
+	}
 }
 
-
 func main() {
-    var samples int
-    flag.IntVar(&samples, "samples", 0, "Number of sample games to simluate")
-    flag.Parse()
+	var samples int
+	flag.IntVar(&samples, "samples", 0, "Number of sample games to simluate")
+	flag.Parse()
 
-    engine := euchre.Engine{ }
-    for i := 0; i < samples; i++ {
-        splits := euchre.GenSituation()
-        setup := randomNoAloneNoPickupSetup(splits)
+	engine := euchre.Engine{}
+	for i := 0; i < samples; i++ {
+		splits := euchre.GenSituation()
+		setup := randomNoAloneNoPickupSetup(splits)
 
-        // Delete the kitty so that it is not included in the state.
-        copy(splits[4:], splits[5:])
-        splits[len(splits) - 1] = nil
-        splits = splits[:len(splits) - 1]
+		// Delete the kitty so that it is not included in the state.
+		copy(splits[4:], splits[5:])
+		splits[len(splits)-1] = nil
+		splits = splits[:len(splits)-1]
 
-        played := make([]deck.Card, 0, 4)
-        prior := make([]euchre.Trick, 0, 5)
-        state := euchre.NewDeterminizedState(setup, (setup.Dealer + 1) % 4,
-                                             splits, played, prior)
+		played := make([]deck.Card, 0, 4)
+		prior := make([]euchre.Trick, 0, 5)
+		state := euchre.NewDeterminizedState(setup, (setup.Dealer+1)%4,
+			splits, played, prior)
 
-        score, _ := ai.Minimax(state, engine)
+		score, _ := ai.Minimax(state, engine)
 
-        stateStr, _ := json.Marshal(state)
-        fmt.Printf("%s\t%f\n", stateStr, score)
-    }
+		stateStr, _ := json.Marshal(state)
+		fmt.Printf("%s\t%f\n", stateStr, score)
+	}
 }

@@ -1,6 +1,5 @@
 package euchre
 
-
 /*
  * Intersect two sets that represent player indices. Keys that are mapped to a
  * true value in both sets are kept in the result.
@@ -14,16 +13,15 @@ package euchre
  *  both mapped to a true value.
  */
 func intersectPlayerSets(s1 map[int]bool, s2 map[int]bool) map[int]bool {
-    result := make(map[int]bool)
-    for k, _ := range s1 {
-        if pres, ok := s2[k]; ok && pres {
-            result[k] = true
-        }
-    }
+	result := make(map[int]bool)
+	for k, _ := range s1 {
+		if pres, ok := s2[k]; ok && pres {
+			result[k] = true
+		}
+	}
 
-    return result
+	return result
 }
-
 
 /*
  * Return a random player index from a set representing some player indices.
@@ -37,14 +35,13 @@ func intersectPlayerSets(s1 map[int]bool, s2 map[int]bool) map[int]bool {
  *  A random player index from the set from those that are mapped to true.
  */
 func randomPlayerFromSet(s map[int]bool) int {
-    keys := make([]int, 0, len(s))
-    for k, _ := range s {
-        keys = append(keys, k)
-    }
+	keys := make([]int, 0, len(s))
+	for k, _ := range s {
+		keys = append(keys, k)
+	}
 
-    return keys[r.Intn(len(keys))]
+	return keys[r.Intn(len(keys))]
 }
-
 
 /*
  * Shuffle the players in a set of players.
@@ -57,16 +54,16 @@ func randomPlayerFromSet(s map[int]bool) int {
  *  is randomly ordered.
  */
 func shufflePlayerSetKeys(m map[int]bool) []int {
-    src := make([]int, 0, len(m))
-    for k, _ := range m {
-        src = append(src, k)
-    }
+	src := make([]int, 0, len(m))
+	for k, _ := range m {
+		src = append(src, k)
+	}
 
-    dst := r.Perm(len(m))
-    shuffled := make([]int, len(m))
-    for i, item := range dst {
-        shuffled[i] = src[item]
-    }
+	dst := r.Perm(len(m))
+	shuffled := make([]int, len(m))
+	for i, item := range dst {
+		shuffled[i] = src[item]
+	}
 
-    return shuffled
+	return shuffled
 }

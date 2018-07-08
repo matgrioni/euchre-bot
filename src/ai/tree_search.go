@@ -1,8 +1,6 @@
 package ai
 
-
-type TSState interface { }
-
+type TSState interface{}
 
 /*
  * A type to represent a move in a game. A move consists of an action, and a
@@ -10,14 +8,13 @@ type TSState interface { }
  * represented via a nil action.
  */
 type Move struct {
-    Action interface{}
-    State TSState
+	Action interface{}
+	State  TSState
 }
 
-
 type TSEngine interface {
-    Favorable(state TSState) bool
-    IsTerminal(state TSState) bool
-    Evaluation(state TSState) float64
-    Successors(state TSState) []Move
+	Favorable(state TSState) bool
+	IsTerminal(state TSState) bool
+	Evaluation(state TSState) float64
+	Successors(state TSState) []Move
 }

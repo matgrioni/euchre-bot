@@ -1,14 +1,13 @@
 package ai
 
 import (
-    "math/rand"
-    "time"
+	"math/rand"
+	"time"
 )
 
 /*
  * Taken and inspired by appliedgo.net/perceptron
  */
-
 
 /*
  * The Input type to the perceptron breaks down any struct or type into a vector
@@ -16,10 +15,8 @@ import (
  * either there or aren't, so they only take on a value of 1 or 0.
  */
 type Input interface {
-    Features() []int
+	Features() []int
 }
-
-
 
 /*
  * A simple perceptron type that acts in the form w * x + b > 0. This means that
@@ -29,10 +26,9 @@ type Input interface {
  * included together.
  */
 type Perceptron struct {
-    weights []float32
-    bias float32
+	weights []float32
+	bias    float32
 }
-
 
 /*
  * Create a random perceptron that has n weights. The weight numbers are
@@ -47,19 +43,18 @@ type Perceptron struct {
  *  A pointer to a Perceptron with n random weights and a random bias.
  */
 func CreatePerceptron(n int, low, high float32) *Perceptron {
-    r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-    weights := make([]float32, n, n)
-    for i := range weights {
-        weights[i] = r.Float32() * (high - low) + low
-    }
+	weights := make([]float32, n, n)
+	for i := range weights {
+		weights[i] = r.Float32()*(high-low) + low
+	}
 
-    return &Perceptron {
-        weights,
-        r.Float32() * (high - low) + low,
-    }
+	return &Perceptron{
+		weights,
+		r.Float32()*(high-low) + low,
+	}
 }
-
 
 /*
  * Process the given input and return a classification of either 1 or 0.
@@ -72,18 +67,17 @@ func CreatePerceptron(n int, low, high float32) *Perceptron {
  *  otherwise.
  */
 func (p *Perceptron) Process(input Input) int {
-    s := p.bias
-    for i, input := range input.Features() {
-        s += float32(input) * p.weights[i]
-    }
+	s := p.bias
+	for i, input := range input.Features() {
+		s += float32(input) * p.weights[i]
+	}
 
-    if s > 0 {
-        return 1
-    }
+	if s > 0 {
+		return 1
+	}
 
-    return 0
+	return 0
 }
-
 
 /*
  * Based on an array of inputs and a parallel array of expected answers, train
@@ -95,14 +89,13 @@ func (p *Perceptron) Process(input Input) int {
  *  rate: The rate at which the Perceptron learns.
  */
 func (p *Perceptron) Train(inputs []Input, expected []int, rate float32) {
-    for i, input := range inputs {
-        actual := p.Process(input)
-        del := expected[i] - actual
+	for i, input := range inputs {
+		actual := p.Process(input)
+		del := expected[i] - actual
 
-        p.adjust(input, del, rate)
-    }
+		p.adjust(input, del, rate)
+	}
 }
-
 
 /*
  * Train the perceptron until a certain level of convergence. Basically this
@@ -125,31 +118,30 @@ func (p *Perceptron) Train(inputs []Input, expected []int, rate float32) {
  *  otherwise.
  */
 func (p *Perceptron) Converge(inputs []Input, expected []int,
-                              rate, percent float32, maxIter int) bool {
-    thres := int(percent * float32(len(inputs)))
+	rate, percent float32, maxIter int) bool {
+	thres := int(percent * float32(len(inputs)))
 
-    iter := 0
-    wrong := thres + 1
-    for wrong > thres && iter < maxIter {
-        wrong = 0
+	iter := 0
+	wrong := thres + 1
+	for wrong > thres && iter < maxIter {
+		wrong = 0
 
-        for i, input := range inputs {
-            actual := p.Process(input)
-            del := expected[i] - actual
+		for i, input := range inputs {
+			actual := p.Process(input)
+			del := expected[i] - actual
 
-            p.adjust(input, del, rate)
+			p.adjust(input, del, rate)
 
-            if del != 0 {
-                wrong++
-            }
-        }
+			if del != 0 {
+				wrong++
+			}
+		}
 
-        iter++
-    }
+		iter++
+	}
 
-    return wrong <= thres
+	return wrong <= thres
 }
-
 
 /*
  * Get the weights for a Perceptron.
@@ -158,9 +150,8 @@ func (p *Perceptron) Converge(inputs []Input, expected []int,
  *  The weights of a Perceptron.
  */
 func (p *Perceptron) Weights() []float32 {
-    return p.weights
+	return p.weights
 }
-
 
 /*
  * Get the bias of a Perceptron.
@@ -169,9 +160,8 @@ func (p *Perceptron) Weights() []float32 {
  *  The bias field of a Perceptron.
  */
 func (p *Perceptron) Bias() float32 {
-    return p.bias
+	return p.bias
 }
-
 
 /*
  * Adjust a perceptron based on a given input, difference and learning rate. The
@@ -189,9 +179,9 @@ func (p *Perceptron) Bias() float32 {
  *  learningRate: The rate at which to adjust the perceptron weights.
  */
 func (p *Perceptron) adjust(input Input, delta int, learningRate float32) {
-    for i, input := range input.Features() {
-        p.weights[i] += float32(input) * float32(delta) * learningRate
-    }
+	for i, input := range input.Features() {
+		p.weights[i] += float32(input) * float32(delta) * learningRate
+	}
 
-    p.bias += float32(delta) * learningRate
+	p.bias += float32(delta) * learningRate
 }

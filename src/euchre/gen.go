@@ -1,8 +1,6 @@
 package euchre
 
-
 import "deck"
-
 
 /*
  * Create a random euchre situation. This means cards are randomly distributed
@@ -13,14 +11,14 @@ import "deck"
  *  in the last card slice.
  */
 func GenSituation() [][]deck.Card {
-    cards := deck.DrawN(24)
+	cards := deck.DrawN(24)
 
-    hands := make([][]deck.Card, 5)
-    for i := 0; i < 4; i++ {
-        hands[i] = cards[i * 5: (i + 1) * 5]
-    }
+	hands := make([][]deck.Card, 5)
+	for i := 0; i < 4; i++ {
+		hands[i] = cards[i*5 : (i+1)*5]
+	}
 
-    hands[4] = cards[20:]
+	hands[4] = cards[20:]
 
-    return hands
+	return hands
 }

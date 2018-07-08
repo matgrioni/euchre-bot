@@ -1,8 +1,8 @@
 package deck
 
 import (
-    "math/rand"
-    "time"
+	"math/rand"
+	"time"
 )
 
 var r = rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -12,7 +12,6 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
  * hands and so on using the random package in go.
  */
 
-
 /*
  * Generates a random card. The suit is generated randomly and so is the value.
  *
@@ -20,13 +19,12 @@ var r = rand.New(rand.NewSource(time.Now().UnixNano()))
  *  A random deck.Card.
  */
 func Draw() Card {
-    var card Card
-    card.Suit = SUITS[r.Intn(4)]
-    card.Value = VALUES[r.Intn(6)]
+	var card Card
+	card.Suit = SUITS[r.Intn(4)]
+	card.Value = VALUES[r.Intn(6)]
 
-    return card
+	return card
 }
-
 
 /*
  * Randomly generates n unique cards.
@@ -38,12 +36,12 @@ func Draw() Card {
  *  A slice of n random, unique cards.
  */
 func DrawN(n int) []Card {
-    hand := make([]Card, n)
-    perm := r.Perm(len(CARDS))
+	hand := make([]Card, n)
+	perm := r.Perm(len(CARDS))
 
-    for i := 0; i < n; i++ {
-        hand[i] = CARDS[perm[i]]
-    }
+	for i := 0; i < n; i++ {
+		hand[i] = CARDS[perm[i]]
+	}
 
-    return hand
+	return hand
 }

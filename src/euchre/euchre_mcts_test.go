@@ -21,23 +21,23 @@ func TestRunPlayout(t *testing.T) {
 		1,
 		1,
 		true,
-		deck.Card{deck.D, deck.Nine},
+		deck.Card{Suit: deck.D, Value: deck.Nine},
 		deck.D,
 		deck.Card{},
 		-1,
 	}
 
 	hand := []deck.Card{
-		deck.Card{deck.H, deck.Nine},
-		deck.Card{deck.H, deck.Ten},
-		deck.Card{deck.S, deck.A},
-		deck.Card{deck.D, deck.Q},
-		deck.Card{deck.C, deck.Q},
+		{Suit: deck.H, Value: deck.Nine},
+		{Suit: deck.H, Value: deck.Ten},
+		{Suit: deck.S, Value: deck.A},
+		{Suit: deck.D, Value: deck.Q},
+		{Suit: deck.C, Value: deck.Q},
 	}
 
 	played := []deck.Card{
-		deck.Card{deck.C, deck.J},
-		deck.Card{deck.C, deck.A},
+		{Suit: deck.C, Value: deck.J},
+		{Suit: deck.C, Value: deck.A},
 	}
 
 	var prior []Trick
@@ -46,8 +46,8 @@ func TestRunPlayout(t *testing.T) {
 	s.Determinize()
 	n := ai.NewNode()
 	m := ai.Move{
-		nil,
-		s,
+		Action: nil,
+		State:  s,
 	}
 	n.Value(m)
 	e := Engine{}

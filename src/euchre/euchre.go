@@ -503,7 +503,7 @@ func (engine Engine) Evaluation(state ai.TSState) float64 {
 	// For a normal win, that's worth one point.
 	if winCounts0 > winCounts1 {
 		return 1
-	} else {
+	} else if winCounts0 < winCounts1 {
 		return -1
 	}
 

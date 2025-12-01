@@ -160,13 +160,13 @@ func main() {
 	}
 
 	setup := euchre.Setup{
-		dealer,
-		caller,
-		pickedUp,
-		top,
-		trump,
-		d,
-		alonePlayer,
+		Dealer:      dealer,
+		Caller:      caller,
+		PickedUp:    pickedUp,
+		Top:         top,
+		Trump:       trump,
+		Discard:     d,
+		AlonePlayer: alonePlayer,
 	}
 
 	var expectedCards int

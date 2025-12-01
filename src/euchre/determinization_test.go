@@ -15,24 +15,24 @@ func TestDeterminization(t *testing.T) {
 		1,
 		2,
 		false,
-		deck.Card{deck.C, deck.A},
+		deck.Card{Suit: deck.C, Value: deck.A},
 		deck.S,
 		deck.Card{},
 		-1,
 	}
 
 	hand := []deck.Card{
-		deck.Card{deck.H, deck.A},
-		deck.Card{deck.D, deck.Nine},
-		deck.Card{deck.D, deck.A},
-		deck.Card{deck.C, deck.Ten},
+		deck.Card{Suit: deck.H, Value: deck.A},
+		deck.Card{Suit: deck.D, Value: deck.Nine},
+		deck.Card{Suit: deck.D, Value: deck.A},
+		deck.Card{Suit: deck.C, Value: deck.Ten},
 	}
 
 	cards1 := []deck.Card{
-		deck.Card{deck.H, deck.K},
-		deck.Card{deck.C, deck.Q},
-		deck.Card{deck.H, deck.Q},
-		deck.Card{deck.H, deck.Nine},
+		deck.Card{Suit: deck.H, Value: deck.K},
+		deck.Card{Suit: deck.C, Value: deck.Q},
+		deck.Card{Suit: deck.H, Value: deck.Q},
+		deck.Card{Suit: deck.H, Value: deck.Nine},
 	}
 
 	var played []deck.Card
@@ -62,29 +62,29 @@ func TestDeterminizationMiddleOfTrick(t *testing.T) {
 		1,
 		2,
 		false,
-		deck.Card{deck.C, deck.A},
+		deck.Card{Suit: deck.C, Value: deck.A},
 		deck.S,
 		deck.Card{},
 		-1,
 	}
 
 	hand := []deck.Card{
-		deck.Card{deck.H, deck.A},
-		deck.Card{deck.D, deck.Nine},
-		deck.Card{deck.D, deck.A},
-		deck.Card{deck.C, deck.Ten},
+		{Suit: deck.H, Value: deck.A},
+		{Suit: deck.D, Value: deck.Nine},
+		{Suit: deck.D, Value: deck.A},
+		{Suit: deck.C, Value: deck.Ten},
 	}
 
 	cards1 := []deck.Card{
-		deck.Card{deck.H, deck.K},
-		deck.Card{deck.C, deck.Q},
-		deck.Card{deck.H, deck.Q},
-		deck.Card{deck.H, deck.Nine},
+		{Suit: deck.H, Value: deck.K},
+		{Suit: deck.C, Value: deck.Q},
+		{Suit: deck.H, Value: deck.Q},
+		{Suit: deck.H, Value: deck.Nine},
 	}
 
 	played := []deck.Card{
-		deck.Card{deck.C, deck.A},
-		deck.Card{deck.C, deck.Ten},
+		{Suit: deck.C, Value: deck.A},
+		{Suit: deck.C, Value: deck.Ten},
 	}
 
 	trick1 := Trick{
@@ -114,42 +114,42 @@ func TestDeterminizationProblematic(t *testing.T) {
 		1,
 		0,
 		true,
-		deck.Card{deck.C, deck.K},
+		deck.Card{Suit: deck.C, Value: deck.K},
 		deck.C,
 		deck.Card{},
 		-1,
 	}
 
 	cards1 := []deck.Card{
-		deck.Card{deck.C, deck.J},
-		deck.Card{deck.C, deck.Ten},
-		deck.Card{deck.C, deck.Q},
-		deck.Card{deck.C, deck.K},
+		{Suit: deck.C, Value: deck.J},
+		{Suit: deck.C, Value: deck.Ten},
+		{Suit: deck.C, Value: deck.Q},
+		{Suit: deck.C, Value: deck.K},
 	}
 
 	cards2 := []deck.Card{
-		deck.Card{deck.D, deck.A},
-		deck.Card{deck.D, deck.K},
-		deck.Card{deck.D, deck.Q},
-		deck.Card{deck.D, deck.J},
+		{Suit: deck.D, Value: deck.A},
+		{Suit: deck.D, Value: deck.K},
+		{Suit: deck.D, Value: deck.Q},
+		{Suit: deck.D, Value: deck.J},
 	}
 
 	cards3 := []deck.Card{
-		deck.Card{deck.D, deck.Ten},
-		deck.Card{deck.C, deck.Nine},
-		deck.Card{deck.C, deck.A},
-		deck.Card{deck.S, deck.J},
+		{Suit: deck.D, Value: deck.Ten},
+		{Suit: deck.C, Value: deck.Nine},
+		{Suit: deck.C, Value: deck.A},
+		{Suit: deck.S, Value: deck.J},
 	}
 
 	played := []deck.Card{
-		deck.Card{deck.S, deck.Q},
-		deck.Card{deck.S, deck.K},
-		deck.Card{deck.H, deck.A},
+		{Suit: deck.S, Value: deck.Q},
+		{Suit: deck.S, Value: deck.K},
+		{Suit: deck.H, Value: deck.A},
 	}
 
 	hand := []deck.Card{
-		deck.Card{deck.S, deck.Nine},
-		deck.Card{deck.S, deck.A},
+		{Suit: deck.S, Value: deck.Nine},
+		{Suit: deck.S, Value: deck.A},
 	}
 
 	trick1 := Trick{

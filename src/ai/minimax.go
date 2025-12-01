@@ -2,7 +2,6 @@ package ai
 
 import "math"
 
-
 /*
  * Uses minimax adversarial tree search to find the optimal move in a game.
  *
@@ -16,9 +15,8 @@ import "math"
  *  and the state it will send you to.
  */
 func Minimax(state TSState, engine TSEngine) (float64, Move) {
-    return minimaxHelper(state, engine, math.Inf(-1), math.Inf(1))
+	return minimaxHelper(state, engine, math.Inf(-1), math.Inf(1))
 }
-
 
 /*
  * Finds the best move and its evaluation using minimax adversarial search and
@@ -36,45 +34,45 @@ func Minimax(state TSState, engine TSEngine) (float64, Move) {
  *  and the state it will send you to.
  */
 func minimaxHelper(state TSState, engine TSEngine, alpha float64,
-                   beta float64) (float64, Move) {
-    if engine.IsTerminal(state) {
-        return engine.Evaluation(state), Move { nil, state }
-    }
+	beta float64) (float64, Move) {
+	if engine.IsTerminal(state) {
+		return engine.Evaluation(state), Move{nil, state}
+	}
 
-    fav := engine.Favorable(state)
+	fav := engine.Favorable(state)
 
-    var extremeMove Move
-    var extremeValue float64
-    if fav {
-        extremeValue = math.Inf(-1)
-    } else {
-        extremeValue = math.Inf(1)
-    }
+	var extremeMove Move
+	var extremeValue float64
+	if fav {
+		extremeValue = math.Inf(-1)
+	} else {
+		extremeValue = math.Inf(1)
+	}
 
-    for _, nextMove := range engine.Successors(state) {
-        nextState := nextMove.State
-        nextEval, _ := minimaxHelper(nextState, engine, alpha, beta)
+	for _, nextMove := range engine.Successors(state) {
+		nextState := nextMove.State
+		nextEval, _ := minimaxHelper(nextState, engine, alpha, beta)
 
-        if fav {
-            if nextEval > extremeValue {
-                extremeValue = nextEval
-                extremeMove = nextMove
-            }
+		if fav {
+			if nextEval > extremeValue {
+				extremeValue = nextEval
+				extremeMove = nextMove
+			}
 
-            alpha = math.Max(alpha, nextEval)
-        } else {
-            if nextEval < extremeValue {
-                extremeValue = nextEval
-                extremeMove = nextMove
-            }
+			alpha = math.Max(alpha, nextEval)
+		} else {
+			if nextEval < extremeValue {
+				extremeValue = nextEval
+				extremeMove = nextMove
+			}
 
-            beta = math.Min(beta, nextEval)
-        }
+			beta = math.Min(beta, nextEval)
+		}
 
-        if beta < alpha {
-            break
-        }
-    }
+		if beta < alpha {
+			break
+		}
+	}
 
-    return extremeValue, extremeMove
+	return extremeValue, extremeMove
 }

@@ -1,9 +1,9 @@
 package euchre
 
 import (
-    "deck"
-    "fmt"
-    "testing"
+	"euchre/deck"
+	"fmt"
+	"testing"
 )
 
 
